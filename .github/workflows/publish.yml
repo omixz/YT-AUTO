@@ -1,0 +1,79 @@
+name: Publish automated YouTube video
+
+on:
+  schedule:
+    # Every Monday at 15:00 UTC. Edit to taste - GitHub Actions cron has a
+    # minimum granularity of 5 minutes and schedules can lag under load.
+    - cron: "0 15 * * 1"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Override topic (leave blank to pull from the queue)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Build the video but skip uploading to YouTube"
+        required: false
+        default: "false"
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: youtube-automation
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore YouTube OAuth credentials
+        run: |
+          echo "${{ secrets.YOUTUBE_CLIENT_SECRET_B64 }}" | base64 -d > client_secret.json
+          echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > token.json
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: |
+          ARGS=()
+          if [ -n "${{ github.event.inputs.topic }}" ]; then
+            ARGS+=(--topic "${{ github.event.inputs.topic }}")
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          python run_pipeline.py "${ARGS[@]}"
+
+      - name: Remove OAuth credential files before committing
+        if: always()
+        run: rm -f client_secret.json token.json
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-run-${{ github.run_id }}
+          path: youtube-automation/output/**
+          retention-days: 14
+
+      - name: Commit updated topic queue/history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/topics.yaml config/topic_history.json
+          git diff --cached --quiet || git commit -m "chore: update topic queue after automated run"
+          git push

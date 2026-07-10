@@ -1,0 +1,10 @@
+.env
+client_secret.json
+token.json
+output/*
+!output/.gitkeep
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+work/

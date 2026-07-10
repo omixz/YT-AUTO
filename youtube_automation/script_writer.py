@@ -1,0 +1,169 @@
+"""Generates a scene-by-scene video script for a topic, using Claude tool-use
+for guaranteed-structured output (no fragile JSON-in-prose parsing)."""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import List
+
+import anthropic
+
+from .config import PipelineConfig
+
+MODEL = "claude-sonnet-5"
+
+SCRIPT_TOOL = {
+    "name": "emit_script",
+    "description": "Return the finished short-form video script.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "title": {"type": "string", "description": "YouTube title, under 100 chars, hook-forward."},
+            "description": {"type": "string", "description": "YouTube description, 2-4 sentences plus hashtags."},
+            "tags": {"type": "array", "items": {"type": "string"}, "description": "8-15 relevant search tags."},
+            "scenes": {
+                "type": "array",
+                "description": "Ordered scenes that make up the full narration.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "narration": {
+                            "type": "string",
+                            "description": "What the voiceover says for this scene, one or two sentences.",
+                        },
+                        "visual_keywords": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "2-4 stock-footage search terms depicting this scene.",
+                        },
+                        "on_screen_text": {
+                            "type": "string",
+                            "description": "Short on-screen caption/emphasis text. Empty string if none.",
+                        },
+                    },
+                    "required": ["narration", "visual_keywords"],
+                },
+            },
+        },
+        "required": ["title", "description", "tags", "scenes"],
+    },
+}
+
+TOPICS_TOOL_NAME = "emit_topics"
+
+
+@dataclass
+class Scene:
+    narration: str
+    visual_keywords: List[str]
+    on_screen_text: str = ""
+
+
+@dataclass
+class Script:
+    topic: str
+    title: str
+    description: str
+    tags: List[str]
+    scenes: List[Scene] = field(default_factory=list)
+
+    @property
+    def full_narration(self) -> str:
+        return " ".join(scene.narration for scene in self.scenes)
+
+
+def _client(config: PipelineConfig) -> anthropic.Anthropic:
+    if not config.secrets.anthropic_api_key:
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY is not set. Add it to youtube-automation/.env "
+            "(copy .env.example first)."
+        )
+    return anthropic.Anthropic(api_key=config.secrets.anthropic_api_key)
+
+
+def generate_script(topic: str, config: PipelineConfig) -> Script:
+    """Ask Claude to write a full scene-by-scene script for one video."""
+    client = _client(config)
+
+    # ~140 spoken words per minute is a safe average for narration pacing.
+    target_words = max(60, round(config.video.target_seconds * 140 / 60))
+
+    prompt = f"""You are writing a {config.video.format} YouTube video script for a faceless channel.
+
+Channel: {config.channel.name}
+Niche: {config.channel.niche}
+Audience: {config.channel.audience}
+Tone: {config.channel.tone}
+Topic for this video: {topic}
+
+Write a script of roughly {target_words} words of total narration, split into 5-9 short
+scenes. Open with a strong hook in the first scene. Each scene's narration should be 1-2
+sentences a voice actor can read in a few seconds. Give each scene visual_keywords that a
+stock-footage search engine could use to find matching {config.visuals.orientation}-orientation
+footage — concrete, filmable nouns, not abstract ideas. Do not use markdown in the narration.
+Only state facts you're confident are accurate; do not fabricate statistics or quotes.
+Call emit_script with the final result."""
+
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=2000,
+        tools=[SCRIPT_TOOL],
+        tool_choice={"type": "tool", "name": "emit_script"},
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    data = next(block.input for block in response.content if block.type == "tool_use")
+
+    scenes = [
+        Scene(
+            narration=s["narration"].strip(),
+            visual_keywords=list(s["visual_keywords"]),
+            on_screen_text=s.get("on_screen_text", "") or "",
+        )
+        for s in data["scenes"]
+    ]
+
+    return Script(
+        topic=topic,
+        title=data["title"].strip(),
+        description=data["description"].strip(),
+        tags=[t.strip() for t in data["tags"]],
+        scenes=scenes,
+    )
+
+
+def brainstorm_topics(config: PipelineConfig, existing: List[str], count: int = 5) -> List[str]:
+    """Ask Claude for fresh topic ideas that avoid what's already been made."""
+    client = _client(config)
+
+    tool = {
+        "name": TOPICS_TOOL_NAME,
+        "description": "Return a list of fresh video topic ideas.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "topics": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["topics"],
+        },
+    }
+
+    used_list = "\n".join(f"- {t}" for t in existing) or "(none yet)"
+    prompt = f"""Channel niche: {config.channel.niche}
+Audience: {config.channel.audience}
+
+Already-used topics (do not repeat these or close variants):
+{used_list}
+
+Suggest {count} new, specific, high-interest video topics for this channel. Avoid anything
+copyrighted or that would require paid licensing to depict. Call {TOPICS_TOOL_NAME} with the result."""
+
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=500,
+        tools=[tool],
+        tool_choice={"type": "tool", "name": TOPICS_TOOL_NAME},
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    data = next(block.input for block in response.content if block.type == "tool_use")
+    return list(data["topics"])
