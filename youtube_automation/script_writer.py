@@ -99,6 +99,13 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
 
     # ~140 spoken words per minute is a safe average for narration pacing.
     target_words = max(60, round(config.video.target_seconds * 140 / 60))
+    # ~25 words per scene keeps each one a genuine "1-2 sentences a few seconds
+    # long" beat rather than a paragraph - matters a lot once target_words
+    # gets into longform territory (a fixed "6-9 scenes" would otherwise force
+    # multi-sentence walls of narration per scene, or the model quietly
+    # ignoring the length target to keep scenes short).
+    suggested_scenes = max(6, min(60, round(target_words / 25)))
+    max_tokens = min(8000, max(2000, round(target_words * 4) + 500))
 
     prompt = f"""You are writing a {config.video.format} YouTube video script for a faceless channel.
 This channel's videos need to read as a genuinely produced mini-documentary with a point of
@@ -112,16 +119,18 @@ Audience: {config.channel.audience}
 Tone: {config.channel.tone}
 Topic for this video: {topic}
 
-Write a script of roughly {target_words} words of total narration, split into 6-9 short
-scenes with this shape:
-- One "hook" scene (first): a surprising claim or question that earns the next 45 seconds.
-- 4+ "build" scenes: connected facts that develop one throughline, not a random list - use
-  connective tissue ("but here's the twist...", "which raises the question...", "and that's
-  the part most people get wrong...").
+Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
+seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
+this shape:
+- One "hook" scene (first): a surprising claim or question that earns the runtime that follows.
+- {suggested_scenes - 2}+ "build" scenes: connected facts that develop one throughline, not a
+  random list - use connective tissue ("but here's the twist...", "which raises the
+  question...", "and that's the part most people get wrong...").
 - One "insight" scene (last): a real "why this matters" synthesis that ties the throughline
   together - genuine analysis, not just one more fact.
 
-Each scene's narration should be 1-2 sentences a voice actor can read in a few seconds. Give
+Each scene's narration should be 1-2 sentences a voice actor can read in a few seconds - do not
+write paragraph-length narration for a single scene, split it into more scenes instead. Give
 each scene visual_keywords that a stock-footage search engine could use to find matching
 {config.visuals.orientation}-orientation footage — concrete, filmable nouns, not abstract ideas.
 Do not use markdown in the narration. Only state facts you're confident are accurate; do not
@@ -129,7 +138,7 @@ fabricate statistics or quotes. Call emit_script with the final result."""
 
     response = client.messages.create(
         model=MODEL,
-        max_tokens=2000,
+        max_tokens=max_tokens,
         tools=[SCRIPT_TOOL],
         tool_choice={"type": "tool", "name": "emit_script"},
         messages=[{"role": "user", "content": prompt}],

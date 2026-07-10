@@ -1,19 +1,42 @@
 channel:
   name: "My Faceless Channel"
-  niche: "bite-sized science and history facts"
-  audience: "curious adults who scroll shorts"
-  tone: "punchy, upbeat, slightly dramatic, no filler"
+  audience: "curious adults who scroll shorts and watch longform"   # default; a niche below can override this
+  tone: "punchy, upbeat, slightly dramatic, no filler"               # default; a niche below can override this
   language: "en"
-  subscribe_cta: "for more {niche} every week"   # {niche} filled in from above; shown under the "Subscribe" heading on the outro card
+  subscribe_cta: "for more {niche} every week"   # {niche} filled in from whichever niche was picked; shown on the outro card
+
+# One channel, multiple niches. Every run, niche_selector.py picks one
+# (niche, format) pair - weighted by past performance once enough data
+# exists (see `growth:` below), falling back to these `weight` priors
+# and round-robin exploration until then. Add/remove niches freely; each
+# gets its own topic queue/history under config/topics/<key>.* and
+# config/topic_history/<key>.json.
+niches:
+  - key: science_history
+    niche: "bite-sized science and history facts"
+    weight: 1.0
+  - key: unsolved_mysteries
+    niche: "unsolved mysteries and cold cases"
+    weight: 1.0
 
 video:
-  format: shorts               # shorts (9:16, up to 3 min under YouTube's current Shorts rules) or longform (16:9)
-  target_seconds: 60           # deeper scripts read as produced content, not a bare fact-list
-  resolution_shorts: [1080, 1920]
-  resolution_longform: [1920, 1080]
   fps: 30
   background_music: null       # path to an mp3 under youtube-automation/assets, optional
   music_volume_db: -22
+  resolution_shorts: [1080, 1920]
+  resolution_longform: [1920, 1080]
+  formats:
+    shorts:
+      enabled: true
+      target_seconds: 60        # deeper scripts read as produced content, not a bare fact-list
+      weight: 0.7                # prior probability before performance data kicks in
+    longform:
+      enabled: true
+      target_seconds: 300        # ~5 min (~19 scenes) - conservative on purpose: the whole script is one
+                                  # LLM call, and pushing scene count much higher risks losing coherence or
+                                  # blowing past output limits. Raise this once you've reviewed a few runs.
+                                  # Visuals come from animation.py (stick-figure/motion-graphics), not stock footage.
+      weight: 0.3
 
 voice:
   provider: edge-tts
@@ -22,23 +45,33 @@ voice:
   pitch: "+0Hz"
 
 visuals:
-  provider: pexels
-  orientation: portrait        # portrait or landscape, should match video.format
+  provider: pexels             # used for shorts only; longform uses animation.py instead
+  orientation: portrait        # portrait or landscape, kept in sync with the chosen format at runtime
   min_clip_seconds: 3
+
+animation:
+  fps: 24                       # longform's procedural renderer runs at a lower fps than stock video - plenty smooth for simple shapes, much faster to render
+  accent_color: [86, 130, 255]  # stick figure / icon / kinetic-text color
 
 upload:
   privacy_status: public       # private | unlisted | public - "public" is required for true set-and-forget;
                                 # switch to "private"/"unlisted" if you want to review before anything goes live
   category_id: "27"            # 27 = Education, see https://developers.google.com/youtube/v3/docs/videoCategories
-  default_tags: ["shorts", "facts", "education"]
+  default_tags: ["facts", "education"]
   made_for_kids: false
 
 quality:
-  min_words: 90                # below this, a script reads as too thin to be "produced content"
+  min_words: 90                # below this, a script reads as too thin to be "produced content" (shorts baseline; longform naturally clears this)
   min_scenes: 6
   require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
   fallback_privacy_status: private # what to publish as when a script fails the gate, instead of skipping the run
 
 topics:
-  queue_file: config/topics.yaml
-  history_file: config/topic_history.json
+  queue_file: "config/topics/{niche}.yaml"
+  history_file: "config/topic_history/{niche}.json"
+
+growth:
+  stats_file: config/performance_stats.json
+  maturity_days: 7              # how long a video's stats need to settle before it counts toward the bandit
+  epsilon: 0.2                  # fraction of runs that explore rather than exploit the current best (niche, format)
+  min_samples_for_trust: 3      # a (niche, format) needs this many matured videos before its average score is trusted

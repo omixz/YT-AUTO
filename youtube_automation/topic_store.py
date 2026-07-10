@@ -30,16 +30,22 @@ def _load_queue(path: Path) -> List[str]:
 
 
 def _save_queue(path: Path, topics: List[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(yaml.safe_dump({"topics": topics}, sort_keys=False), encoding="utf-8")
 
 
-def next_topic(config: PipelineConfig, override: Optional[str] = None) -> str:
-    """Pop the next topic off the queue, brainstorming more via Claude if empty."""
+def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] = None) -> str:
+    """Pop the next topic off niche_key's queue, brainstorming more via Claude if empty.
+
+    Each niche gets its own queue/history file (config.topics.queue_file /
+    history_file are `{niche}`-templated paths) so topics never cross-pollinate
+    between niches sharing the one channel.
+    """
     if override:
         return override
 
-    queue_path = ROOT / config.topics.queue_file
-    history_path = ROOT / config.topics.history_file
+    queue_path = ROOT / config.topics.queue_file.format(niche=niche_key)
+    history_path = ROOT / config.topics.history_file.format(niche=niche_key)
 
     queue = _load_queue(queue_path)
     history = _load_history(history_path)
