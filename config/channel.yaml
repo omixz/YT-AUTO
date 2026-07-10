@@ -26,7 +26,8 @@ visuals:
   min_clip_seconds: 3
 
 upload:
-  privacy_status: private      # private | unlisted | public - keep private until you review output
+  privacy_status: public       # private | unlisted | public - "public" is required for true set-and-forget;
+                                # switch to "private"/"unlisted" if you want to review before anything goes live
   category_id: "27"            # 27 = Education, see https://developers.google.com/youtube/v3/docs/videoCategories
   default_tags: ["shorts", "facts", "education"]
   made_for_kids: false

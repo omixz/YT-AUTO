@@ -8,7 +8,7 @@ Generates one short-form (or long-form) video end to end and uploads it to YouTu
 4. **Visuals** — stock video/photos fetched from Pexels per scene's visual keywords.
 5. **Assembly** — `ffmpeg` stitches scenes together (Ken Burns zoom on stills, scale/crop/loop on video), burns in captions, and mixes narration (+ optional background music).
 6. **Thumbnail** — a bold-title thumbnail generated with Pillow.
-7. **Upload** — pushed to YouTube via the Data API v3 (OAuth), defaulting to `private` so you can review before it goes public.
+7. **Upload** — pushed to YouTube via the Data API v3 (OAuth), publishing live by default (`privacy_status: public`) so scheduled runs are truly hands-off; set it to `private`/`unlisted` in `config/channel.yaml` if you'd rather review each video before it goes live.
 
 Everything after step 1 is deterministic code, not another AI call pretending to "run a channel" — you get a real, inspectable video file before anything is uploaded.
 
@@ -78,7 +78,38 @@ This is a working pipeline, not a guarantee of channel success or policy complia
 - **Accuracy** — the script prompt tells Claude not to fabricate facts, but nothing here fact-checks output. Review scripts before publishing anything as factual, especially in `education`/`science` niches.
 - **Stock footage licensing** — Pexels' license permits this kind of use, but always check current Pexels license terms, and avoid keywords likely to surface identifiable people, trademarks, or news footage.
 - **`made_for_kids`** — set honestly in `config/channel.yaml`; COPPA compliance is determined by YouTube/FTC rules, not by this flag alone.
-- Default `privacy_status` is `private` on purpose — flip to `public`/`unlisted` in config only once you've reviewed a few runs' output.
+
+## Running this truly unattended ("set and forget")
+
+Two things have to be true for this to actually run without you touching it:
+
+### 1. `privacy_status: public`
+
+Set by default in `config/channel.yaml`. With `private` (the safer starting point), videos upload but sit unpublished until you manually flip them in Studio — that's a manual step, so it isn't hands-off. Switch back to `private`/`unlisted` any time you want a review buffer instead.
+
+### 2. Publish your Google OAuth consent screen (do this once, or automation silently dies in ~7 days)
+
+By default, a newly created OAuth client sits in **Testing** status in Google Cloud Console. Refresh tokens issued while in Testing status **expire after 7 days**, no matter what — so the pipeline would work fine for about a week, then every scheduled run would start failing with an auth error, and nothing would tell you unless you're watching GitHub Actions.
+
+Fix it once:
+
+1. Google Cloud Console → **APIs & Services → OAuth consent screen**.
+2. Click **Publish App** to move it from *Testing* to *Production*.
+3. Since the app requesting `youtube.upload` isn't formally verified, the one-time browser consent flow will show an **"Google hasn't verified this app"** warning. That's expected for a personal-use script — click **Advanced → Go to \[app name\] (unsafe)** to proceed. You only see this once, when `run_pipeline.py` first opens the browser to mint `token.json`.
+4. Regenerate `token.json` after publishing (delete the old one, run the pipeline once locally, complete the consent flow again) — a token minted *before* publishing keeps the old 7-day expiry.
+
+After this, the refresh token is long-lived (effectively indefinite until you revoke access or leave it unused for 6+ months), which is what the scheduled GitHub Actions workflow depends on.
+
+### What's already handled for you
+
+- The topic queue self-refills via Claude brainstorming — it never runs dry.
+- A failed run (bad API key, transient network error, quota hit) just skips that week's video; it doesn't corrupt state or require intervention. The topic queue only advances/commits on a fully successful run.
+- GitHub notifies you by email when a scheduled workflow run fails (default GitHub behavior for repos you watch) — that's your safety net for noticing real problems (expired key, quota exhausted, etc.) without watching it actively.
+
+### What's still on you, even unattended
+
+- YouTube's ~10,000 unit/day API quota (≈6 uploads/day) caps how often you can realistically schedule this — weekly (the workflow default) is comfortably inside it.
+- Nothing here fact-checks scripts or guarantees YPP monetization eligibility (see above) — "unattended" means it won't need your hands, not that its output is risk-free to run forever with zero spot-checks.
 
 ## Project layout
 
