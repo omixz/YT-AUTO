@@ -59,13 +59,18 @@ def upload_video(
     config: PipelineConfig,
     thumbnail_path: Optional[Path] = None,
     publish_at: Optional[str] = None,
+    privacy_status_override: Optional[str] = None,
 ) -> str:
-    """Uploads video_path to YouTube. Returns the new video's ID."""
+    """Uploads video_path to YouTube. Returns the new video's ID.
+
+    privacy_status_override lets callers (e.g. a failed quality gate) publish
+    more cautiously than config.upload.privacy_status for one specific run.
+    """
     creds = _get_credentials(config)
     youtube = build(API_SERVICE_NAME, API_VERSION, credentials=creds)
 
     status = {
-        "privacyStatus": config.upload.privacy_status,
+        "privacyStatus": privacy_status_override or config.upload.privacy_status,
         "selfDeclaredMadeForKids": config.upload.made_for_kids,
     }
     if publish_at:

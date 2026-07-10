@@ -26,6 +26,18 @@ SCRIPT_TOOL = {
                 "items": {
                     "type": "object",
                     "properties": {
+                        "role": {
+                            "type": "string",
+                            "enum": ["hook", "build", "insight"],
+                            "description": (
+                                "hook: exactly the first scene, a surprising claim or question. "
+                                "build: 3+ middle scenes that develop connected facts into a mini-story "
+                                "(use transitions like 'but here's the twist' / 'and that's not even "
+                                "the strangest part' - don't just list isolated trivia). "
+                                "insight: exactly the last scene - a genuine 'why this matters' "
+                                "synthesis, not just another fact."
+                            ),
+                        },
                         "narration": {
                             "type": "string",
                             "description": "What the voiceover says for this scene, one or two sentences.",
@@ -40,7 +52,7 @@ SCRIPT_TOOL = {
                             "description": "Short on-screen caption/emphasis text. Empty string if none.",
                         },
                     },
-                    "required": ["narration", "visual_keywords"],
+                    "required": ["role", "narration", "visual_keywords"],
                 },
             },
         },
@@ -55,6 +67,7 @@ TOPICS_TOOL_NAME = "emit_topics"
 class Scene:
     narration: str
     visual_keywords: List[str]
+    role: str = "build"
     on_screen_text: str = ""
 
 
@@ -88,6 +101,10 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
     target_words = max(60, round(config.video.target_seconds * 140 / 60))
 
     prompt = f"""You are writing a {config.video.format} YouTube video script for a faceless channel.
+This channel's videos need to read as a genuinely produced mini-documentary with a point of
+view, not a text-to-speech slideshow of disconnected trivia - YouTube treats the latter as
+low-value "reused/duplicative content" and won't monetize it, so the connective analysis
+matters as much as the facts themselves.
 
 Channel: {config.channel.name}
 Niche: {config.channel.niche}
@@ -95,13 +112,20 @@ Audience: {config.channel.audience}
 Tone: {config.channel.tone}
 Topic for this video: {topic}
 
-Write a script of roughly {target_words} words of total narration, split into 5-9 short
-scenes. Open with a strong hook in the first scene. Each scene's narration should be 1-2
-sentences a voice actor can read in a few seconds. Give each scene visual_keywords that a
-stock-footage search engine could use to find matching {config.visuals.orientation}-orientation
-footage — concrete, filmable nouns, not abstract ideas. Do not use markdown in the narration.
-Only state facts you're confident are accurate; do not fabricate statistics or quotes.
-Call emit_script with the final result."""
+Write a script of roughly {target_words} words of total narration, split into 6-9 short
+scenes with this shape:
+- One "hook" scene (first): a surprising claim or question that earns the next 45 seconds.
+- 4+ "build" scenes: connected facts that develop one throughline, not a random list - use
+  connective tissue ("but here's the twist...", "which raises the question...", "and that's
+  the part most people get wrong...").
+- One "insight" scene (last): a real "why this matters" synthesis that ties the throughline
+  together - genuine analysis, not just one more fact.
+
+Each scene's narration should be 1-2 sentences a voice actor can read in a few seconds. Give
+each scene visual_keywords that a stock-footage search engine could use to find matching
+{config.visuals.orientation}-orientation footage — concrete, filmable nouns, not abstract ideas.
+Do not use markdown in the narration. Only state facts you're confident are accurate; do not
+fabricate statistics or quotes. Call emit_script with the final result."""
 
     response = client.messages.create(
         model=MODEL,
@@ -117,6 +141,7 @@ Call emit_script with the final result."""
         Scene(
             narration=s["narration"].strip(),
             visual_keywords=list(s["visual_keywords"]),
+            role=s.get("role", "build"),
             on_screen_text=s.get("on_screen_text", "") or "",
         )
         for s in data["scenes"]

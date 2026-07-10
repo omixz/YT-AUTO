@@ -94,13 +94,18 @@ def build_video(
     video_concat = work_dir / "video_full.mp4"
     _concat_segments(segment_paths, video_concat, work_dir)
 
-    subs_style = "FontSize=16,Alignment=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,MarginV=80"
     burned = work_dir / "video_captioned.mp4"
-    _run([
-        "ffmpeg", "-y", "-i", str(video_concat),
-        "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}'",
-        "-c:v", "libx264", "-pix_fmt", "yuv420p", str(burned),
-    ])
+    if subtitles_path.exists() and subtitles_path.stat().st_size > 0:
+        subs_style = "FontSize=16,Alignment=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,MarginV=80"
+        _run([
+            "ffmpeg", "-y", "-i", str(video_concat),
+            "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}'",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p", str(burned),
+        ])
+    else:
+        # No cues to burn in (e.g. a scene with no word-boundary data) - an
+        # empty SRT makes ffmpeg's subtitles filter fail outright, so skip it.
+        burned = video_concat
 
     if background_music and background_music.exists():
         music_gain = config.video.music_volume_db

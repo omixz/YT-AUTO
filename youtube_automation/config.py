@@ -21,12 +21,13 @@ class ChannelConfig:
     audience: str
     tone: str
     language: str = "en"
+    subscribe_cta: str = "for more {niche} every week"
 
 
 @dataclass
 class VideoConfig:
     format: str = "shorts"
-    target_seconds: int = 45
+    target_seconds: int = 60
     resolution_shorts: tuple = (1080, 1920)
     resolution_longform: tuple = (1920, 1080)
     fps: int = 30
@@ -62,6 +63,14 @@ class UploadConfig:
 
 
 @dataclass
+class QualityConfig:
+    min_words: int = 90
+    min_scenes: int = 6
+    require_hook_and_insight: bool = True
+    fallback_privacy_status: str = "private"
+
+
+@dataclass
 class TopicsConfig:
     queue_file: str = "config/topics.yaml"
     history_file: str = "config/topic_history.json"
@@ -91,6 +100,7 @@ class PipelineConfig:
     voice: VoiceConfig
     visuals: VisualsConfig
     upload: UploadConfig
+    quality: QualityConfig
     topics: TopicsConfig
     secrets: Secrets
 
@@ -110,6 +120,7 @@ class PipelineConfig:
             voice=VoiceConfig(**raw.get("voice", {})),
             visuals=VisualsConfig(**raw.get("visuals", {})),
             upload=UploadConfig(**raw.get("upload", {})),
+            quality=QualityConfig(**raw.get("quality", {})),
             topics=TopicsConfig(**raw.get("topics", {})),
             secrets=Secrets.from_env(),
         )

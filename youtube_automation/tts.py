@@ -66,6 +66,25 @@ def _probe_duration(path: Path) -> float:
     return float(json.loads(result.stdout)["format"]["duration"])
 
 
+def concat_audio(paths: List[Path], out_path: Path) -> Path:
+    """Decode-and-reconcatenate (rather than stream-copy concat) so per-file mp3
+    encoder padding doesn't accumulate into audible drift across segments."""
+    inputs = []
+    for p in paths:
+        inputs += ["-i", str(p)]
+    filter_inputs = "".join(f"[{i}:a]" for i in range(len(paths)))
+    filter_complex = f"{filter_inputs}concat=n={len(paths)}:v=0:a=1[out]"
+    subprocess.run(
+        [
+            "ffmpeg", "-y", *inputs,
+            "-filter_complex", filter_complex, "-map", "[out]",
+            str(out_path),
+        ],
+        check=True, capture_output=True,
+    )
+    return out_path
+
+
 def synthesize_script(script: Script, voice: VoiceConfig, work_dir: Path) -> Tuple[List[SceneAudio], Path]:
     """Synthesize every scene's narration, returning per-scene audio and a
     single concatenated narration track for the final mix."""
@@ -78,21 +97,17 @@ def synthesize_script(script: Script, voice: VoiceConfig, work_dir: Path) -> Tup
         duration = _probe_duration(out_path)
         scenes.append(SceneAudio(scene_index=i, audio_path=out_path, duration=duration, cues=cues))
 
-    # Decode-and-reconcatenate (rather than stream-copy concat) so per-file mp3
-    # encoder padding doesn't accumulate into audible drift across scenes.
-    full_narration = work_dir / "narration_full.mp3"
-    inputs = []
-    for s in scenes:
-        inputs += ["-i", str(s.audio_path)]
-    filter_inputs = "".join(f"[{i}:a]" for i in range(len(scenes)))
-    filter_complex = f"{filter_inputs}concat=n={len(scenes)}:v=0:a=1[out]"
+    full_narration = concat_audio([s.audio_path for s in scenes], work_dir / "narration_full.mp3")
+    return scenes, full_narration
+
+
+def silent_audio(duration: float, out_path: Path) -> Path:
     subprocess.run(
         [
-            "ffmpeg", "-y", *inputs,
-            "-filter_complex", filter_complex, "-map", "[out]",
-            str(full_narration),
+            "ffmpeg", "-y", "-f", "lavfi",
+            "-i", "anullsrc=channel_layout=mono:sample_rate=24000",
+            "-t", f"{duration:.3f}", str(out_path),
         ],
         check=True, capture_output=True,
     )
-
-    return scenes, full_narration
+    return out_path

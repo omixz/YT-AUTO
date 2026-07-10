@@ -10,20 +10,10 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from .fonts import load_bold
 from .visuals import VisualAsset
 
 THUMB_SIZE = (1280, 720)
-FONT_CANDIDATES = [
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-]
-
-
-def _load_font(size: int) -> ImageFont.ImageFont:
-    for path in FONT_CANDIDATES:
-        if Path(path).exists():
-            return ImageFont.truetype(path, size)
-    return ImageFont.load_default()
 
 
 def _extract_frame(asset: VisualAsset, out_path: Path) -> Path:
@@ -86,7 +76,7 @@ def generate(title: str, background_asset: VisualAsset, work_dir: Path, out_path
 
     draw = ImageDraw.Draw(bg)
     font_size = 76
-    font = _load_font(font_size)
+    font = load_bold(font_size)
     margin = 60
     max_width = THUMB_SIZE[0] - 2 * margin
 

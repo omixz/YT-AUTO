@@ -3,12 +3,14 @@
 Generates one short-form (or long-form) video end to end and uploads it to YouTube:
 
 1. **Topic** — pulled from `config/topics.yaml`, or brainstormed by Claude once the queue is empty.
-2. **Script** — Claude writes a scene-by-scene script (title, description, tags, narration, visual keywords).
-3. **Narration** — synthesized with Microsoft Edge's free neural voices (`edge-tts`), with word-level timing.
-4. **Visuals** — stock video/photos fetched from Pexels per scene's visual keywords.
-5. **Assembly** — `ffmpeg` stitches scenes together (Ken Burns zoom on stills, scale/crop/loop on video), burns in captions, and mixes narration (+ optional background music).
-6. **Thumbnail** — a bold-title thumbnail generated with Pillow.
-7. **Upload** — pushed to YouTube via the Data API v3 (OAuth), publishing live by default (`privacy_status: public`) so scheduled runs are truly hands-off; set it to `private`/`unlisted` in `config/channel.yaml` if you'd rather review each video before it goes live.
+2. **Script** — Claude writes a scene-by-scene script with a hook → connected-facts → insight structure (title, description, tags, narration, visual keywords) - not a bare fact-list, see "Monetization" below for why that distinction matters.
+3. **Quality gate** — a cheap heuristic (`quality_check.py`) checks the script has enough substance and the right shape before anything gets published; see below.
+4. **Narration** — synthesized with Microsoft Edge's free neural voices (`edge-tts`), with word-level timing.
+5. **Visuals** — stock video/photos fetched from Pexels per scene's visual keywords.
+6. **Branding** — a consistent intro card (channel name) and outro card (subscribe CTA) get stitched onto every video (`branding.py`).
+7. **Assembly** — `ffmpeg` stitches it all together (Ken Burns zoom on stills, scale/crop/loop on video), burns in captions, and mixes narration (+ optional background music).
+8. **Thumbnail** — a bold-title thumbnail generated with Pillow.
+9. **Upload** — pushed to YouTube via the Data API v3 (OAuth), publishing live by default (`privacy_status: public`) so scheduled runs are truly hands-off; set it to `private`/`unlisted` in `config/channel.yaml` if you'd rather review each video before it goes live.
 
 Everything after step 1 is deterministic code, not another AI call pretending to "run a channel" — you get a real, inspectable video file before anything is uploaded.
 
@@ -70,12 +72,23 @@ Output for each run lands in `output/<timestamp>/`: `final.mp4`, `thumbnail.jpg`
 
 The workflow commits the updated `config/topics.yaml` / `config/topic_history.json` back to the branch after each run so the topic queue keeps progressing across ephemeral runners. Because a refresh token doesn't expire from use, you generally only need to regenerate `YOUTUBE_TOKEN_B64` if you revoke access or it goes unused for 6+ months.
 
-## Before you turn this loose on a real channel
+## Monetization: what this does and doesn't get you
 
-This is a working pipeline, not a guarantee of channel success or policy compliance. Worth knowing:
+YouTube Partner Program (YPP) eligibility has two independent gates, and this pipeline can only help with one of them.
 
-- **YouTube's monetization policy** on "reused/repetitious" and mass-produced content has tightened (2023+ "inauthentic content" guidance under the Partner Program). Purely templated faceless videos can be demonetized or rejected from the Partner Program even if not outright removed — put real editorial effort into topic selection and scripts, don't just run this unattended forever.
-- **Accuracy** — the script prompt tells Claude not to fabricate facts, but nothing here fact-checks output. Review scripts before publishing anything as factual, especially in `education`/`science` niches.
+**Gate 1: the numbers bar.** 1,000 subscribers + 4,000 public watch hours in 12 months, or 1,000 subscribers + 10M Shorts views in 90 days. No code can force this — it depends on real audience growth. Consistent branding (the intro/outro cards) and better retention from more substantial scripts help your odds, but there's no engineering shortcut around it.
+
+**Gate 2: the "reused/duplicative content" policy.** This is the one that specifically targets what a naive version of this pipeline would produce — mass-produced, formulaic slideshows of TTS-over-stock-footage with no added value. This build takes concrete steps against that:
+
+- **Narrative structure, not a fact-list.** The script prompt requires a `hook` scene, 4+ connected `build` scenes with actual transitions ("but here's the twist..."), and a closing `insight` scene that synthesizes *why it matters* — real analysis, not one more trivia item.
+- **Consistent channel branding.** Every video opens and closes with the same intro/outro cards (`branding.py`), a concrete "this is a produced show" signal, not a generic template.
+- **A quality gate (`quality_check.py`)** runs before every upload: minimum word count, minimum scene count, and the hook/insight structure. A script that fails gets uploaded as `private` (configurable via `quality.fallback_privacy_status`) instead of published live, so a weak episode doesn't go out on autopilot — it waits for you to look at it.
+
+None of this is a guarantee. Whether a specific channel passes YPP review is a human judgment call on YouTube's end, and policy details change. What this pipeline gives you is content that's built to the shape of channels that *do* get monetized, plus a safety valve so bad output doesn't publish itself — not certainty.
+
+Also worth knowing:
+
+- **Accuracy** — the script prompt tells Claude not to fabricate facts, but nothing here fact-checks output. Review scripts periodically, especially in `education`/`science` niches.
 - **Stock footage licensing** — Pexels' license permits this kind of use, but always check current Pexels license terms, and avoid keywords likely to surface identifiable people, trademarks, or news footage.
 - **`made_for_kids`** — set honestly in `config/channel.yaml`; COPPA compliance is determined by YouTube/FTC rules, not by this flag alone.
 
@@ -104,12 +117,14 @@ After this, the refresh token is long-lived (effectively indefinite until you re
 
 - The topic queue self-refills via Claude brainstorming — it never runs dry.
 - A failed run (bad API key, transient network error, quota hit) just skips that week's video; it doesn't corrupt state or require intervention. The topic queue only advances/commits on a fully successful run.
+- The quality gate catches thin/malformed scripts and holds them at `private` instead of publishing them live — see "Monetization" above.
 - GitHub notifies you by email when a scheduled workflow run fails (default GitHub behavior for repos you watch) — that's your safety net for noticing real problems (expired key, quota exhausted, etc.) without watching it actively.
 
 ### What's still on you, even unattended
 
 - YouTube's ~10,000 unit/day API quota (≈6 uploads/day) caps how often you can realistically schedule this — weekly (the workflow default) is comfortably inside it.
 - Nothing here fact-checks scripts or guarantees YPP monetization eligibility (see above) — "unattended" means it won't need your hands, not that its output is risk-free to run forever with zero spot-checks.
+- Worth periodically skimming a `private`-fallback video in `output/` when the quality gate does trip, both to fix whatever made it fail and to catch anything the gate itself can't judge (factual accuracy, tone).
 
 ## Project layout
 
@@ -121,15 +136,18 @@ youtube-automation/
     topics.yaml                topic queue (auto-drained, auto-refilled)
     topic_history.json         topics already produced (avoids repeats)
   youtube_automation/
-    script_writer.py           Claude script + topic brainstorming
-    topic_store.py             queue/history management
-    tts.py                     edge-tts narration + word timing
-    subtitles.py                SRT caption generation
-    visuals.py                  Pexels stock footage/photo search
-    assembler.py                 ffmpeg scene assembly + captions + audio mix
-    thumbnail.py                 Pillow thumbnail generation
-    youtube_uploader.py           OAuth + resumable upload
-    pipeline.py                   orchestrates all of the above
+    script_writer.py           Claude script (hook/build/insight) + topic brainstorming
+    quality_check.py            pre-upload heuristic gate (word/scene count, structure)
+    topic_store.py               queue/history management
+    tts.py                        edge-tts narration + word timing
+    subtitles.py                   SRT caption generation
+    visuals.py                      Pexels stock footage/photo search
+    branding.py                      intro/outro channel-identity cards
+    fonts.py                          shared bold-font lookup
+    assembler.py                       ffmpeg scene assembly + captions + audio mix
+    thumbnail.py                        Pillow thumbnail generation
+    youtube_uploader.py                  OAuth + resumable upload
+    pipeline.py                           orchestrates all of the above
   .github/workflows/publish.yml  scheduled/on-demand CI run
   tests/                          unit tests (config + topic queue logic)
 ```

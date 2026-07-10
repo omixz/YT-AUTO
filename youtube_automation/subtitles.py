@@ -29,8 +29,10 @@ def build_srt(scenes: List[SceneAudio], out_path: Path) -> Path:
             group = cues[i : i + WORDS_PER_CAPTION]
             if not group:
                 continue
-            start = offset + group[0].start
-            end = offset + group[-1].end
+            # Clamp to this scene's real duration so a mistimed cue can never
+            # bleed a caption into the next scene (or the outro bumper).
+            start = offset + min(group[0].start, scene.duration)
+            end = offset + min(group[-1].end, scene.duration)
             text = " ".join(c.text for c in group)
             lines.append(str(index))
             lines.append(f"{_srt_timestamp(start)} --> {_srt_timestamp(end)}")

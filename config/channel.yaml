@@ -4,10 +4,11 @@ channel:
   audience: "curious adults who scroll shorts"
   tone: "punchy, upbeat, slightly dramatic, no filler"
   language: "en"
+  subscribe_cta: "for more {niche} every week"   # {niche} filled in from above; shown under the "Subscribe" heading on the outro card
 
 video:
-  format: shorts               # shorts (9:16, <=60s) or longform (16:9)
-  target_seconds: 45
+  format: shorts               # shorts (9:16, up to 3 min under YouTube's current Shorts rules) or longform (16:9)
+  target_seconds: 60           # deeper scripts read as produced content, not a bare fact-list
   resolution_shorts: [1080, 1920]
   resolution_longform: [1920, 1080]
   fps: 30
@@ -31,6 +32,12 @@ upload:
   category_id: "27"            # 27 = Education, see https://developers.google.com/youtube/v3/docs/videoCategories
   default_tags: ["shorts", "facts", "education"]
   made_for_kids: false
+
+quality:
+  min_words: 90                # below this, a script reads as too thin to be "produced content"
+  min_scenes: 6
+  require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
+  fallback_privacy_status: private # what to publish as when a script fails the gate, instead of skipping the run
 
 topics:
   queue_file: config/topics.yaml
