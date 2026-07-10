@@ -50,8 +50,8 @@ visuals:
   min_clip_seconds: 3
 
 animation:
-  fps: 24                       # longform's procedural renderer runs at a lower fps than stock video - plenty smooth for simple shapes, much faster to render
-  accent_color: [86, 130, 255]  # stick figure / icon / kinetic-text color
+  fps: 24                        # longform's procedural renderer runs at a lower fps than stock video - plenty smooth for simple shapes, much faster to render
+  accent_color: [139, 92, 246]   # vivid violet stick figure / icon color, against a near-black background
 
 upload:
   privacy_status: public       # private | unlisted | public - "public" is required for true set-and-forget;

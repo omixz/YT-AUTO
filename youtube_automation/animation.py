@@ -17,8 +17,8 @@ from .config import PipelineConfig
 from .fonts import load_bold
 from .script_writer import Scene
 
-BG_TOP = (20, 22, 38)
-BG_BOTTOM = (34, 38, 66)
+BG_TOP = (13, 13, 17)
+BG_BOTTOM = (24, 22, 30)
 
 
 # --- background ---------------------------------------------------------
@@ -81,14 +81,20 @@ def _draw_stick_figure(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: f
     leg_l_end = _limb_end(hip, 180 + pose["leg_l"], limb_len * 1.3)
     leg_r_end = _limb_end(hip, 180 + pose["leg_r"], limb_len * 1.3)
 
-    draw.line([shoulder, hip], fill=color, width=width)
-    draw.line([shoulder, arm_l_end], fill=color, width=width)
-    draw.line([shoulder, arm_r_end], fill=color, width=width)
-    draw.line([hip, leg_l_end], fill=color, width=width)
-    draw.line([hip, leg_r_end], fill=color, width=width)
+    def dot(point: Tuple[float, float], r: float) -> None:
+        draw.ellipse([point[0] - r, point[1] - r, point[0] + r, point[1] + r], fill=color)
+
+    cap_r = width / 2
+    for a, b in ((shoulder, hip), (shoulder, arm_l_end), (shoulder, arm_r_end),
+                 (hip, leg_l_end), (hip, leg_r_end)):
+        draw.line([a, b], fill=color, width=width)
+        dot(a, cap_r)
+        dot(b, cap_r)
+
+    # Solid head (rather than an outline) for a bolder, modern pictogram look.
     draw.ellipse(
         [head_c[0] - head_r, head_c[1] - head_r, head_c[0] + head_r, head_c[1] + head_r],
-        outline=color, width=width,
+        fill=color,
     )
 
 
@@ -117,6 +123,13 @@ def _draw_exclamation(draw: ImageDraw.ImageDraw, cx: float, cy: float, size: flo
     draw.text((cx - w / 2 - bbox[0], cy - h / 2 - bbox[1]), "!", font=font, fill=color)
 
 
+def _capped_line(draw: ImageDraw.ImageDraw, a: Tuple[float, float], b: Tuple[float, float], color: tuple, width: int) -> None:
+    draw.line([a, b], fill=color, width=width)
+    r = width / 2
+    for p in (a, b):
+        draw.ellipse([p[0] - r, p[1] - r, p[0] + r, p[1] + r], fill=color)
+
+
 def _draw_chart_bars(draw: ImageDraw.ImageDraw, cx: float, cy: float, size: float, color: tuple, width: int) -> None:
     bar_w = size * 0.18
     heights = [0.4, 0.7, 1.0]
@@ -135,14 +148,14 @@ def _draw_magnifying_glass(draw: ImageDraw.ImageDraw, cx: float, cy: float, size
     draw.ellipse([lens_cx - r, lens_cy - r, lens_cx + r, lens_cy + r], outline=color, width=width)
     handle_start = (lens_cx + r * 0.7, lens_cy + r * 0.7)
     handle_end = (cx + size * 0.35, cy + size * 0.35)
-    draw.line([handle_start, handle_end], fill=color, width=width * 2)
+    _capped_line(draw, handle_start, handle_end, color, width * 2)
 
 
 def _draw_clock(draw: ImageDraw.ImageDraw, cx: float, cy: float, size: float, color: tuple, width: int) -> None:
     r = size * 0.35
     draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=color, width=width)
-    draw.line([(cx, cy), (cx, cy - r * 0.6)], fill=color, width=width)
-    draw.line([(cx, cy), (cx + r * 0.4, cy + r * 0.2)], fill=color, width=width)
+    _capped_line(draw, (cx, cy), (cx, cy - r * 0.6), color, width)
+    _capped_line(draw, (cx, cy), (cx + r * 0.4, cy + r * 0.2), color, width)
 
 
 def _draw_map_pin(draw: ImageDraw.ImageDraw, cx: float, cy: float, size: float, color: tuple, width: int) -> None:

@@ -21,8 +21,8 @@ from .fonts import load_bold
 from .tts import SceneAudio, silent_audio
 from .visuals import VisualAsset
 
-TOP_COLOR = (16, 18, 30)
-BOTTOM_COLOR = (42, 46, 82)
+TOP_COLOR = (13, 13, 17)
+BOTTOM_COLOR = (24, 22, 30)
 
 INTRO_SCENE_INDEX = -1
 OUTRO_SCENE_INDEX = 10_000
@@ -70,7 +70,7 @@ def _fit_lines(draw: ImageDraw.ImageDraw, text: str, max_font_size: int, max_wid
     return load_bold(size), _wrap(draw, text, load_bold(size), max_width)[:max_lines]
 
 
-def _card(size: Tuple[int, int], heading: str, subheading: str, out_path: Path) -> Path:
+def _card(size: Tuple[int, int], heading: str, subheading: str, out_path: Path, accent: tuple = (200, 202, 224)) -> Path:
     img = _gradient(size)
     draw = ImageDraw.Draw(img)
     max_width = round(size[0] * 0.82)
@@ -95,7 +95,7 @@ def _card(size: Tuple[int, int], heading: str, subheading: str, out_path: Path) 
     y += gap
     for line in subheading_lines:
         w = draw.textlength(line, font=subheading_font)
-        draw.text(((size[0] - w) / 2, y), line, font=subheading_font, fill=(200, 202, 224))
+        draw.text(((size[0] - w) / 2, y), line, font=subheading_font, fill=accent)
         y += subheading_line_h
 
     img.save(out_path, quality=92)
@@ -105,7 +105,7 @@ def _card(size: Tuple[int, int], heading: str, subheading: str, out_path: Path) 
 def build_intro(config: PipelineConfig, work_dir: Path, duration: float = 1.6) -> Tuple[VisualAsset, SceneAudio]:
     image_path = _card(
         config.video.resolution, config.channel.name, config.channel.niche.title(),
-        work_dir / "intro_card.jpg",
+        work_dir / "intro_card.jpg", accent=tuple(config.animation.accent_color),
     )
     audio_path = silent_audio(duration, work_dir / "intro_audio.mp3")
     return (
@@ -118,7 +118,7 @@ def build_outro(config: PipelineConfig, work_dir: Path, duration: float = 2.2) -
     cta = config.channel.subscribe_cta.format(niche=config.channel.niche)
     image_path = _card(
         config.video.resolution, "Subscribe", cta,
-        work_dir / "outro_card.jpg",
+        work_dir / "outro_card.jpg", accent=tuple(config.animation.accent_color),
     )
     audio_path = silent_audio(duration, work_dir / "outro_audio.mp3")
     return (
