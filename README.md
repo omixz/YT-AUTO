@@ -26,14 +26,19 @@ actually performing:
 7. **Branding** — a consistent intro card (channel name) and outro card (subscribe CTA) get
    stitched onto every video (`branding.py`), sharing the same bundled font and color palette as
    the longform renderer.
-8. **Assembly** — `ffmpeg` stitches it all together (Ken Burns zoom on stills, scale/crop/loop on
-   video), burns in captions, and mixes narration (+ optional background music).
-9. **Thumbnail** — a bold-title thumbnail generated with Pillow.
-10. **Upload** — pushed to YouTube via the Data API v3 (OAuth), publishing live by default
+8. **Ambient sound** — `sound_effects.py` matches each scene's visual keywords against a small set
+   of procedurally synthesized ambience beds (rain, fire, horses, farm/countryside, ocean, crowds,
+   battle, thunder, wind) and layers whichever ones fit quietly under the narration - no SFX
+   library or extra API key needed. Scenes that don't match anything just get none; nothing is
+   forced in.
+9. **Assembly** — `ffmpeg` stitches it all together (Ken Burns zoom on stills, scale/crop/loop on
+   video), burns in captions, and mixes narration (+ optional background music + ambience).
+10. **Thumbnail** — a bold-title thumbnail generated with Pillow.
+11. **Upload** — pushed to YouTube via the Data API v3 (OAuth), publishing live by default
     (`privacy_status: public`) so scheduled runs are truly hands-off; set it to
     `private`/`unlisted` in `config/channel.yaml` if you'd rather review each video before it
     goes live.
-11. **Growth feedback** — once a published video matures (`growth.maturity_days`, default 7),
+12. **Growth feedback** — once a published video matures (`growth.maturity_days`, default 7),
     `sync_analytics.py` (its own scheduled workflow) pulls real view/watch-time/subscriber data
     and rolls it into the bandit, so future runs lean toward whatever niche/format is actually
     working.
@@ -199,6 +204,7 @@ youtube_automation/
   animation.py                         stick-figure/icon overlay composited onto real footage (longform)
   branding.py                           intro/outro channel-identity cards
   fonts.py                               shared font lookup (bundled Outfit + system fallback)
+  sound_effects.py                        procedurally synthesized scene-matched ambience
   assembler.py                            ffmpeg scene assembly + captions + audio mix
   thumbnail.py                             Pillow thumbnail generation
   youtube_auth.py                           shared OAuth credential loading

@@ -40,7 +40,7 @@ video:
 
 voice:
   provider: edge-tts
-  name: en-US-GuyNeural        # run `edge-tts --list-voices` for options
+  name: en-US-AvaMultilingualNeural   # newer, more expressive/natural neural model than the standard voices
   rate: "+0%"
   pitch: "+0Hz"
 

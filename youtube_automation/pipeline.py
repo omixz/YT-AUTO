@@ -15,7 +15,7 @@ from typing import List, Optional
 
 from . import (
     animation, assembler, branding, growth_ledger, niche_selector,
-    quality_check, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
+    quality_check, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
 from .script_writer import generate_script
@@ -108,11 +108,16 @@ def run(
     logger.info("Building captions...")
     srt_path = subtitles.build_srt(all_scene_audio, work_dir / "captions.srt")
 
+    logger.info("Building ambient sound effects...")
+    ambience_path = sound_effects.build_ambience_track(
+        script.scenes, content_scene_audio, intro_audio.duration, outro_audio.duration, work_dir,
+    )
+
     logger.info("Assembling final video...")
     music_path = Path(config.video.background_music) if config.video.background_music else None
     video_path = assembler.build_video(
         all_visuals, all_scene_audio, narration_path, srt_path, config, work_dir,
-        work_dir / "final.mp4", background_music=music_path,
+        work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
     )
 
     logger.info("Generating thumbnail...")

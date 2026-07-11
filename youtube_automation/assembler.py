@@ -4,7 +4,8 @@ For each scene: video clips (stock footage, or animation.py's prerendered
 longform clips) are scaled/cropped to fill the frame and looped if shorter
 than the narration; still images get a slow Ken Burns zoom. Segments are
 concatenated, captions are burned in, and the narration (plus optional
-ducked background music) is muxed on top.
+ducked background music and/or a scene-matched ambience track from
+sound_effects.py) is muxed on top.
 """
 from __future__ import annotations
 
@@ -82,6 +83,7 @@ def build_video(
     work_dir: Path,
     out_path: Path,
     background_music: Optional[Path] = None,
+    ambience_path: Optional[Path] = None,
 ) -> Path:
     if len(visuals) != len(scene_audio):
         raise ValueError("visuals and scene_audio must be the same length (one per scene)")
@@ -108,23 +110,38 @@ def build_video(
         # empty SRT makes ffmpeg's subtitles filter fail outright, so skip it.
         burned = video_concat
 
+    # Layer narration with any of the optional background audio beds - music
+    # and/or the scene-matched ambience track (see sound_effects.py) - via a
+    # variable-arity amix, rather than hardcoding for exactly one extra layer.
+    inputs = ["-i", str(burned), "-i", str(narration_path)]
+    filter_parts = []
+    audio_labels = ["[1:a]"]
+    next_input_idx = 2
+
     if background_music and background_music.exists():
-        music_gain = config.video.music_volume_db
+        inputs += ["-stream_loop", "-1", "-i", str(background_music)]
+        filter_parts.append(f"[{next_input_idx}:a]volume={config.video.music_volume_db}dB[music]")
+        audio_labels.append("[music]")
+        next_input_idx += 1
+
+    if ambience_path and ambience_path.exists():
+        inputs += ["-i", str(ambience_path)]
+        filter_parts.append(f"[{next_input_idx}:a]volume={config.video.sfx_volume_db}dB[amb]")
+        audio_labels.append("[amb]")
+        next_input_idx += 1
+
+    if len(audio_labels) > 1:
+        mix_filter = "".join(audio_labels) + f"amix=inputs={len(audio_labels)}:duration=first:dropout_transition=2[aout]"
+        filter_complex = ";".join(filter_parts + [mix_filter])
         cmd = [
-            "ffmpeg", "-y",
-            "-i", str(burned),
-            "-i", str(narration_path),
-            "-stream_loop", "-1", "-i", str(background_music),
-            "-filter_complex",
-            f"[2:a]volume={music_gain}dB[music];[1:a][music]amix=inputs=2:duration=first:dropout_transition=2[aout]",
+            "ffmpeg", "-y", *inputs,
+            "-filter_complex", filter_complex,
             "-map", "0:v", "-map", "[aout]",
             "-c:v", "copy", "-c:a", "aac", "-shortest", str(out_path),
         ]
     else:
         cmd = [
-            "ffmpeg", "-y",
-            "-i", str(burned),
-            "-i", str(narration_path),
+            "ffmpeg", "-y", *inputs,
             "-map", "0:v", "-map", "1:a",
             "-c:v", "copy", "-c:a", "aac", "-shortest", str(out_path),
         ]

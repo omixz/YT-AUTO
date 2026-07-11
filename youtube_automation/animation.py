@@ -75,8 +75,8 @@ def _draw_stick_figure(
 
     arm_l_end = _limb_end(shoulder, pose["arm_l"], limb_len)
     arm_r_end = _limb_end(shoulder, pose["arm_r"], limb_len)
-    leg_l_end = _limb_end(hip, 180 + pose["leg_l"], limb_len * 1.3)
-    leg_r_end = _limb_end(hip, 180 + pose["leg_r"], limb_len * 1.3)
+    leg_l_end = _limb_end(hip, pose["leg_l"], limb_len * 1.3)
+    leg_r_end = _limb_end(hip, pose["leg_r"], limb_len * 1.3)
 
     def dot(point: Tuple[float, float], r: float) -> None:
         draw.ellipse([point[0] - r, point[1] - r, point[0] + r, point[1] + r], fill=color)
