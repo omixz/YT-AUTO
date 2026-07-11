@@ -18,9 +18,11 @@ actually performing:
 5. **Narration** — synthesized with Microsoft Edge's free neural voices (`edge-tts`), with
    word-level timing.
 6. **Visuals** — **shorts** use stock video/photos fetched from Pexels per scene's visual
-   keywords; **longform** uses a zero-cost procedural renderer (`animation.py`) - a stick figure,
-   a small icon library, and kinetic-typography captions, drawn with Pillow and encoded with
-   ffmpeg, no image-gen API required.
+   keywords; **longform** uses that same real Pexels footage as the backdrop, with a white
+   stick-figure/icon/kinetic-typography overlay (`animation.py`) composited on top via ffmpeg
+   colorkey - drawn with Pillow, no image-gen API required. The figure also wears a topic-relevant
+   prop (a helmet for war/military topics, a crown for royalty/medieval, a hat for detective/noir)
+   so it isn't just a generic silhouette.
 7. **Branding** — a consistent intro card (channel name) and outro card (subscribe CTA) get
    stitched onto every video (`branding.py`), sharing the same bundled font and color palette as
    the longform renderer.
@@ -70,7 +72,7 @@ Edit `config/channel.yaml`:
 
 - `niches:` — one channel, multiple niches; add/remove freely. Each gets its own topic queue at `config/topics/<key>.yaml` (seed it, or leave `topics: []` to let Gemini brainstorm) and history at `config/topic_history/<key>.json`.
 - `video.formats:` — per-format `target_seconds` and a `weight` prior (used before the growth bandit has enough data to trust real performance).
-- `animation:` — longform's stick-figure/icon accent color and fps.
+- `animation:` — longform's stick-figure/icon accent color (composited over real footage) and fps.
 - `growth:` — bandit tuning (`epsilon`, `min_samples_for_trust`, `maturity_days`).
 
 ## Running it
@@ -193,8 +195,8 @@ youtube_automation/
   topic_store.py                   per-niche queue/history management
   tts.py                            edge-tts narration + word timing
   subtitles.py                       SRT caption generation
-  visuals.py                          Pexels stock footage/photo search (shorts)
-  animation.py                         procedural stick-figure/icon renderer (longform)
+  visuals.py                          Pexels stock footage/photo search (shorts + longform backdrop)
+  animation.py                         stick-figure/icon overlay composited onto real footage (longform)
   branding.py                           intro/outro channel-identity cards
   fonts.py                               shared font lookup (bundled Outfit + system fallback)
   assembler.py                            ffmpeg scene assembly + captions + audio mix

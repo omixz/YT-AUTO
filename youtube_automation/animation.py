@@ -1,37 +1,31 @@
-"""Procedural stick-figure + icon + kinetic-typography renderer for longform
-videos - a zero-API-cost stand-in for AI-illustrated animation. Draws each
-scene as a PNG frame sequence with Pillow, then encodes it with ffmpeg,
-matched to that scene's exact narration duration. Used for `longform` only;
-`shorts` keep the Pexels stock-footage pipeline in visuals.py.
+"""Procedural stick-figure + icon + kinetic-typography overlay, composited
+onto real stock footage/photos for longform videos. The figure/icon/caption
+layer is rendered on a pure-black canvas and combined with a real Pexels
+background via ffmpeg's colorkey filter (black -> transparent) - avoids the
+complexity of true alpha-channel video encoding while still compositing
+cleanly, since the overlay only ever draws in the accent/white colors.
 """
 from __future__ import annotations
 
 import math
 import subprocess
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 from PIL import Image, ImageDraw
 
+from . import assembler
 from .config import PipelineConfig
 from .fonts import load_bold
 from .script_writer import Scene
+from .visuals import VisualAsset
 
-BG_TOP = (13, 13, 17)
-BG_BOTTOM = (24, 22, 30)
-
-
-# --- background ---------------------------------------------------------
-
-def _gradient_background(size: Tuple[int, int]) -> Image.Image:
-    w, h = size
-    img = Image.new("RGB", size)
-    draw = ImageDraw.Draw(img)
-    for y in range(h):
-        t = y / max(1, h - 1)
-        color = tuple(round(BG_TOP[i] + (BG_BOTTOM[i] - BG_TOP[i]) * t) for i in range(3))
-        draw.line([(0, y), (w, y)], fill=color)
-    return img
+OVERLAY_BG = (0, 0, 0)
+# Props are drawn in a darker neutral tone rather than the accent color -
+# against a solid white head, a same-color outline is invisible. Dark enough
+# to read clearly, far enough from pure black to survive the overlay's
+# colorkey compositing (which keys out near-black as transparent).
+PROP_COLOR = (60, 60, 60)
 
 
 # --- stick figure ---------------------------------------------------------
@@ -66,7 +60,10 @@ def _limb_end(origin: Tuple[float, float], angle_deg: float, length: float) -> T
     return (origin[0] + length * math.sin(rad), origin[1] + length * math.cos(rad))
 
 
-def _draw_stick_figure(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: float, pose: dict, color: tuple, bob: float) -> None:
+def _draw_stick_figure(
+    draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: float, pose: dict,
+    color: tuple, bob: float, prop: Optional[str] = None,
+) -> None:
     hip = (cx, cy + bob)
     head_r = 0.18 * scale
     torso_len = 0.55 * scale
@@ -96,6 +93,69 @@ def _draw_stick_figure(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: f
         [head_c[0] - head_r, head_c[1] - head_r, head_c[0] + head_r, head_c[1] + head_r],
         fill=color,
     )
+
+    if prop and prop in _PROP_DRAWERS:
+        _PROP_DRAWERS[prop](draw, head_c, head_r, PROP_COLOR, width)
+
+
+# --- topic-relevant props (drawn on/above the head) - a lightweight "costume"
+# system so the figure isn't always the same generic silhouette: a war/
+# military topic gets a helmet, a royalty/medieval topic gets a crown, etc. --
+
+def _prop_helmet(draw: ImageDraw.ImageDraw, head_c: Tuple[float, float], head_r: float, color: tuple, width: int) -> None:
+    cx, cy = head_c
+    r = head_r * 1.2
+    draw.pieslice([cx - r, cy - r * 1.05, cx + r, cy + r * 0.35], 180, 360, outline=color, width=width)
+    draw.line([(cx - r, cy), (cx + r, cy)], fill=color, width=width)
+
+
+def _prop_crown(draw: ImageDraw.ImageDraw, head_c: Tuple[float, float], head_r: float, color: tuple, width: int) -> None:
+    cx, cy = head_c
+    base_y = cy - head_r * 1.05
+    mid_y = cy - head_r * 1.5
+    top_y = cy - head_r * 2.0
+    points = [
+        (cx - head_r * 1.1, base_y),
+        (cx - head_r * 1.1, mid_y),
+        (cx - head_r * 0.55, top_y),
+        (cx, mid_y),
+        (cx + head_r * 0.55, top_y),
+        (cx + head_r * 1.1, mid_y),
+        (cx + head_r * 1.1, base_y),
+    ]
+    draw.line(points, fill=color, width=width)
+    draw.line([points[0], points[-1]], fill=color, width=width)
+
+
+def _prop_hat(draw: ImageDraw.ImageDraw, head_c: Tuple[float, float], head_r: float, color: tuple, width: int) -> None:
+    cx, cy = head_c
+    brim_y = cy - head_r * 0.75
+    draw.ellipse(
+        [cx - head_r * 1.6, brim_y - head_r * 0.18, cx + head_r * 1.6, brim_y + head_r * 0.18],
+        outline=color, width=width,
+    )
+    draw.rectangle([cx - head_r * 0.7, cy - head_r * 1.9, cx + head_r * 0.7, brim_y], outline=color, width=width)
+
+
+_PROP_DRAWERS = {
+    "helmet": _prop_helmet,
+    "crown": _prop_crown,
+    "hat": _prop_hat,
+}
+
+_KEYWORD_TO_PROP = [
+    (("soldier", "army", "military", "war", "battle", "troops", "combat", "invasion", "regiment"), "helmet"),
+    (("king", "queen", "royal", "monarch", "throne", "kingdom", "empire", "emperor", "medieval", "castle"), "crown"),
+    (("detective", "spy", "noir", "crime", "gangster", "mafia"), "hat"),
+]
+
+
+def _prop_for_scene(scene: Scene) -> Optional[str]:
+    haystack = " ".join(scene.visual_keywords).lower()
+    for keywords, prop_name in _KEYWORD_TO_PROP:
+        if any(kw in haystack for kw in keywords):
+            return prop_name
+    return None
 
 
 # --- icon library (drawn with primitives, not glyphs - keeps it fully
@@ -258,23 +318,28 @@ def _draw_caption(frame: Image.Image, text: str, t: float, color: tuple) -> None
 
 # --- frame rendering + encoding --------------------------------------------
 
-def render_scene(scene: Scene, duration: float, config: PipelineConfig, out_path: Path) -> Path:
-    """Renders one scene as an animated mp4 (silent, exact duration, already
-    at config.video.resolution) using only Pillow + ffmpeg."""
+def render_overlay(scene: Scene, duration: float, config: PipelineConfig, out_path: Path) -> Path:
+    """Renders the stick-figure/icon/caption layer as an animated mp4 (silent,
+    exact duration, already at config.video.resolution) on a pure-black
+    background, meant to be composited onto real footage via compose_scene."""
     size = config.video.resolution
     fps = config.animation.fps
     accent = tuple(config.animation.accent_color)
 
     frame_count = max(1, round(duration * fps))
 
-    background = _gradient_background(size)
+    background = Image.new("RGB", size, OVERLAY_BG)
     icon_name = _icon_for_scene(scene)
     icon_drawer = _ICON_DRAWERS[icon_name]
+    prop = _prop_for_scene(scene)
 
     # Sized off height (the constrained dimension once icon/figure/caption
     # are stacked vertically), not width - keeps proportions sane in landscape.
-    figure_cx, figure_cy = size[0] * 0.5, size[1] * 0.62
-    figure_scale = size[1] * 0.30
+    # figure_cy is pushed low enough that the head (which sits well above the
+    # hip - see _draw_stick_figure) clears the caption band drawn at ~34-48%
+    # of frame height, so on-screen text never overlaps the figure's head.
+    figure_cx, figure_cy = size[0] * 0.5, size[1] * 0.74
+    figure_scale = size[1] * 0.28
     icon_cx, icon_cy = size[0] * 0.5, size[1] * 0.22
     icon_size = size[1] * 0.16
 
@@ -299,7 +364,7 @@ def render_scene(scene: Scene, duration: float, config: PipelineConfig, out_path
 
             bob = math.sin(t * math.pi * 4) * size[1] * 0.01
             pose = _pose_for(scene.role, t)
-            _draw_stick_figure(draw, figure_cx, figure_cy, figure_scale, pose, accent, bob)
+            _draw_stick_figure(draw, figure_cx, figure_cy, figure_scale, pose, accent, bob, prop)
 
             icon_bob = math.sin(t * math.pi * 3 + 1) * size[1] * 0.015
             icon_width = max(2, round(icon_size * 0.05))
@@ -319,4 +384,31 @@ def render_scene(scene: Scene, duration: float, config: PipelineConfig, out_path
         stderr = proc.stderr.read().decode("utf-8", errors="replace") if proc.stderr else ""
         raise RuntimeError(f"ffmpeg failed rendering {out_path}:\n{stderr[-4000:]}")
 
+    return out_path
+
+
+def compose_scene(
+    scene: Scene, duration: float, background_asset: VisualAsset,
+    config: PipelineConfig, work_dir: Path, out_path: Path,
+) -> Path:
+    """Renders the animated overlay and composites it onto a real stock-
+    footage/photo background (reusing assembler's scale/crop/loop and Ken
+    Burns handling), via ffmpeg colorkey - the overlay's pure-black
+    background becomes transparent, its white figure/icon/text stays."""
+    overlay_path = work_dir / f"{out_path.stem}_overlay.mp4"
+    render_overlay(scene, duration, config, overlay_path)
+
+    bg_path = work_dir / f"{out_path.stem}_bg.mp4"
+    assembler.build_video_segment(background_asset, duration, config, bg_path)
+
+    assembler.run_ffmpeg([
+        "ffmpeg", "-y", "-i", str(bg_path), "-i", str(overlay_path),
+        "-filter_complex",
+        # Darken the real footage a bit first so white line art stays legible
+        # over bright/busy source material, then key out the overlay's black.
+        "[0:v]eq=brightness=-0.12:contrast=0.92[bgdark];"
+        "[1:v]colorkey=0x000000:0.15:0.05[fg];"
+        "[bgdark][fg]overlay=format=auto[out]",
+        "-map", "[out]", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(out_path),
+    ])
     return out_path

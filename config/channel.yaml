@@ -45,13 +45,13 @@ voice:
   pitch: "+0Hz"
 
 visuals:
-  provider: pexels             # used for shorts only; longform uses animation.py instead
+  provider: pexels             # real stock footage/photos - shorts use it directly; longform uses it as the backdrop behind animation.py's overlay
   orientation: portrait        # portrait or landscape, kept in sync with the chosen format at runtime
   min_clip_seconds: 3
 
 animation:
-  fps: 24                        # longform's procedural renderer runs at a lower fps than stock video - plenty smooth for simple shapes, much faster to render
-  accent_color: [139, 92, 246]   # vivid violet stick figure / icon color, against a near-black background
+  fps: 24                        # longform's procedural overlay runs at a lower fps than stock video - plenty smooth for simple shapes, much faster to render
+  accent_color: [255, 255, 255]  # white stick figure / icon, composited via colorkey onto real footage
 
 upload:
   privacy_status: public       # private | unlisted | public - "public" is required for true set-and-forget;

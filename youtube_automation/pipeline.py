@@ -1,6 +1,7 @@
 """End-to-end orchestration: pick a (niche, format), write a script, run it
 past a quality gate, synthesize narration, build visuals (stock footage for
-shorts, procedural animation for longform), wrap it in a branded intro/outro,
+shorts; for longform, that same stock footage with a stick-figure/icon/
+caption overlay composited on top), wrap it in a branded intro/outro,
 assemble the video, generate a thumbnail, and (unless dry_run) upload it to
 YouTube."""
 from __future__ import annotations
@@ -47,10 +48,14 @@ def _select_niche_and_format(config: PipelineConfig) -> tuple:
 
 def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config: PipelineConfig, work_dir: Path) -> List[VisualAsset]:
     if config.video.format == "longform":
+        # Real Pexels footage as the backdrop (same source shorts use) with
+        # the stick-figure/icon/caption overlay composited on top - see
+        # animation.compose_scene.
         assets = []
         for i, (scene, audio) in enumerate(zip(script.scenes, content_scene_audio)):
-            out_path = work_dir / f"scene_{i:02d}_animated.mp4"
-            animation.render_scene(scene, audio.duration, config, out_path)
+            background = visuals.fetch_visual_for_scene(scene, i, config, work_dir)
+            out_path = work_dir / f"scene_{i:02d}_composed.mp4"
+            animation.compose_scene(scene, audio.duration, background, config, work_dir, out_path)
             assets.append(VisualAsset(kind="prerendered", path=out_path))
         return assets
     return visuals.fetch_all(script.scenes, config, work_dir)

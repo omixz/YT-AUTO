@@ -78,10 +78,10 @@ class VisualsConfig:
 
 @dataclass
 class AnimationConfig:
-    """Settings for the procedural (stick-figure/motion-graphics) renderer
-    used for longform instead of stock footage."""
+    """Settings for the procedural stick-figure overlay composited onto real
+    stock footage/photos for longform."""
     fps: int = 24
-    accent_color: tuple = (86, 130, 255)
+    accent_color: tuple = (255, 255, 255)
 
 
 @dataclass

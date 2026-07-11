@@ -20,13 +20,13 @@ MIN_ZOOM_STEP = 0.0015
 MAX_ZOOM = 1.3
 
 
-def _run(cmd: List[str]) -> None:
+def run_ffmpeg(cmd: List[str]) -> None:
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg command failed:\n{' '.join(cmd)}\n\n{result.stderr[-4000:]}")
 
 
-def _build_video_segment(asset: VisualAsset, duration: float, config: PipelineConfig, out_path: Path) -> None:
+def build_video_segment(asset: VisualAsset, duration: float, config: PipelineConfig, out_path: Path) -> None:
     w, h = config.video.resolution
     fps = config.video.fps
 
@@ -54,7 +54,7 @@ def _build_video_segment(asset: VisualAsset, duration: float, config: PipelineCo
             "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(out_path),
         ]
 
-    _run(cmd)
+    run_ffmpeg(cmd)
 
 
 def _concat_segments(segment_paths: List[Path], out_path: Path, work_dir: Path) -> None:
@@ -62,7 +62,7 @@ def _concat_segments(segment_paths: List[Path], out_path: Path, work_dir: Path) 
     list_file.write_text(
         "\n".join(f"file '{p.name}'" for p in segment_paths), encoding="utf-8"
     )
-    _run([
+    run_ffmpeg([
         "ffmpeg", "-y", "-f", "concat", "-safe", "0",
         "-i", str(list_file), "-c", "copy", str(out_path),
     ])
@@ -89,7 +89,7 @@ def build_video(
     segment_paths = []
     for i, (asset, audio) in enumerate(zip(visuals, scene_audio)):
         seg_path = work_dir / f"segment_{i:02d}.mp4"
-        _build_video_segment(asset, audio.duration, config, seg_path)
+        build_video_segment(asset, audio.duration, config, seg_path)
         segment_paths.append(seg_path)
 
     video_concat = work_dir / "video_full.mp4"
@@ -98,7 +98,7 @@ def build_video(
     burned = work_dir / "video_captioned.mp4"
     if subtitles_path.exists() and subtitles_path.stat().st_size > 0:
         subs_style = "FontSize=16,Alignment=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,MarginV=80"
-        _run([
+        run_ffmpeg([
             "ffmpeg", "-y", "-i", str(video_concat),
             "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}'",
             "-c:v", "libx264", "-pix_fmt", "yuv420p", str(burned),
@@ -129,5 +129,5 @@ def build_video(
             "-c:v", "copy", "-c:a", "aac", "-shortest", str(out_path),
         ]
 
-    _run(cmd)
+    run_ffmpeg(cmd)
     return out_path
