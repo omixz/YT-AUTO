@@ -1,9 +1,8 @@
 """End-to-end orchestration: pick a (niche, format), write a script, run it
 past a quality gate, synthesize narration, build visuals (stock footage for
-shorts; for longform, that same stock footage with a stick-figure/icon/
-caption overlay composited on top), wrap it in a branded intro/outro,
-assemble the video, generate a thumbnail, and (unless dry_run) upload it to
-YouTube."""
+shorts; for longform, a crude hand-drawn-doodle illustration generated per
+scene - see illustration.py), append a subscribe-CTA outro, assemble the
+video, generate a thumbnail, and (unless dry_run) upload it to YouTube."""
 from __future__ import annotations
 
 import json
@@ -14,7 +13,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    animation, assembler, branding, growth_ledger, niche_selector,
+    assembler, branding, growth_ledger, illustration, niche_selector,
     quality_check, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
@@ -48,16 +47,13 @@ def _select_niche_and_format(config: PipelineConfig, format_override: Optional[s
 
 def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config: PipelineConfig, work_dir: Path) -> List[VisualAsset]:
     if config.video.format == "longform":
-        # Real Pexels footage as the backdrop (same source shorts use) with
-        # the stick-figure/icon/caption overlay composited on top - see
-        # animation.compose_scene.
-        assets = []
-        for i, (scene, audio) in enumerate(zip(script.scenes, content_scene_audio)):
-            background = visuals.fetch_visual_for_scene(scene, i, config, work_dir)
-            out_path = work_dir / f"scene_{i:02d}_composed.mp4"
-            animation.compose_scene(scene, audio.duration, background, config, work_dir, out_path)
-            assets.append(VisualAsset(kind="prerendered", path=out_path))
-        return assets
+        # One crude hand-drawn-doodle illustration generated per scene,
+        # depicting that scene's specific content directly (the drawn figure
+        # IS the subject being narrated, not a generic mascot) - see
+        # illustration.py. Ken Burns zoom applied the same way a still photo
+        # would be (VisualAsset kind="image"), via assembler.py.
+        paths = illustration.generate_all(script.scenes, config, work_dir)
+        return [VisualAsset(kind="image", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
 
 
@@ -91,18 +87,18 @@ def run(
     logger.info("Synthesizing narration...")
     content_scene_audio, content_narration_path = tts.synthesize_script(script, config.voice, work_dir)
 
-    logger.info("Building %s visuals...", "animated" if format_name == "longform" else "stock")
+    logger.info("Building %s visuals...", "illustrated" if format_name == "longform" else "stock")
     content_visuals = _build_content_visuals(script, content_scene_audio, config, work_dir)
 
-    logger.info("Building branded intro/outro...")
-    intro_visual, intro_audio = branding.build_intro(config, work_dir)
+    logger.info("Building outro...")
+    # No channel-branded intro card - the video opens directly on content.
     outro_visual, outro_audio = branding.build_outro(config, work_dir)
 
-    all_scene_audio = [intro_audio] + content_scene_audio + [outro_audio]
-    all_visuals = [intro_visual] + content_visuals + [outro_visual]
+    all_scene_audio = content_scene_audio + [outro_audio]
+    all_visuals = content_visuals + [outro_visual]
 
     narration_path = tts.concat_audio(
-        [intro_audio.audio_path, content_narration_path, outro_audio.audio_path],
+        [content_narration_path, outro_audio.audio_path],
         work_dir / "narration_final.mp3",
     )
 
@@ -111,7 +107,7 @@ def run(
 
     logger.info("Building ambient sound effects...")
     ambience_path = sound_effects.build_ambience_track(
-        script.scenes, content_scene_audio, intro_audio.duration, outro_audio.duration, work_dir,
+        script.scenes, content_scene_audio, 0.0, outro_audio.duration, work_dir,
     )
 
     logger.info("Assembling final video...")

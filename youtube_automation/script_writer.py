@@ -165,14 +165,11 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
     suggested_scenes = max(6, min(60, round(target_words / 25)))
     max_output_tokens = min(8000, max(2000, round(target_words * 4) + 500))
 
-    # Both formats composite onto real Pexels footage now (longform via
-    # animation.compose_scene, shorts directly) - abstract concept words used
-    # to be fine for longform back when it only drove icon selection, but
-    # fed into a real stock-footage search they return generic, unrelated
-    # clips (a tape measure for "stretching the limits", a random office for
-    # "poor health"). Concrete, filmable, topic-specific nouns work for both:
-    # animation.py's icon matching just falls back to a generic star icon
-    # when nothing matches, which costs far less than irrelevant footage.
+    # Shorts use these directly for Pexels stock-footage search; longform no
+    # longer does (illustration.py generates each scene's image straight
+    # from scene.narration instead), but both formats still use them for
+    # sound_effects.py's ambience keyword matching - concrete, topic-specific
+    # nouns work better than abstract mood words for both purposes.
     visual_keyword_guidance = (
         "each scene visual_keywords that a stock-footage search engine could use to find "
         f"matching {config.visuals.orientation}-orientation footage that actually depicts this "
@@ -252,8 +249,12 @@ Audience: {config.channel.audience}
 Already-used topics (do not repeat these or close variants):
 {used_list}
 
-Suggest {count} new, specific, high-interest video topics for this channel. Avoid anything
-copyrighted or that would require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
+Suggest {count} new video topics for this channel. Bias hard toward genuinely dramatic, high-stakes,
+shocking, or emotionally charged stories over bland "fun fact" trivia - a real person facing a real
+crisis, a disaster, a betrayal, a narrow escape, a shocking twist - the kind of premise that makes
+someone stop scrolling. Each topic should be specific enough to have a clear central character or
+moment (a name, an event, a decision), not a vague category. Avoid anything copyrighted or that would
+require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
 
     data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=500)
     return list(data["topics"])
