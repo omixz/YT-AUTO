@@ -37,7 +37,11 @@ def build_video_segment(asset: VisualAsset, duration: float, config: PipelineCon
             "-stream_loop", "-1", "-i", str(asset.path),
             "-t", f"{duration:.3f}",
             "-vf", f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},fps={fps},format=yuv420p",
-            "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(out_path),
+            # ultrafast: this segment gets re-encoded again downstream (colorkey
+            # composite for longform, caption burn-in for every format), so
+            # spending time on encode efficiency here is pure waste - it matters
+            # a lot once a longform video means dozens of these per run.
+            "-an", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
         ]
     else:  # image: Ken Burns zoom
         frames = max(1, round(duration * fps))
@@ -52,7 +56,7 @@ def build_video_segment(asset: VisualAsset, duration: float, config: PipelineCon
         cmd = [
             "ffmpeg", "-y", "-loop", "1", "-i", str(asset.path),
             "-t", f"{duration:.3f}", "-vf", vf,
-            "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(out_path),
+            "-an", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
         ]
 
     run_ffmpeg(cmd)
@@ -103,7 +107,10 @@ def build_video(
         run_ffmpeg([
             "ffmpeg", "-y", "-i", str(video_concat),
             "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}'",
-            "-c:v", "libx264", "-pix_fmt", "yuv420p", str(burned),
+            # This is the last video encode before the final mux (which copies
+            # the video stream unchanged), so it's worth a slower/better preset
+            # than the per-scene intermediate passes above.
+            "-c:v", "libx264", "-preset", "faster", "-pix_fmt", "yuv420p", str(burned),
         ])
     else:
         # No cues to burn in (e.g. a scene with no word-boundary data) - an

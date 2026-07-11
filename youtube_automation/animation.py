@@ -351,7 +351,10 @@ def render_overlay(scene: Scene, duration: float, config: PipelineConfig, out_pa
             "ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
             "-s", f"{size[0]}x{size[1]}", "-framerate", str(fps), "-i", "-",
             "-t", f"{duration:.3f}", "-vf", "format=yuv420p",
-            "-c:v", "libx264", "-pix_fmt", "yuv420p", str(out_path),
+            # This overlay gets keyed and composited (and the composite result
+            # re-encoded again) downstream, so encode speed matters more than
+            # efficiency here.
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
         ],
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
     )
@@ -409,6 +412,9 @@ def compose_scene(
         "[0:v]eq=brightness=-0.12:contrast=0.92[bgdark];"
         "[1:v]colorkey=0x000000:0.15:0.05[fg];"
         "[bgdark][fg]overlay=format=auto[out]",
-        "-map", "[out]", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(out_path),
+        # This composited scene gets re-encoded again once more when
+        # assembler.build_video_segment picks it up as a "prerendered" asset,
+        # so - same logic as the two encodes above - speed over efficiency.
+        "-map", "[out]", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
     ])
     return out_path
