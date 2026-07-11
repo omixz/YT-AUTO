@@ -32,23 +32,28 @@ _RETRY_BACKOFF = 2.0
 # rather than a paraphrase.
 STYLE_SUFFIX = (
     "STYLE (follow exactly): Looks like an extremely simple, rushed beginner drawing made in MS Paint. "
-    "Like someone who is NOT good at drawing made it quickly by hand. Plain white background. "
+    "Like someone who is NOT good at drawing made it quickly by hand. Plain flat background (a simple "
+    "white/light sky, no photorealistic or gradient backdrop), but DO draw the actual setting as simple "
+    "flat shapes in the same crude style (buildings, snow, mountains, streets, rooms, vehicles, whatever "
+    "the scene is set in) - the environment matters as much as any character in it. "
     "No 3D, no cinematic lighting, no realistic detail, no fancy rendering. "
     "Crude, flat, hand-drawn, slightly messy on purpose. "
     "Flat 2D vector clip-art style, like a simple flat-icon illustration or a Duolingo-style mascot - "
     "every clothing item and object is a single solid flat color with a thick black outline, absolutely "
     "no shading, no gradients, no highlights, no folds, no texture, no cel-shading, no painterly rendering "
     "anywhere in the image. "
-    "Faces are extremely minimal - just a plain circle or oval head with a single simple curved line for a "
-    "mouth showing the expression (a smile, a frown, an upside-down smile, or a flat straight line) - no "
-    "detailed eyes, no nose, no eyebrows, no realistic facial features at all, just two small dots for eyes. "
-    "Every character is bald or has something covering their head (a helmet, hat, cap, hood, crown, or "
-    "similar) - never draw hair."
+    "If a character appears, they're a normal-sized small part of a wider scene, not a large close-up "
+    "portrait filling the frame - the setting should be clearly visible around them. "
+    "Any faces are extremely minimal - just a plain circle or oval head with a single simple curved line "
+    "for a mouth showing the expression (a smile, a frown, an upside-down smile, or a flat straight line) - "
+    "no detailed eyes, no nose, no eyebrows, no realistic facial features at all, just two small dots for "
+    "eyes. Every character is bald or has something covering their head (a helmet, hat, cap, hood, crown, "
+    "or similar) - never draw hair."
 )
 
 
 def _prompt_for_scene(scene: Scene) -> str:
-    return f"{scene.narration.strip()}. {STYLE_SUFFIX}"
+    return f"Wide shot of this scene, showing the full setting: {scene.narration.strip()}. {STYLE_SUFFIX}"
 
 
 def generate_scene_image(scene: Scene, index: int, config: PipelineConfig, work_dir: Path) -> Path:

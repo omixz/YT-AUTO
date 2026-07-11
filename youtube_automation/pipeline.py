@@ -1,8 +1,9 @@
 """End-to-end orchestration: pick a (niche, format), write a script, run it
 past a quality gate, synthesize narration, build visuals (stock footage for
-shorts; for longform, a crude hand-drawn-doodle illustration generated per
-scene - see illustration.py), append a subscribe-CTA outro, assemble the
-video, generate a thumbnail, and (unless dry_run) upload it to YouTube."""
+shorts; for longform, a flat-vector-clipart illustration drawn procedurally
+per scene - see procedural_illustration.py), append a subscribe-CTA outro,
+assemble the video, generate a thumbnail, and (unless dry_run) upload it to
+YouTube."""
 from __future__ import annotations
 
 import json
@@ -13,7 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    assembler, branding, growth_ledger, illustration, niche_selector,
+    assembler, branding, growth_ledger, niche_selector, procedural_illustration,
     quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
@@ -47,12 +48,12 @@ def _select_niche_and_format(config: PipelineConfig, format_override: Optional[s
 
 def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config: PipelineConfig, work_dir: Path) -> List[VisualAsset]:
     if config.video.format == "longform":
-        # One crude hand-drawn-doodle illustration generated per scene,
-        # depicting that scene's specific content directly (the drawn figure
-        # IS the subject being narrated, not a generic mascot) - see
-        # illustration.py. Ken Burns zoom applied the same way a still photo
-        # would be (VisualAsset kind="image"), via assembler.py.
-        paths = illustration.generate_all(script.scenes, config, work_dir)
+        # One flat-vector-clipart illustration drawn per scene, depicting
+        # that scene's specific content directly (the drawn figure IS the
+        # subject being narrated, not a generic mascot) - see
+        # procedural_illustration.py. Ken Burns zoom applied the same way a
+        # still photo would be (VisualAsset kind="image"), via assembler.py.
+        paths = procedural_illustration.generate_all(script.scenes, config, work_dir)
         return [VisualAsset(kind="image", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
 

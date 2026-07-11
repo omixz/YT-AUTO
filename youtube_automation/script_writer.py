@@ -165,11 +165,11 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
     suggested_scenes = max(6, min(60, round(target_words / 25)))
     max_output_tokens = min(8000, max(2000, round(target_words * 4) + 500))
 
-    # Shorts use these directly for Pexels stock-footage search; longform no
-    # longer does (illustration.py generates each scene's image straight
-    # from scene.narration instead), but both formats still use them for
-    # sound_effects.py's ambience keyword matching - concrete, topic-specific
-    # nouns work better than abstract mood words for both purposes.
+    # Shorts use these directly for Pexels stock-footage search; longform
+    # uses them too, for procedural_illustration.py's setting/outfit/headwear/
+    # mood keyword matching, and both formats use them for sound_effects.py's
+    # ambience keyword matching - concrete, topic-specific nouns work better
+    # than abstract mood words for all three purposes.
     visual_keyword_guidance = (
         "each scene visual_keywords that a stock-footage search engine could use to find "
         f"matching {config.visuals.orientation}-orientation footage that actually depicts this "

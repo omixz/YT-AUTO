@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from .config import PipelineConfig
+from .fonts import ASSETS_DIR
 from .tts import SceneAudio
 from .visuals import VisualAsset
 
@@ -103,10 +104,14 @@ def build_video(
 
     burned = work_dir / "video_captioned.mp4"
     if subtitles_path.exists() and subtitles_path.stat().st_size > 0:
-        subs_style = "FontSize=16,Alignment=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,MarginV=80"
+        # Fontname=Outfit + fontsdir: without an explicit font, libass falls
+        # back to whatever generic default the runner has installed, which
+        # reads as dated - use the same modern bundled font as the
+        # thumbnail/branding text (see fonts.py) for burned-in captions too.
+        subs_style = "Fontname=Outfit,Bold=1,FontSize=16,Alignment=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,MarginV=80"
         run_ffmpeg([
             "ffmpeg", "-y", "-i", str(video_concat),
-            "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}'",
+            "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}':fontsdir={_escape_for_filter(ASSETS_DIR)}",
             # This is the last video encode before the final mux (which copies
             # the video stream unchanged), so it's worth a slower/better preset
             # than the per-scene intermediate passes above.
