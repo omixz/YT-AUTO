@@ -1,7 +1,8 @@
-"""End-to-end orchestration: pick a topic, write a script, run it past a
-quality gate, synthesize narration, fetch visuals, wrap it in a branded
-intro/outro, assemble the video, generate a thumbnail, and (unless dry_run)
-upload it to YouTube."""
+"""End-to-end orchestration: pick a (niche, format), write a script, run it
+past a quality gate, synthesize narration, build visuals (stock footage for
+shorts, procedural animation for longform), wrap it in a branded intro/outro,
+assemble the video, generate a thumbnail, and (unless dry_run) upload it to
+YouTube."""
 from __future__ import annotations
 
 import json
@@ -9,15 +10,50 @@ import logging
 import shutil
 import time
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
-from . import assembler, branding, quality_check, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader
+from . import (
+    animation, assembler, branding, growth_ledger, niche_selector,
+    quality_check, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
+)
 from .config import ROOT, PipelineConfig
 from .script_writer import generate_script
+from .tts import SceneAudio
+from .visuals import VisualAsset
 
 logger = logging.getLogger(__name__)
 
 KEEP_FILES = {"final.mp4", "thumbnail.jpg", "captions.srt", "manifest.json"}
+
+
+def _select_niche_and_format(config: PipelineConfig) -> tuple:
+    """Picks (niche_key, format_name) and mutates config in place so every
+    other module (script_writer, branding, quality_check, assembler, ...)
+    just keeps reading config.channel.niche / config.video.format like
+    before - see ChannelConfig.niche / VideoConfig.format docstrings."""
+    niche_key, format_name = niche_selector.choose(config)
+    niche = next(n for n in config.niches if n.key == niche_key)
+
+    config.channel.niche = niche.niche
+    config.channel.audience = niche.audience or config.channel.audience
+    config.channel.tone = niche.tone or config.channel.tone
+
+    config.video.format = format_name
+    config.video.target_seconds = config.video.formats[format_name].target_seconds
+    config.visuals.orientation = "portrait" if format_name == "shorts" else "landscape"
+
+    return niche_key, format_name
+
+
+def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config: PipelineConfig, work_dir: Path) -> List[VisualAsset]:
+    if config.video.format == "longform":
+        assets = []
+        for i, (scene, audio) in enumerate(zip(script.scenes, content_scene_audio)):
+            out_path = work_dir / f"scene_{i:02d}_animated.mp4"
+            animation.render_scene(scene, audio.duration, config, out_path)
+            assets.append(VisualAsset(kind="prerendered", path=out_path))
+        return assets
+    return visuals.fetch_all(script.scenes, config, work_dir)
 
 
 def run(
@@ -31,8 +67,11 @@ def run(
     work_dir = ROOT / "output" / run_id
     work_dir.mkdir(parents=True, exist_ok=True)
 
+    niche_key, format_name = _select_niche_and_format(config)
+    logger.info("Selected niche=%s format=%s", niche_key, format_name)
+
     logger.info("Picking topic...")
-    topic = topic_store.next_topic(config, override=topic_override)
+    topic = topic_store.next_topic(config, niche_key, override=topic_override)
     logger.info("Topic: %s", topic)
 
     logger.info("Writing script...")
@@ -46,8 +85,8 @@ def run(
     logger.info("Synthesizing narration...")
     content_scene_audio, content_narration_path = tts.synthesize_script(script, config.voice, work_dir)
 
-    logger.info("Fetching stock visuals...")
-    content_visuals = visuals.fetch_all(script.scenes, config, work_dir)
+    logger.info("Building %s visuals...", "animated" if format_name == "longform" else "stock")
+    content_visuals = _build_content_visuals(script, content_scene_audio, config, work_dir)
 
     logger.info("Building branded intro/outro...")
     intro_visual, intro_audio = branding.build_intro(config, work_dir)
@@ -78,6 +117,8 @@ def run(
 
     manifest = {
         "run_id": run_id,
+        "niche": niche_key,
+        "format": format_name,
         "topic": topic,
         "title": script.title,
         "description": script.description,
@@ -109,6 +150,8 @@ def run(
         manifest["youtube_video_id"] = video_id
         manifest["youtube_url"] = f"https://youtu.be/{video_id}"
         manifest["privacy_status"] = effective_privacy
+
+        growth_ledger.record_published(niche_key, format_name, video_id)
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

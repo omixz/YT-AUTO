@@ -1,0 +1,44 @@
+name: Sync YouTube analytics into the growth bandit
+
+on:
+  schedule:
+    # Daily - a video only "matures" (growth.maturity_days, default 7) once
+    # its stats have settled, so this just checks for newly-matured videos.
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore YouTube OAuth credentials
+        run: |
+          echo "${{ secrets.YOUTUBE_CLIENT_SECRET_B64 }}" | base64 -d > client_secret.json
+          echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > token.json
+
+      - name: Sync analytics
+        run: python sync_analytics.py
+
+      - name: Remove OAuth credential files before committing
+        if: always()
+        run: rm -f client_secret.json token.json
+
+      - name: Commit updated performance stats + ledger
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/performance_stats.json config/published_videos.json
+          git diff --cached --quiet || git commit -m "chore: sync YouTube analytics into growth bandit"
+          git push

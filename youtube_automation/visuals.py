@@ -24,7 +24,7 @@ FALLBACK_KEYWORDS = ["abstract background", "nature timelapse"]
 
 @dataclass
 class VisualAsset:
-    kind: str  # "video" | "image"
+    kind: str  # "video" | "image" | "prerendered" (animation.py's already-animated longform clips)
     path: Path
     source_duration: Optional[float] = None  # only known for video
 

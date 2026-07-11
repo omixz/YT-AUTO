@@ -117,7 +117,7 @@ class GrowthConfig:
 
 @dataclass
 class Secrets:
-    anthropic_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
     pexels_api_key: Optional[str] = None
     youtube_client_secret_file: str = "client_secret.json"
     youtube_token_file: str = "token.json"
@@ -125,7 +125,7 @@ class Secrets:
     @classmethod
     def from_env(cls) -> "Secrets":
         return cls(
-            anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+            gemini_api_key=os.getenv("GEMINI_API_KEY"),
             pexels_api_key=os.getenv("PEXELS_API_KEY"),
             youtube_client_secret_file=os.getenv("YOUTUBE_CLIENT_SECRET_FILE", "client_secret.json"),
             youtube_token_file=os.getenv("YOUTUBE_TOKEN_FILE", "token.json"),

@@ -208,13 +208,17 @@ def _icon_for_scene(scene: Scene) -> str:
 # --- kinetic typography ---------------------------------------------------
 
 def _draw_caption(frame: Image.Image, text: str, t: float, color: tuple) -> None:
-    """Mutates frame in place, compositing faded-in kinetic-typography text."""
+    """Mutates frame in place, compositing faded-in kinetic-typography text
+    in the gap between the icon and the figure's head. Deliberately NOT
+    bottom-anchored: assembler.py separately burns in the real narration-
+    synced SRT captions along the bottom for every format, so this on-screen
+    text (a short optional headline) would collide with those down there."""
     if not text:
         return
     size = frame.size
     scratch_draw = ImageDraw.Draw(frame)
-    font = load_bold(round(size[0] * 0.045))
-    max_width = round(size[0] * 0.8)
+    font = load_bold(round(size[0] * 0.03))
+    max_width = round(size[0] * 0.7)
 
     words = text.split()
     lines, current = [], ""
@@ -228,16 +232,15 @@ def _draw_caption(frame: Image.Image, text: str, t: float, color: tuple) -> None
             current = word
     if current:
         lines.append(current)
-    lines = lines[:3]
+    lines = lines[:2]
 
     # Ease-in slide-up + fade-in over the first 25% of the scene.
     fade_t = min(1.0, t / 0.25)
-    y_offset = round((1 - fade_t) * size[1] * 0.04)
+    y_offset = round((1 - fade_t) * size[1] * 0.03)
     alpha = round(255 * fade_t)
 
     line_h = round(font.size * 1.3)
-    total_h = line_h * len(lines)
-    y = size[1] - round(size[1] * 0.14) - total_h + y_offset
+    y = round(size[1] * 0.34) + y_offset
 
     overlay = Image.new("RGBA", size, (0, 0, 0, 0))
     odraw = ImageDraw.Draw(overlay)

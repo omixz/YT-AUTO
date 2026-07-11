@@ -1,8 +1,9 @@
 """Stitches per-scene visuals + narration + captions into the final MP4 via ffmpeg.
 
-For each scene: video clips are scaled/cropped to fill the frame and looped if
-shorter than the narration; still images get a slow Ken Burns zoom. Segments
-are concatenated, captions are burned in, and the narration (plus optional
+For each scene: video clips (stock footage, or animation.py's prerendered
+longform clips) are scaled/cropped to fill the frame and looped if shorter
+than the narration; still images get a slow Ken Burns zoom. Segments are
+concatenated, captions are burned in, and the narration (plus optional
 ducked background music) is muxed on top.
 """
 from __future__ import annotations
@@ -29,7 +30,7 @@ def _build_video_segment(asset: VisualAsset, duration: float, config: PipelineCo
     w, h = config.video.resolution
     fps = config.video.fps
 
-    if asset.kind == "video":
+    if asset.kind in ("video", "prerendered"):
         cmd = [
             "ffmpeg", "-y",
             "-stream_loop", "-1", "-i", str(asset.path),
