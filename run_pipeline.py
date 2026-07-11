@@ -18,6 +18,7 @@ from youtube_automation.pipeline import run
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--topic", help="Override the next topic instead of pulling from the queue.")
+    parser.add_argument("--format", choices=["shorts", "longform"], default=None, help="Force a specific format instead of letting the bandit pick one.")
     parser.add_argument("--dry-run", action="store_true", help="Build the video but skip uploading.")
     parser.add_argument("--config", default=None, help="Path to a channel config YAML (default: config/channel.yaml).")
     parser.add_argument("--publish-at", default=None, help="RFC3339 timestamp to schedule the YouTube release.")
@@ -37,6 +38,7 @@ def main() -> None:
         dry_run=args.dry_run,
         publish_at=args.publish_at,
         keep_work_dir=args.keep_work_dir,
+        format_override=args.format,
     )
 
     print("\n=== Run complete ===")

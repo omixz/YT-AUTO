@@ -12,6 +12,12 @@ on:
         description: "Override topic (leave blank to pull from the queue)"
         required: false
         default: ""
+      format:
+        description: "Force a format instead of letting the bandit pick (leave blank for normal behavior)"
+        required: false
+        default: ""
+        type: choice
+        options: ["", "shorts", "longform"]
       dry_run:
         description: "Build the video but skip uploading to YouTube"
         required: false
@@ -53,6 +59,9 @@ jobs:
           ARGS=()
           if [ -n "${{ github.event.inputs.topic }}" ]; then
             ARGS+=(--topic "${{ github.event.inputs.topic }}")
+          fi
+          if [ -n "${{ github.event.inputs.format }}" ]; then
+            ARGS+=(--format "${{ github.event.inputs.format }}")
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             ARGS+=(--dry-run)

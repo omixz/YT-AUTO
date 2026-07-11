@@ -27,12 +27,12 @@ logger = logging.getLogger(__name__)
 KEEP_FILES = {"final.mp4", "thumbnail.jpg", "captions.srt", "manifest.json"}
 
 
-def _select_niche_and_format(config: PipelineConfig) -> tuple:
+def _select_niche_and_format(config: PipelineConfig, format_override: Optional[str] = None) -> tuple:
     """Picks (niche_key, format_name) and mutates config in place so every
     other module (script_writer, branding, quality_check, assembler, ...)
     just keeps reading config.channel.niche / config.video.format like
     before - see ChannelConfig.niche / VideoConfig.format docstrings."""
-    niche_key, format_name = niche_selector.choose(config)
+    niche_key, format_name = niche_selector.choose(config, format_override=format_override)
     niche = next(n for n in config.niches if n.key == niche_key)
 
     config.channel.niche = niche.niche
@@ -67,12 +67,13 @@ def run(
     dry_run: bool = False,
     publish_at: Optional[str] = None,
     keep_work_dir: bool = False,
+    format_override: Optional[str] = None,
 ) -> dict:
     run_id = time.strftime("%Y%m%d-%H%M%S")
     work_dir = ROOT / "output" / run_id
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    niche_key, format_name = _select_niche_and_format(config)
+    niche_key, format_name = _select_niche_and_format(config, format_override=format_override)
     logger.info("Selected niche=%s format=%s", niche_key, format_name)
 
     logger.info("Picking topic...")

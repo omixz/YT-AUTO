@@ -42,14 +42,24 @@ def _enabled_combos(config: PipelineConfig) -> List[Tuple[str, str, float]]:
     return combos
 
 
-def choose(config: PipelineConfig) -> Tuple[str, str]:
-    """Returns (niche_key, format_name)."""
+def choose(config: PipelineConfig, format_override: "str | None" = None) -> Tuple[str, str]:
+    """Returns (niche_key, format_name). format_override forces a specific
+    format (e.g. for a one-off manual run) while still letting the bandit
+    pick the niche normally - see run_pipeline.py's --format flag."""
     combos = _enabled_combos(config)
     if not combos:
         raise RuntimeError(
             "No enabled (niche, format) combinations - check channel.yaml's "
             "niches: list and video.formats: entries."
         )
+
+    if format_override:
+        combos = [c for c in combos if c[1] == format_override]
+        if not combos:
+            raise RuntimeError(
+                f"format_override={format_override!r} doesn't match any enabled "
+                "(niche, format) combination."
+            )
 
     stats = _load_stats(ROOT / config.growth.stats_file)
 
