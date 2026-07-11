@@ -17,7 +17,10 @@ niches:
     weight: 1.0
   - key: unsolved_mysteries
     niche: "unsolved mysteries and cold cases"
-    weight: 1.0
+    weight: 1.4   # mystery/true-crime content retains materially better than general facts
+                  # content on YouTube (real-world retention data puts it well above the
+                  # platform average) - nudges the cold-start prior while data accumulates;
+                  # the bandit will correct this automatically once real analytics kick in
 
 video:
   fps: 30

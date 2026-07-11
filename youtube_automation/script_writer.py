@@ -21,7 +21,7 @@ API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:gene
 SCRIPT_SCHEMA = {
     "type": "object",
     "properties": {
-        "title": {"type": "string", "description": "YouTube title, under 100 chars, hook-forward."},
+        "title": {"type": "string", "description": "YouTube title, under 100 chars, hook-forward. Makes one specific, curiosity-gap promise (not a vague topic label) - the hook scene's opening line must deliver on exactly this promise, since a title/thumbnail that overpromises what the video actually opens with kills retention and the algorithm's willingness to keep distributing it."},
         "description": {"type": "string", "description": "YouTube description, 2-4 sentences plus hashtags."},
         "tags": {"type": "array", "items": {"type": "string"}, "description": "8-15 relevant search tags."},
         "scenes": {
@@ -34,7 +34,11 @@ SCRIPT_SCHEMA = {
                         "type": "string",
                         "enum": ["hook", "build", "insight"],
                         "description": (
-                            "hook: exactly the first scene, a surprising claim or question. "
+                            "hook: exactly the first scene. Opens by delivering on the title's exact "
+                            "promise in its very first sentence - no scene-setting, no 'today we're "
+                            "looking at...' throat-clearing, since viewers decide whether to keep "
+                            "watching within seconds and a slow open loses them before the rest of "
+                            "the script gets a chance. "
                             "build: 3+ middle scenes that develop connected facts into a mini-story "
                             "(use transitions like 'but here's the twist' / 'and that's not even "
                             "the strangest part' - don't just list isolated trivia). "
@@ -185,6 +189,12 @@ Niche: {config.channel.niche}
 Audience: {config.channel.audience}
 Tone: {config.channel.tone}
 Topic for this video: {topic}
+
+Write the title first, then a script that delivers on it. The title must make one specific,
+curiosity-gap promise (not a vague topic label), and the hook scene's first sentence must open by
+directly delivering on that exact promise - a title/thumbnail that oversells what the video
+actually opens with is the single biggest reason a video's retention (and therefore YouTube's
+willingness to keep recommending it) collapses in the first seconds.
 
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
