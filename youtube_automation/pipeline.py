@@ -14,7 +14,7 @@ from typing import List, Optional
 
 from . import (
     assembler, branding, growth_ledger, illustration, niche_selector,
-    quality_check, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
+    quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
 from .script_writer import generate_script
@@ -148,15 +148,25 @@ def run(
                 effective_privacy, config.upload.privacy_status,
             )
 
+        # A quality-gate failure means a human needs to review this by hand,
+        # not have it auto-publish later unattended - only schedule the
+        # optimal slot on the normal (passed-gate) path, and only when the
+        # caller hasn't already pinned a specific publish_at themselves.
+        effective_publish_at = publish_at
+        if effective_publish_at is None and passed_quality_gate:
+            effective_publish_at = scheduling.next_optimal_publish_time()
+            logger.info("Scheduling publish for the next optimal slot: %s", effective_publish_at)
+
         logger.info("Uploading to YouTube...")
         video_id = youtube_uploader.upload_video(
             video_path, script.title, script.description, script.tags, config,
-            thumbnail_path=thumb_path, publish_at=publish_at,
+            thumbnail_path=thumb_path, publish_at=effective_publish_at,
             privacy_status_override=effective_privacy,
         )
         manifest["youtube_video_id"] = video_id
         manifest["youtube_url"] = f"https://youtu.be/{video_id}"
         manifest["privacy_status"] = effective_privacy
+        manifest["publish_at"] = effective_publish_at
 
         growth_ledger.record_published(niche_key, format_name, video_id)
 

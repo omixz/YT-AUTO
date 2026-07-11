@@ -2,10 +2,14 @@ name: Publish automated YouTube video
 
 on:
   schedule:
-    # 3x/week - Monday/Wednesday/Friday at 15:00 UTC. Edit to taste - GitHub
-    # Actions cron has a minimum granularity of 5 minutes and schedules can
-    # lag under load. The (niche, format) bandit picks what to make each run.
-    - cron: "0 15 * * 1,3,5"
+    # Wednesday/Thursday at 13:00 UTC - the two strongest posting days for
+    # documentary/long-form content per YouTube posting-time research, with
+    # a build-time buffer (typically ~10-40min, occasionally more) before
+    # the actual scheduled go-live time pipeline.run() picks (12-3pm ET /
+    # 17:00 UTC - see scheduling.py). The build finishing early or late
+    # doesn't matter: publishAt decouples the two, so this trigger time just
+    # needs enough headroom before 17:00 UTC, not to land on it exactly.
+    - cron: "0 13 * * 3,4"
   workflow_dispatch:
     inputs:
       topic:
