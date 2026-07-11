@@ -1,0 +1,51 @@
+name: TEMP - generate voice samples
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  samples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install edge-tts
+        run: pip install edge-tts
+
+      - name: Generate samples
+        run: |
+          python3 -c "
+          import asyncio, edge_tts
+
+          line = 'Did you know this bridge was built so perfectly, it terrified the people who saw it?'
+          voices = [
+              ('AndrewNeural_M_Warm', 'en-US-AndrewNeural'),
+              ('BrianNeural_M_Approachable', 'en-US-BrianNeural'),
+              ('ChristopherNeural_M_Authority', 'en-US-ChristopherNeural'),
+              ('JennyNeural_F_Comfort', 'en-US-JennyNeural'),
+              ('AriaNeural_F_Confident', 'en-US-AriaNeural'),
+              ('EmmaNeural_F_Cheerful', 'en-US-EmmaNeural'),
+          ]
+
+          async def make(label, voice):
+              communicate = edge_tts.Communicate(line, voice)
+              with open(f'{label}.mp3', 'wb') as f:
+                  async for chunk in communicate.stream():
+                      if chunk['type'] == 'audio':
+                          f.write(chunk['data'])
+
+          async def main():
+              for label, voice in voices:
+                  await make(label, voice)
+                  print('done', label)
+
+          asyncio.run(main())
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-samples
+          path: "*.mp3"
+          retention-days: 1
