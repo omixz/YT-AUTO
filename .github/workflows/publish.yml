@@ -90,4 +90,10 @@ jobs:
           # that matches zero files, unlike a directory glob.
           [ -f config/published_videos.json ] && git add config/published_videos.json
           git diff --cached --quiet || git commit -m "chore: update topic queues + growth ledger after automated run"
+          # A long run (a big longform video can take a while to render/upload)
+          # can easily overlap with an unrelated push landing on main in the
+          # meantime, which would make a plain push fail as non-fast-forward
+          # and silently lose this run's topic-queue/ledger update. Rebase
+          # onto whatever's there now before pushing.
+          git pull --rebase origin main
           git push

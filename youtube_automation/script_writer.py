@@ -165,18 +165,20 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
     suggested_scenes = max(6, min(60, round(target_words / 25)))
     max_output_tokens = min(8000, max(2000, round(target_words * 4) + 500))
 
-    if config.video.format == "longform":
-        visual_keyword_guidance = (
-            "each scene visual_keywords as 2-4 concept words (e.g. 'mystery', 'data', 'clock', "
-            "'location', 'idea') - these pick a simple icon from a small library, not a stock-"
-            "footage search, so abstract themes are fine here, unlike for shorts"
-        )
-    else:
-        visual_keyword_guidance = (
-            "each scene visual_keywords that a stock-footage search engine could use to find "
-            f"matching {config.visuals.orientation}-orientation footage — concrete, filmable "
-            "nouns, not abstract ideas"
-        )
+    # Both formats composite onto real Pexels footage now (longform via
+    # animation.compose_scene, shorts directly) - abstract concept words used
+    # to be fine for longform back when it only drove icon selection, but
+    # fed into a real stock-footage search they return generic, unrelated
+    # clips (a tape measure for "stretching the limits", a random office for
+    # "poor health"). Concrete, filmable, topic-specific nouns work for both:
+    # animation.py's icon matching just falls back to a generic star icon
+    # when nothing matches, which costs far less than irrelevant footage.
+    visual_keyword_guidance = (
+        "each scene visual_keywords that a stock-footage search engine could use to find "
+        f"matching {config.visuals.orientation}-orientation footage that actually depicts this "
+        "scene's specific content (the subject, era, location, objects involved) - concrete, "
+        "filmable nouns tied to the topic, not abstract ideas or generic mood words"
+    )
 
     prompt = f"""You are writing a {config.video.format} YouTube video script for a faceless channel.
 This channel's videos need to read as a genuinely produced mini-documentary with a point of
