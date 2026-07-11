@@ -75,6 +75,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add config/topics/ config/topic_history/ config/published_videos.json
+          git add config/topics/ config/topic_history/
+          # published_videos.json only exists after a real (non-dry-run) upload
+          # actually records something - "git add" hard-errors on a pathspec
+          # that matches zero files, unlike a directory glob.
+          [ -f config/published_videos.json ] && git add config/published_videos.json
           git diff --cached --quiet || git commit -m "chore: update topic queues + growth ledger after automated run"
           git push

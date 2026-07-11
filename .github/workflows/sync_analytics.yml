@@ -39,6 +39,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add config/performance_stats.json config/published_videos.json
+          # Neither file exists until at least one real (non-dry-run) video
+          # has been published and matured - "git add" hard-errors on a
+          # pathspec that matches zero files, so only add what's there.
+          [ -f config/performance_stats.json ] && git add config/performance_stats.json
+          [ -f config/published_videos.json ] && git add config/published_videos.json
           git diff --cached --quiet || git commit -m "chore: sync YouTube analytics into growth bandit"
           git push
