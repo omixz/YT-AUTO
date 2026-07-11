@@ -44,8 +44,11 @@ jobs:
 
       - name: Run pipeline
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          # Right-hand side matches this repo's actual secret names
+          # (GEMINI_API / PEXELSAPI) - left-hand side stays GEMINI_API_KEY /
+          # PEXELS_API_KEY since that's what the Python code reads via os.getenv.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API }}
+          PEXELS_API_KEY: ${{ secrets.PEXELSAPI }}
         run: |
           ARGS=()
           if [ -n "${{ github.event.inputs.topic }}" ]; then
