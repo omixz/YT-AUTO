@@ -1,0 +1,58 @@
+name: TEMP - generate voice samples round 2
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  samples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install edge-tts
+        run: pip install edge-tts
+
+      - name: Generate samples
+        run: |
+          python3 -c "
+          import asyncio, edge_tts
+
+          line = 'Did you know this bridge was built so perfectly, it terrified the people who saw it?'
+          # The 'Multilingual' voices use a newer, more expressive neural model -
+          # noticeably less flat / robotic than the standard voices tried last round.
+          voices = [
+              ('AndrewMultilingual_M_Natural', 'en-US-AndrewMultilingualNeural'),
+              ('BrianMultilingual_M_Natural', 'en-US-BrianMultilingualNeural'),
+              ('AvaMultilingual_F_Natural', 'en-US-AvaMultilingualNeural'),
+              ('EmmaMultilingual_F_Natural', 'en-US-EmmaMultilingualNeural'),
+              ('Steffan_M_Deep', 'en-US-SteffanNeural'),
+              ('Eric_M_Authority', 'en-US-EricNeural'),
+              ('RyanUK_M_Natural', 'en-GB-RyanNeural'),
+              ('SoniaUK_F_Natural', 'en-GB-SoniaNeural'),
+          ]
+
+          async def make(label, voice):
+              communicate = edge_tts.Communicate(line, voice)
+              with open(f'{label}.mp3', 'wb') as f:
+                  async for chunk in communicate.stream():
+                      if chunk['type'] == 'audio':
+                          f.write(chunk['data'])
+
+          async def main():
+              for label, voice in voices:
+                  try:
+                      await make(label, voice)
+                      print('done', label)
+                  except Exception as e:
+                      print('FAILED', label, e)
+
+          asyncio.run(main())
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-samples-round2
+          path: "*.mp3"
+          retention-days: 1
