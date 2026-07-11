@@ -14,7 +14,7 @@ from __future__ import annotations
 import datetime as dt
 import logging
 
-from youtube_automation import analytics, growth_ledger
+from youtube_automation import analytics, growth_ledger, reporting
 from youtube_automation.config import PipelineConfig
 
 
@@ -44,6 +44,14 @@ def main() -> None:
             record["video_id"], record["niche"], record["format"], stats.score,
             stats.views, stats.estimated_minutes_watched, stats.subscribers_gained,
         )
+
+        # Post-mortem report: what worked, and how to get more views next
+        # time, broken down per traffic source - see reporting.py. A report
+        # failure shouldn't block scoring the remaining videos.
+        try:
+            reporting.generate_report(record, config, window_days=config.growth.maturity_days)
+        except Exception:
+            logger.exception("Report generation failed for %s - continuing.", record["video_id"])
 
 
 if __name__ == "__main__":

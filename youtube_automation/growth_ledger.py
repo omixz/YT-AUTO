@@ -29,13 +29,21 @@ def _save(path: Path, records: List[dict]) -> None:
     path.write_text(json.dumps(records, indent=2), encoding="utf-8")
 
 
-def record_published(niche_key: str, format_name: str, video_id: str) -> None:
+def record_published(
+    niche_key: str, format_name: str, video_id: str,
+    title: str = "", topic: str = "",
+) -> None:
+    # Title/topic are captured here because the analytics token's scopes
+    # can't read video metadata back from the Data API later - reporting.py
+    # needs them when it writes the post-mortem report at maturity.
     path = ROOT / LEDGER_PATH
     records = _load(path)
     records.append({
         "video_id": video_id,
         "niche": niche_key,
         "format": format_name,
+        "title": title,
+        "topic": topic,
         "published_at": dt.date.today().isoformat(),
         "scored": False,
     })

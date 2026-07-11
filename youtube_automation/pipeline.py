@@ -169,7 +169,9 @@ def run(
         manifest["privacy_status"] = effective_privacy
         manifest["publish_at"] = effective_publish_at
 
-        growth_ledger.record_published(niche_key, format_name, video_id)
+        growth_ledger.record_published(
+            niche_key, format_name, video_id, title=script.title, topic=topic,
+        )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

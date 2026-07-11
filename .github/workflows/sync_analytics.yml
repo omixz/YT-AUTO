@@ -44,6 +44,7 @@ jobs:
           # pathspec that matches zero files, so only add what's there.
           [ -f config/performance_stats.json ] && git add config/performance_stats.json
           [ -f config/published_videos.json ] && git add config/published_videos.json
+          [ -d reports ] && git add reports/
           git diff --cached --quiet || git commit -m "chore: sync YouTube analytics into growth bandit"
           git pull --rebase origin main
           git push
