@@ -19,10 +19,20 @@ THUMB_SIZE = (1280, 720)
 def _extract_frame(asset: VisualAsset, out_path: Path) -> Path:
     if asset.kind == "image":
         return asset.path
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", str(asset.path), "-ss", "00:00:00.5", "-frames:v", "1", str(out_path)],
-        check=True, capture_output=True,
-    )
+
+    if asset.kind == "prerendered":
+        # animation.py's own kinetic on-screen text fades in over the first
+        # 25% of a scene, so grabbing any later frame risks catching it
+        # half-visible and colliding with the thumbnail's own title text
+        # below. At frame 0 its alpha is exactly 0 - always clean, and
+        # (unlike real stock footage) there's no black-intro-frame risk
+        # since these are programmatically generated.
+        cmd = ["ffmpeg", "-y", "-i", str(asset.path), "-frames:v", "1", str(out_path)]
+    else:
+        # Real stock video: skip past a possible black/fade-in intro frame.
+        cmd = ["ffmpeg", "-y", "-i", str(asset.path), "-ss", "00:00:00.5", "-frames:v", "1", str(out_path)]
+
+    subprocess.run(cmd, check=True, capture_output=True)
     return out_path
 
 
