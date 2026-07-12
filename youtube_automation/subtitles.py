@@ -1,14 +1,104 @@
-"""Builds one SRT caption file for the whole video from per-scene word cues."""
+"""Builds burn-in captions for the whole video from per-scene word cues.
+
+Produces an ASS (Advanced SubStation Alpha) file with karaoke (\\k) timing
+tags rather than a plain SRT: libass reveals each word in the accent colour
+exactly as edge-tts's real word-boundary timestamps say it's spoken, so the
+caption highlights track the voiceover word-by-word instead of just fading
+a static line of text in and out.
+"""
 from __future__ import annotations
 
-from datetime import timedelta
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from .tts import SceneAudio
 
 WORDS_PER_CAPTION = 4
 
+# Bold white base text; the accent colour "fills in" each word as it's
+# spoken (ASS \k karaoke: SecondaryColour is the not-yet-spoken colour,
+# PrimaryColour is what it becomes once its timer elapses).
+FONT_NAME = "Outfit"
+BASE_COLOUR = "&H00FFFFFF"     # white (not yet spoken)
+HIGHLIGHT_COLOUR = "&H0046D4FE"  # warm gold-yellow (ASS is &HAABBGGRR -> this is #FED446)
+OUTLINE_COLOUR = "&H00000000"  # black outline
+
+
+def _ass_timestamp(seconds: float) -> str:
+    seconds = max(0.0, seconds)
+    total_cs = round(seconds * 100)
+    hours, rem = divmod(total_cs, 360_000)
+    minutes, rem = divmod(rem, 6_000)
+    secs, cs = divmod(rem, 100)
+    return f"{hours:d}:{minutes:02d}:{secs:02d}.{cs:02d}"
+
+
+def _escape(text: str) -> str:
+    return text.replace("\\", "").replace("{", "").replace("}", "")
+
+
+def build_ass(scenes: List[SceneAudio], out_path: Path, resolution: Tuple[int, int]) -> Path:
+    w, h = resolution
+    # Scales with resolution so shorts (portrait, narrower) and longform
+    # (landscape) both read comfortably; noticeably bigger than the old
+    # fixed FontSize=16.
+    font_size = round(h * 0.052)
+    margin_v = round(h * 0.09)
+
+    header = f"""[Script Info]
+ScriptType: v4.00+
+PlayResX: {w}
+PlayResY: {h}
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,{FONT_NAME},{font_size},{HIGHLIGHT_COLOUR},{BASE_COLOUR},{OUTLINE_COLOUR},&H00000000,1,0,0,0,100,100,0,0,1,3,0,2,60,60,{margin_v},1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+
+    lines = [header]
+    offset = 0.0
+    for scene in scenes:
+        cues = scene.cues
+        for i in range(0, len(cues), WORDS_PER_CAPTION):
+            group = cues[i : i + WORDS_PER_CAPTION]
+            if not group:
+                continue
+            start = offset + min(group[0].start, scene.duration)
+            end = offset + min(group[-1].end, scene.duration)
+            if end <= start:
+                continue
+
+            karaoke_text = ""
+            prev_end = group[0].start
+            for cue in group:
+                # Duration this word is "active" for, in centiseconds - clamp
+                # to >=1 so a zero-length cue (rare, but real TTS timing can
+                # be noisy) never produces a malformed \k0 tag.
+                gap = max(0, round((cue.start - prev_end) * 100))
+                dur = max(1, round((cue.end - cue.start) * 100))
+                if gap:
+                    karaoke_text += f"{{\\k{gap}}}"
+                # \kf (not \k): sweeps the highlight across the word over its
+                # own spoken duration, so the fill tracks *while* the word is
+                # being said rather than snapping to highlighted only once
+                # it's already finished.
+                karaoke_text += f"{{\\kf{dur}}}{_escape(cue.text)} "
+                prev_end = cue.end
+
+            lines.append(
+                f"Dialogue: 0,{_ass_timestamp(start)},{_ass_timestamp(end)},Default,,0,0,0,,{karaoke_text.strip()}"
+            )
+        offset += scene.duration
+
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+    return out_path
+
+
+# --- SRT (kept for anything that still wants plain, non-karaoke captions) --
 
 def _srt_timestamp(seconds: float) -> str:
     total_ms = int(max(0.0, seconds) * 1000)
@@ -29,8 +119,6 @@ def build_srt(scenes: List[SceneAudio], out_path: Path) -> Path:
             group = cues[i : i + WORDS_PER_CAPTION]
             if not group:
                 continue
-            # Clamp to this scene's real duration so a mistimed cue can never
-            # bleed a caption into the next scene (or the outro bumper).
             start = offset + min(group[0].start, scene.duration)
             end = offset + min(group[-1].end, scene.duration)
             text = " ".join(c.text for c in group)

@@ -24,7 +24,7 @@ from .visuals import VisualAsset
 
 logger = logging.getLogger(__name__)
 
-KEEP_FILES = {"final.mp4", "thumbnail.jpg", "captions.srt", "manifest.json"}
+KEEP_FILES = {"final.mp4", "thumbnail.jpg", "captions.ass", "manifest.json"}
 
 
 def _select_niche_and_format(config: PipelineConfig, format_override: Optional[str] = None) -> tuple:
@@ -106,7 +106,7 @@ def run(
     )
 
     logger.info("Building captions...")
-    srt_path = subtitles.build_srt(all_scene_audio, work_dir / "captions.srt")
+    ass_path = subtitles.build_ass(all_scene_audio, work_dir / "captions.ass", config.video.resolution)
 
     logger.info("Building ambient sound effects...")
     ambience_path = sound_effects.build_ambience_track(
@@ -123,7 +123,7 @@ def run(
         total_duration = sum(a.duration for a in all_scene_audio)
         music_path = music.build_music_bed(total_duration, work_dir)
     video_path = assembler.build_video(
-        all_visuals, all_scene_audio, narration_path, srt_path, config, work_dir,
+        all_visuals, all_scene_audio, narration_path, ass_path, config, work_dir,
         work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
     )
 

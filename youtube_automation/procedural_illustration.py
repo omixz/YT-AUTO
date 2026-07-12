@@ -261,13 +261,22 @@ def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, gro
         _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 100 * scale, hip_y - 10 * scale)], width=int(18 * scale) or 4)
 
     # head
-    draw.ellipse([cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r], fill=(245, 210, 175), outline=INK, width=int(9 * scale) or 4)
+    skin = (245, 210, 175)
+    draw.ellipse([cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r], fill=skin, outline=INK, width=int(9 * scale) or 4)
+    _highlight_ellipse(draw, cx - head_r * 0.32, head_cy - head_r * 0.38, head_r * 0.28, head_r * 0.2, skin)
+    brow_w = max(3, round(head_r * 0.05))
     if mood == "shocked":
         _x_eyes(draw, cx, head_cy, spacing=head_r * 0.35, r=head_r * 0.16)
         _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=False)
+        for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+            draw.line([(ex - head_r * 0.2, head_cy - head_r * 0.32), (ex + head_r * 0.2, head_cy - head_r * 0.42)],
+                      fill=INK, width=brow_w)
     else:
         _dot_eyes(draw, cx, head_cy, spacing=head_r * 0.35, r=head_r * 0.1)
         _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=True)
+        for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+            draw.arc([ex - head_r * 0.2, head_cy - head_r * 0.42, ex + head_r * 0.2, head_cy - head_r * 0.22],
+                      start=200, end=340, fill=INK, width=brow_w)
 
     if headwear and headwear in _HEADWEAR_DRAWERS:
         _HEADWEAR_DRAWERS[headwear](draw, cx, head_cy, head_r)
@@ -315,6 +324,15 @@ def _texture_rock(draw, rng, ground_y, w, h):
         draw.ellipse([x - r, y - r * 0.6, x + r, y + r * 0.6], outline=(120, 115, 110), width=3)
 
 
+def _draw_cloud(draw, rng, cx, cy, scale):
+    color = (235, 238, 242)
+    r = 46 * scale
+    for dx, dy, rr in ((-1.1, 0.15, 0.85), (-0.4, -0.2, 1.0), (0.4, 0.0, 0.95), (1.1, 0.2, 0.75)):
+        rad = r * rr
+        draw.ellipse([cx + dx * r * 1.3 - rad, cy + dy * r - rad,
+                      cx + dx * r * 1.3 + rad, cy + dy * r + rad], fill=color, outline=INK, width=max(3, round(3 * scale)))
+
+
 _GROUND_TEXTURES = {
     "snow": _texture_snow,
     "forest": _texture_grass,
@@ -340,40 +358,46 @@ def _outlined_blob(draw, points, fill, line_w):
     draw.line(list(points) + [points[0]], fill=INK, width=line_w, joint="curve")
 
 
-def _draw_octopus(draw, rng, cx, cy, scale):
+def _lighten(color, amount=0.35):
+    return tuple(round(c + (255 - c) * amount) for c in color)
+
+
+def _highlight_ellipse(draw, cx, cy, rx, ry, base_color):
+    """A soft flat highlight patch (lighter flat ellipse, no gradient) for a
+    touch of dimensionality while staying in the flat-vector style - the
+    same trick a lot of flat-icon sets use instead of real shading."""
+    draw.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=_lighten(base_color))
+
+
+def _draw_octopus(draw, rng, cx, cy, scale, phase=0.0):
     body = (196, 84, 108)
     r = 150 * scale
     lw = int(8 * scale) or 4
     base_y = cy + r * 0.28
 
-    # Eight tentacles fanning out below the mantle, drawn as an INK-outlined
-    # stroke (thick dark line under a slightly thinner body-colour line) so
-    # they read as solid limbs with an outline rather than flat sticks.
+    # Eight tentacles fanning below the mantle. `phase` (radians) modulates
+    # each tentacle's sway independently so an animation loop over several
+    # phase values reads as the tentacles drifting, not just the whole
+    # creature translating - see generate_scene_clip's aquatic sprite loop.
     n = 8
-    for i in range(n):
-        spread = (i / (n - 1) - 0.5) * 2  # -1 .. 1
-        sx = cx + spread * r * 0.62
-        mx = cx + spread * r * 1.35
-        ex = cx + spread * r * 1.75
-        wob = (1 if i % 2 == 0 else -1) * 22 * scale
-        pts = [(sx, base_y), (mx, base_y + 120 * scale),
-               (ex + wob, base_y + 210 * scale)]
-        draw.line(pts, fill=INK, width=int(40 * scale) or 6, joint="curve")
-    for i in range(n):
-        spread = (i / (n - 1) - 0.5) * 2
-        sx = cx + spread * r * 0.62
-        mx = cx + spread * r * 1.35
-        ex = cx + spread * r * 1.75
-        wob = (1 if i % 2 == 0 else -1) * 22 * scale
-        pts = [(sx, base_y), (mx, base_y + 120 * scale),
-               (ex + wob, base_y + 210 * scale)]
-        draw.line(pts, fill=body, width=int(28 * scale) or 4, joint="curve")
-        tip = pts[-1]
-        draw.ellipse([tip[0] - 16 * scale, tip[1] - 16 * scale,
-                      tip[0] + 16 * scale, tip[1] + 16 * scale], fill=body, outline=INK, width=lw)
+    for pass_fill, pass_width in ((INK, int(40 * scale) or 6), (body, int(28 * scale) or 4)):
+        for i in range(n):
+            spread = (i / (n - 1) - 0.5) * 2  # -1 .. 1
+            sx = cx + spread * r * 0.62
+            mx = cx + spread * r * 1.35
+            wob = math.sin(phase * 1.6 + i * 0.85) * 26 * scale
+            ex = cx + spread * r * 1.75
+            pts = [(sx, base_y), (mx + wob * 0.5, base_y + 120 * scale),
+                   (ex + wob, base_y + 210 * scale)]
+            draw.line(pts, fill=pass_fill, width=pass_width, joint="curve")
+            if pass_fill == body:
+                tip = pts[-1]
+                draw.ellipse([tip[0] - 16 * scale, tip[1] - 16 * scale,
+                              tip[0] + 16 * scale, tip[1] + 16 * scale], fill=body, outline=INK, width=lw)
 
     # Mantle (bulbous head), drawn over the tentacle roots.
     draw.ellipse([cx - r, cy - r * 1.25, cx + r, cy + r * 0.55], fill=body, outline=INK, width=lw)
+    _highlight_ellipse(draw, cx - r * 0.32, cy - r * 0.85, r * 0.32, r * 0.22, body)
 
     # Eyes: white with a big pupil, the flat cartoon look.
     eye_r = r * 0.3
@@ -385,16 +409,18 @@ def _draw_octopus(draw, rng, cx, cy, scale):
         draw.ellipse([ex - pr, pcy - pr, ex + pr, pcy + pr], fill=INK)
 
 
-def _draw_fish(draw, rng, cx, cy, scale):
+def _draw_fish(draw, rng, cx, cy, scale, phase=0.0):
     body = (235, 150, 60)
     r = 130 * scale
     lw = int(8 * scale) or 4
+    tail_wag = math.sin(phase * 2.2) * 14 * scale
     # tail
-    _outlined_blob(draw, [(cx - r * 1.05, cy), (cx - r * 1.7, cy - r * 0.6),
-                          (cx - r * 1.7, cy + r * 0.6)], body, lw)
+    _outlined_blob(draw, [(cx - r * 1.05, cy), (cx - r * 1.7, cy - r * 0.6 + tail_wag),
+                          (cx - r * 1.7, cy + r * 0.6 + tail_wag)], body, lw)
     # body
     draw.ellipse([cx - r * 1.1, cy - r * 0.72, cx + r * 1.1, cy + r * 0.72],
                  fill=body, outline=INK, width=lw)
+    _highlight_ellipse(draw, cx + r * 0.1, cy - r * 0.34, r * 0.35, r * 0.18, body)
     # top fin
     _outlined_blob(draw, [(cx - r * 0.3, cy - r * 0.7), (cx + r * 0.2, cy - r * 1.15),
                           (cx + r * 0.45, cy - r * 0.65)], body, lw)
@@ -446,7 +472,19 @@ def _draw_searock(draw, rng, base_x, floor_y, scale):
     _outlined_blob(draw, pts, (120, 120, 130), int(6 * scale) or 4)
 
 
-_SEABED_PROPS = [_draw_seaweed, _draw_seaweed, _draw_coral, _draw_searock]
+def _draw_starfish(draw, rng, base_x, floor_y, scale):
+    color = (230, 150, 60)
+    r = rng.uniform(30, 48) * scale
+    cy = floor_y - r * 0.5
+    pts = []
+    for i in range(10):
+        ang = math.pi / 2 + i * math.pi / 5
+        rad = r if i % 2 == 0 else r * 0.42
+        pts.append((base_x + rad * math.cos(ang), cy - rad * math.sin(ang)))
+    _outlined_blob(draw, pts, color, int(5 * scale) or 3)
+
+
+_SEABED_PROPS = [_draw_seaweed, _draw_seaweed, _draw_coral, _draw_searock, _draw_starfish]
 
 _KEYWORD_TO_SUBJECT = [
     (("octopus", "cephalopod", "tentacle", "mollusk", "kraken", "squid", "cuttlefish"), "octopus"),
@@ -479,21 +517,35 @@ def _dominant_subject(scenes: List[Scene], extra_text: str = "") -> Optional[str
 # --- scene composition -----------------------------------------------------
 
 def _draw_water_scene(draw, rng, w, h):
-    """Fills the lower half of the frame with water (wavy surface + bubbles)
-    and returns the surface y, so an aquatic subject can be placed below it."""
-    surface_y = round(h * 0.24)
-    draw.rectangle([0, surface_y, w, h], fill=(64, 132, 176))
+    """Water covers the entire frame (no white sky strip) - a lighter-to-
+    darker vertical gradient reads as depth, with a bright ripple band near
+    the very top standing in for the surface instead of a hard boundary to
+    white. Returns a nominal surface_y (used to bias where the subject and
+    static bubbles are placed - still "near the top" - even though water
+    now fills the whole canvas)."""
+    top_color = (118, 184, 212)
+    bottom_color = (26, 64, 102)
+    step = 4
+    for y in range(0, h, step):
+        t = y / h
+        r = round(top_color[0] + (bottom_color[0] - top_color[0]) * t)
+        g = round(top_color[1] + (bottom_color[1] - top_color[1]) * t)
+        b = round(top_color[2] + (bottom_color[2] - top_color[2]) * t)
+        draw.rectangle([0, y, w, y + step], fill=(r, g, b))
+
+    surface_y = round(h * 0.06)
     crest = []
     x = 0
     while x <= w:
-        crest.append((x, surface_y + (15 if (x // 44) % 2 == 0 else -15)))
+        crest.append((x, surface_y + (10 if (x // 44) % 2 == 0 else -10)))
         x += 44
-    draw.line(crest, fill=(200, 230, 242), width=6, joint="curve")
-    for _ in range(round(w / 90)):
+    draw.line(crest, fill=(210, 236, 246), width=5, joint="curve")
+
+    for _ in range(round(w / 70)):
         bx = rng.uniform(0, w)
-        by = rng.uniform(surface_y + 40, h - 30)
-        br = rng.uniform(6, 18)
-        draw.ellipse([bx - br, by - br, bx + br, by + br], outline=(190, 224, 238), width=3)
+        by = rng.uniform(surface_y + 20, h - 20)
+        br = rng.uniform(5, 16)
+        draw.ellipse([bx - br, by - br, bx + br, by + br], outline=(200, 230, 242), width=3)
     return surface_y
 
 
@@ -528,14 +580,23 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
         subj_cy = surface_y + (h - surface_y) * rng.uniform(0.34, 0.5)
         drawer = _SUBJECT_DRAWERS[subject]
 
-        def paint(d):
-            drawer(d, rng, subj_cx, subj_cy, subj_scale)
+        def paint(d, phase=0.0):
+            drawer(d, rng, subj_cx, subj_cy, subj_scale, phase)
 
         motion = (26 * base_scale, 30 * base_scale, 7.0, 3.7)
         return base, paint, motion
 
     setting = _setting_for_scene(scene)
     ground_y = round(h * 0.82)
+
+    # A couple of flat clouds in the sky band above the ground - otherwise
+    # that whole upper region is empty white, which reads as unfinished.
+    if setting != "indoor":
+        for _ in range(rng.randint(1, 2)):
+            cx = w * rng.uniform(0.08, 0.92)
+            cy = h * rng.uniform(0.10, 0.34)
+            _draw_cloud(draw, rng, cx, cy, base_scale * rng.uniform(0.8, 1.2))
+
     draw.rectangle([0, ground_y, w, h], fill=GROUND_COLORS.get(setting, GROUND_COLORS["default"]))
     draw.line([(0, ground_y), (w, ground_y)], fill=INK, width=3)
     texture = _GROUND_TEXTURES.get(setting)
@@ -559,15 +620,15 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
     if subject in _SUBJECT_DRAWERS:
         sd = _SUBJECT_DRAWERS[subject]
 
-        def paint(d):
-            sd(d, rng, w * 0.5, ground_y - 180 * element_scale, element_scale)
+        def paint(d, phase=0.0):
+            sd(d, rng, w * 0.5, ground_y - 180 * element_scale, element_scale, phase)
     else:
         outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
         headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
         mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
         pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
 
-        def paint(d):
+        def paint(d, phase=0.0):
             draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose)
 
     motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
@@ -587,6 +648,60 @@ def generate_scene_image(
     return out_path
 
 
+# --- aquatic sprite loop: tentacle-sway + rising bubbles -------------------
+# A single static overlay PNG only lets the whole creature drift as a rigid
+# body. To get real tentacle-sway and bubbles rising independently, aquatic
+# subjects instead get a short (2s) looping alpha-video sprite - a handful
+# of Pillow-rendered frames encoded to VP9/yuva420p - which is then looped
+# for the whole scene duration via ffmpeg, same overlay mechanism as before.
+
+_LOOP_SECONDS = 2.0
+_LOOP_FPS = 8
+_LOOP_FRAMES = int(_LOOP_SECONDS * _LOOP_FPS)
+
+
+def _rising_bubbles(rng: random.Random, w: int, h: int, n: int = 9) -> list:
+    return [
+        {
+            "x": rng.uniform(w * 0.08, w * 0.92),
+            "y0": rng.uniform(0, h),
+            "speed": rng.uniform(35, 85),  # px/sec
+            "r": rng.uniform(4, 11),
+        }
+        for _ in range(n)
+    ]
+
+
+def _draw_bubbles(draw: ImageDraw.ImageDraw, bubbles: list, t: float, h: int) -> None:
+    for b in bubbles:
+        y = (b["y0"] - b["speed"] * t) % h
+        r = b["r"]
+        draw.ellipse([b["x"] - r, y - r, b["x"] + r, y + r], outline=(215, 238, 248), width=3)
+
+
+def _build_aquatic_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int) -> Path:
+    """Writes the looping RGBA frame sequence to disk and returns its
+    printf-style pattern path. Fed straight into ffmpeg's image2 demuxer
+    (with -stream_loop) rather than pre-encoded to a video, since VP9's
+    alpha channel is lossy through some libvpx builds (alt-ref frames can
+    silently drop it, rendering the "transparent" areas as opaque black) -
+    a raw PNG sequence has no such risk and every ffmpeg build reads it."""
+    frame_dir = work_dir / f"scene_{index:02d}_frames"
+    frame_dir.mkdir(exist_ok=True)
+    bubbles = _rising_bubbles(rng, w, h)
+
+    for i in range(_LOOP_FRAMES):
+        t = i / _LOOP_FPS
+        phase = 2 * math.pi * i / _LOOP_FRAMES
+        frame = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        d = ImageDraw.Draw(frame)
+        _draw_bubbles(d, bubbles, t, h)
+        paint(d, phase)
+        frame.save(frame_dir / f"f_{i:03d}.png")
+
+    return frame_dir / "f_%03d.png"
+
+
 def generate_scene_clip(
     scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
     duration: float, subject_fallback: Optional[str] = None,
@@ -594,7 +709,12 @@ def generate_scene_clip(
     """Renders an animated MP4 for one scene: the static background with the
     subject drawn on its own layer and drifted over time via an ffmpeg overlay
     with time-varying position, so the figure floats/bobs instead of sitting
-    still. Cheap - one encode per scene, no per-frame Pillow rendering."""
+    still. Aquatic subjects additionally get a short looping alpha-video
+    sprite (tentacle-sway/fin-wiggle + rising bubbles - see
+    _build_aquatic_sprite_loop) instead of a single static PNG, so the
+    creature itself has motion, not just its position. Cheap either way -
+    a handful of small frames or one encode, no per-frame full-scene
+    rendering."""
     rng = random.Random(index)
     w, h = config.video.resolution
     subject = _subject_for_scene(scene) or subject_fallback
@@ -603,10 +723,15 @@ def generate_scene_clip(
     bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
     base.save(bg_path, quality=90)
 
-    sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    paint(ImageDraw.Draw(sprite))
-    sprite_path = work_dir / f"scene_{index:02d}_sprite.png"
-    sprite.save(sprite_path)
+    if subject in _AQUATIC_SUBJECTS:
+        frame_pattern = _build_aquatic_sprite_frames(rng, paint, w, h, work_dir, index)
+        sprite_input = ["-framerate", str(_LOOP_FPS), "-stream_loop", "-1", "-i", str(frame_pattern)]
+    else:
+        sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        paint(ImageDraw.Draw(sprite))
+        sprite_path = work_dir / f"scene_{index:02d}_sprite.png"
+        sprite.save(sprite_path)
+        sprite_input = ["-loop", "1", "-i", str(sprite_path)]
 
     x_expr = f"{ax:.1f}*sin(2*PI*t/{px})" if ax and px else "0"
     y_expr = f"{ay:.1f}*sin(2*PI*t/{py})" if ay and py else "0"
@@ -614,7 +739,7 @@ def generate_scene_clip(
     cmd = [
         "ffmpeg", "-y",
         "-loop", "1", "-i", str(bg_path),
-        "-loop", "1", "-i", str(sprite_path),
+        *sprite_input,
         "-filter_complex",
         f"[0:v]fps={config.video.fps}[bg];[bg][1:v]overlay=x={x_expr}:y={y_expr}:eval=frame[v]",
         "-map", "[v]", "-t", f"{duration:.3f}",

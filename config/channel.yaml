@@ -1,7 +1,7 @@
 channel:
   name: "My Faceless Channel"
   audience: "curious adults who scroll shorts and watch longform"   # default; a niche below can override this
-  tone: "punchy, upbeat, slightly dramatic, no filler"               # default; a niche below can override this
+  tone: "dramatic, high-stakes, suspenseful, no filler"              # default; a niche below can override this
   language: "en"
   subscribe_cta: "for more {niche} every week"   # {niche} filled in from whichever niche was picked; shown on the outro card
 
@@ -12,15 +12,21 @@ channel:
 # gets its own topic queue/history under config/topics/<key>.* and
 # config/topic_history/<key>.json.
 niches:
-  - key: science_history
-    niche: "bite-sized science and history facts"
-    weight: 1.0
   - key: unsolved_mysteries
     niche: "unsolved mysteries and cold cases"
+    tone: "dramatic, suspenseful, high-stakes"
     weight: 1.4   # mystery/true-crime content retains materially better than general facts
                   # content on YouTube (real-world retention data puts it well above the
                   # platform average) - nudges the cold-start prior while data accumulates;
                   # the bandit will correct this automatically once real analytics kick in
+  - key: dark_history
+    niche: "history's darkest, strangest, and most shocking moments"
+    tone: "dramatic, high-stakes, told like a mini-documentary"
+    weight: 1.2
+  - key: wild_facts
+    niche: "wild, surprising 'did you know' facts about science, nature, and the world"
+    tone: "dramatic curiosity-gap hooks, punchy, surprising"
+    weight: 1.0
 
 video:
   fps: 30
@@ -31,16 +37,15 @@ video:
   resolution_longform: [1920, 1080]
   formats:
     shorts:
-      enabled: true
-      target_seconds: 60        # deeper scripts read as produced content, not a bare fact-list
-      weight: 0.7                # prior probability before performance data kicks in
+      enabled: false            # longform only, per explicit direction - re-enable by flipping this
+      target_seconds: 60
+      weight: 0.0
     longform:
       enabled: true
-      target_seconds: 300        # ~5 min (~19 scenes) - conservative on purpose: the whole script is one
-                                  # LLM call, and pushing scene count much higher risks losing coherence or
-                                  # blowing past output limits. Raise this once you've reviewed a few runs.
-                                  # Visuals come from animation.py (stick-figure/motion-graphics), not stock footage.
-      weight: 0.3
+      target_seconds: 420        # ~7 min (~25-30 scenes) - within Gemini's single-call output budget
+                                  # (see script_writer.py's max_output_tokens formula); raise further only
+                                  # after confirming a run at this length still holds together end to end.
+      weight: 1.0
 
 voice:
   provider: edge-tts

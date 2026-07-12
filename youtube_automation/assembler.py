@@ -104,14 +104,14 @@ def build_video(
 
     burned = work_dir / "video_captioned.mp4"
     if subtitles_path.exists() and subtitles_path.stat().st_size > 0:
-        # Fontname=Outfit + fontsdir: without an explicit font, libass falls
-        # back to whatever generic default the runner has installed, which
-        # reads as dated - use the same modern bundled font as the
-        # thumbnail/branding text (see fonts.py) for burned-in captions too.
-        subs_style = "Fontname=Outfit,Bold=1,FontSize=16,Alignment=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,MarginV=80"
+        # subtitles_path is an .ass file (subtitles.build_ass) - it carries
+        # its own Style block (font, size, karaoke highlight colours), so no
+        # force_style override is needed here, just fontsdir so libass can
+        # resolve the bundled "Outfit" family instead of falling back to
+        # whatever generic default font the runner has installed.
         run_ffmpeg([
             "ffmpeg", "-y", "-i", str(video_concat),
-            "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:force_style='{subs_style}':fontsdir={_escape_for_filter(ASSETS_DIR)}",
+            "-vf", f"subtitles={_escape_for_filter(subtitles_path)}:fontsdir={_escape_for_filter(ASSETS_DIR)}",
             # This is the last video encode before the final mux (which copies
             # the video stream unchanged), so it's worth a slower/better preset
             # than the per-scene intermediate passes above.
@@ -119,7 +119,8 @@ def build_video(
         ])
     else:
         # No cues to burn in (e.g. a scene with no word-boundary data) - an
-        # empty SRT makes ffmpeg's subtitles filter fail outright, so skip it.
+        # empty subtitle file makes ffmpeg's subtitles filter fail outright,
+        # so skip it.
         burned = video_concat
 
     # Layer narration with any of the optional background audio beds - music

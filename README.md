@@ -1,8 +1,8 @@
 # YouTube Automation — Faceless Channel Pipeline
 
-Generates videos end to end and uploads them to YouTube — multiple niches, both Shorts and
-longform, on one channel, with a feedback loop that shifts future output toward whatever's
-actually performing:
+Generates videos end to end and uploads them to YouTube — multiple niches, longform only right
+now (`shorts` is built but disabled in `config/channel.yaml`), with a feedback loop that shifts
+future output toward whatever's actually performing:
 
 1. **Selection** — `niche_selector.py` picks which niche and format (`shorts` or `longform`) to
    make this run, weighted by real YouTube Analytics performance once enough data exists (an
@@ -18,11 +18,14 @@ actually performing:
 5. **Narration** — synthesized with Microsoft Edge's free neural voices (`edge-tts`), with
    word-level timing.
 6. **Visuals** — **shorts** use stock video/photos fetched from Pexels per scene's visual
-   keywords; **longform** uses that same real Pexels footage as the backdrop, with a white
-   stick-figure/icon/kinetic-typography overlay (`animation.py`) composited on top via ffmpeg
-   colorkey - drawn with Pillow, no image-gen API required. The figure also wears a topic-relevant
-   prop (a helmet for war/military topics, a crown for royalty/medieval, a hat for detective/noir)
-   so it isn't just a generic silhouette.
+   keywords. **longform** draws every scene itself with Pillow (`procedural_illustration.py`) in a
+   flat-vector-clipart style - solid colors, thick outlines, no shading, zero image-gen API cost -
+   and shows whatever the scene is actually about: a human character (with a topic-relevant prop -
+   a helmet, crown, or hat) for people-driven topics, or the real subject itself (currently an
+   octopus/fish, matched by keyword) in a proper underwater scene for marine topics, rather than a
+   generic mascot standing near unrelated scenery. Each scene is a short animated clip, not a
+   still - the focal subject drifts/bobs (and aquatic subjects additionally get tentacle-sway/fin-
+   wiggle and rising bubbles) over the static background via an ffmpeg overlay.
 7. **Branding** — a consistent intro card (channel name) and outro card (subscribe CTA) get
    stitched onto every video (`branding.py`), sharing the same bundled font and color palette as
    the longform renderer.
@@ -77,7 +80,7 @@ Edit `config/channel.yaml`:
 
 - `niches:` — one channel, multiple niches; add/remove freely. Each gets its own topic queue at `config/topics/<key>.yaml` (seed it, or leave `topics: []` to let Gemini brainstorm) and history at `config/topic_history/<key>.json`.
 - `video.formats:` — per-format `target_seconds` and a `weight` prior (used before the growth bandit has enough data to trust real performance).
-- `animation:` — longform's stick-figure/icon accent color (composited over real footage) and fps.
+- `animation:` — legacy settings for the old real-footage overlay renderer (`animation.py`), unused by the current procedural illustration path; kept for reference only.
 - `growth:` — bandit tuning (`epsilon`, `min_samples_for_trust`, `maturity_days`).
 
 ## Running it
@@ -96,13 +99,13 @@ python run_pipeline.py --publish-at 2026-07-15T15:00:00Z
 python sync_analytics.py
 ```
 
-Output for each run lands in `output/<timestamp>/`: `final.mp4`, `thumbnail.jpg`, `captions.srt`, `manifest.json` (includes which niche/format got picked and whether it passed the quality gate).
+Output for each run lands in `output/<timestamp>/`: `final.mp4`, `thumbnail.jpg`, `captions.ass` (karaoke-style word-highlight captions), `manifest.json` (includes which niche/format got picked and whether it passed the quality gate).
 
 ## Automating it (GitHub Actions)
 
 Two workflows:
 
-- **`.github/workflows/publish.yml`** — makes and uploads a video, 3x/week by default, or on demand via `workflow_dispatch`.
+- **`.github/workflows/publish.yml`** — makes and uploads a video daily by default, or on demand via `workflow_dispatch` (accepts `topic`, `format`, `dry_run`, `publish_at`, and `publish_now` inputs).
 - **`.github/workflows/sync_analytics.yml`** — daily; rolls matured videos' real performance into the growth bandit.
 
 Repo secrets both need:
@@ -199,14 +202,18 @@ youtube_automation/
   quality_check.py                pre-upload heuristic gate (word/scene count, structure)
   topic_store.py                   per-niche queue/history management
   tts.py                            edge-tts narration + word timing
-  subtitles.py                       SRT caption generation
-  visuals.py                          Pexels stock footage/photo search (shorts + longform backdrop)
-  animation.py                         stick-figure/icon overlay composited onto real footage (longform)
+  subtitles.py                       karaoke-style (.ass, word-highlight) caption generation
+  visuals.py                          Pexels stock footage/photo search (shorts only)
+  procedural_illustration.py           Pillow-drawn flat-vector scenes + animated subject overlay (longform)
+  illustration.py                       legacy AI-image-gen visuals (Pollinations), unused - kept for reference
+  animation.py                          legacy stick-figure/real-footage overlay, unused - kept for reference
+  music.py                               procedurally synthesized ambient background-music bed
   branding.py                           intro/outro channel-identity cards
   fonts.py                               shared font lookup (bundled Outfit + system fallback)
   sound_effects.py                        procedurally synthesized scene-matched ambience
   assembler.py                            ffmpeg scene assembly + captions + audio mix
   thumbnail.py                             Pillow thumbnail generation
+  reporting.py                              per-video performance reports (reports/*.md)
   youtube_auth.py                           shared OAuth credential loading
   youtube_uploader.py                        resumable video upload
   analytics.py                                YouTube Analytics API queries
