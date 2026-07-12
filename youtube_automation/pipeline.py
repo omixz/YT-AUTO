@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    assembler, branding, growth_ledger, niche_selector, procedural_illustration,
+    assembler, branding, growth_ledger, music, niche_selector, procedural_illustration,
     quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
@@ -113,7 +113,14 @@ def run(
     )
 
     logger.info("Assembling final video...")
-    music_path = Path(config.video.background_music) if config.video.background_music else None
+    # Use a configured music file if one is set, otherwise synthesize an
+    # ambient bed sized to the whole video (see music.py) - every video gets
+    # background music without needing an external, copyrighted track.
+    if config.video.background_music:
+        music_path = Path(config.video.background_music)
+    else:
+        total_duration = sum(a.duration for a in all_scene_audio)
+        music_path = music.build_music_bed(total_duration, work_dir)
     video_path = assembler.build_video(
         all_visuals, all_scene_audio, narration_path, srt_path, config, work_dir,
         work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
