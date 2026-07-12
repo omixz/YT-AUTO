@@ -148,6 +148,16 @@ def _synth_farm(duration: float) -> np.ndarray:
     return _synth_wind(duration) * 0.5 + _synth_birds(duration)
 
 
+def _synth_air(duration: float) -> np.ndarray:
+    """A neutral, barely-there room-tone/air bed. Used as the default when a
+    scene matches no specific atmosphere, so every video still has a quiet
+    ambient layer rather than dead silence under the narration."""
+    noise = _lowpass(_white_noise(duration), 400)
+    t = np.linspace(0, duration, len(noise))
+    drift = 0.7 + 0.3 * np.sin(2 * np.pi * 0.05 * t)
+    return noise * drift * 0.18
+
+
 _SFX_SYNTH: Dict[str, Callable[[float], np.ndarray]] = {
     "rain": _synth_rain,
     "thunder": _synth_thunder,
@@ -158,6 +168,7 @@ _SFX_SYNTH: Dict[str, Callable[[float], np.ndarray]] = {
     "farm": _synth_farm,
     "birds": _synth_birds,
     "battle": _synth_battle,
+    "air": _synth_air,
 }
 
 _KEYWORD_TO_SFX: List[Tuple[Tuple[str, ...], str]] = [
@@ -200,26 +211,26 @@ def build_ambience_track(
     work_dir: Path,
 ) -> Optional[Path]:
     """Builds one ambience track spanning the whole video (intro + content +
-    outro), with each matched content scene's synthesized SFX pasted in at
-    that scene's actual time offset. Returns None if nothing matched, so
-    callers can skip mixing entirely rather than adding a silent layer."""
+    outro): each content scene gets either its keyword-matched SFX or the
+    neutral air bed, so the track is always present - every video has an
+    ambient layer, never dead silence under the narration."""
     total_duration = intro_duration + sum(a.duration for a in content_scene_audio) + outro_duration
     track = np.zeros(max(1, int(total_duration * SAMPLE_RATE)))
     matched_any = False
 
     offset = intro_duration
     for scene, audio in zip(scenes, content_scene_audio):
+        # A scene with no specific atmosphere still gets the neutral air bed,
+        # so every video has an ambient layer (guaranteed, never silent) -
+        # matched scenes just layer their specific SFX on top of that.
         name = sfx_for_scene(scene)
         if name:
             matched_any = True
-            samples = _fade(_SFX_SYNTH[name](audio.duration))
-            start = int(offset * SAMPLE_RATE)
-            end = min(len(track), start + len(samples))
-            track[start:end] += samples[: end - start]
+        samples = _fade(_SFX_SYNTH[name or "air"](audio.duration))
+        start = int(offset * SAMPLE_RATE)
+        end = min(len(track), start + len(samples))
+        track[start:end] += samples[: end - start]
         offset += audio.duration
-
-    if not matched_any:
-        return None
 
     out_path = work_dir / "ambience.wav"
     _write_wav(track, out_path)
