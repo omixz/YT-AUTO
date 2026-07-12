@@ -34,6 +34,10 @@ on:
         required: false
         default: "false"
         type: boolean
+      unschedule_video_id:
+        description: "Admin: set this video ID to private (pulls back a scheduled/public video) and skip the normal pipeline run entirely"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -59,7 +63,12 @@ jobs:
           echo "${{ secrets.YOUTUBE_CLIENT_SECRET_B64 }}" | base64 -d > client_secret.json
           echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > token.json
 
+      - name: Unschedule video (admin)
+        if: ${{ github.event.inputs.unschedule_video_id != '' }}
+        run: python publish_now.py "${{ github.event.inputs.unschedule_video_id }}" --private
+
       - name: Run pipeline
+        if: ${{ github.event.inputs.unschedule_video_id == '' }}
         env:
           # Right-hand side matches this repo's actual secret names
           # (GEMINI_API / PEXELSAPI) - left-hand side stays GEMINI_API_KEY /

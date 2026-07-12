@@ -81,12 +81,13 @@ def upload_video(
     return video_id
 
 
-def set_video_public(video_id: str, config: PipelineConfig) -> str:
-    """Immediately publishes a video that was uploaded as private/scheduled.
+def set_video_privacy(video_id: str, privacy_status: str, config: PipelineConfig) -> str:
+    """Sets a video's privacyStatus directly (e.g. "public" to release a
+    scheduled video immediately, or "private" to unschedule/pull one back).
 
     videos.update with part='status' replaces the whole status object, so
-    omitting publishAt here clears any pending scheduled release - the video
-    goes public right now. Returns the resulting privacyStatus.
+    omitting publishAt here always clears any pending scheduled release.
+    Returns the resulting privacyStatus.
     """
     creds = get_credentials(config)
     youtube = build(API_SERVICE_NAME, API_VERSION, credentials=creds)
@@ -95,7 +96,7 @@ def set_video_public(video_id: str, config: PipelineConfig) -> str:
         body={
             "id": video_id,
             "status": {
-                "privacyStatus": "public",
+                "privacyStatus": privacy_status,
                 "selfDeclaredMadeForKids": config.upload.made_for_kids,
             },
         },
