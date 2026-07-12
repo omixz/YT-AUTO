@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import math
 import random
+import subprocess
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -496,29 +497,27 @@ def _draw_water_scene(draw, rng, w, h):
     return surface_y
 
 
-def generate_scene_image(
-    scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
-    subject_fallback: Optional[str] = None,
-) -> Path:
-    rng = random.Random(index)
-    w, h = config.video.resolution
-    img = Image.new("RGB", (w, h), SKY)
-    draw = ImageDraw.Draw(img)
+def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[str]):
+    """Draws the background (everything except the focal subject) onto a fresh
+    image and returns (background, paint_subject, motion).
 
-    subject = _subject_for_scene(scene) or subject_fallback
+    - paint_subject(draw) renders the subject onto any draw context, so the
+      same composition can be flattened into a still or drawn onto its own
+      transparent layer for animation.
+    - motion is (amp_x, amp_y, period_x, period_y): how the subject drifts,
+      used by the animator. Aquatic subjects float in two axes; land subjects
+      bob gently in place.
+    """
+    w, h = config.video.resolution
+    base = Image.new("RGB", (w, h), SKY)
+    draw = ImageDraw.Draw(base)
+    base_scale = h / 1080
 
     if subject in _AQUATIC_SUBJECTS:
-        # Underwater scene: water fills the lower frame, a seabed with a few
-        # varied props runs along the bottom, and the subject is placed at a
-        # per-scene position/size so consecutive scenes don't look identical.
         surface_y = _draw_water_scene(draw, rng, w, h)
-        base_scale = h / 1080
-
         floor_y = h - round(40 * base_scale)
         draw.rectangle([0, floor_y, w, h], fill=(196, 178, 140))
         draw.line([(0, floor_y), (w, floor_y)], fill=INK, width=3)
-        # 2-4 seabed props at spread-out x positions (skip the middle third so
-        # they don't collide with the subject).
         n_props = rng.randint(2, 4)
         for _ in range(n_props):
             side = rng.choice([rng.uniform(0.04, 0.30), rng.uniform(0.70, 0.96)])
@@ -527,10 +526,13 @@ def generate_scene_image(
         subj_scale = base_scale * rng.uniform(1.0, 1.3)
         subj_cx = w * rng.uniform(0.34, 0.66)
         subj_cy = surface_y + (h - surface_y) * rng.uniform(0.34, 0.5)
-        _SUBJECT_DRAWERS[subject](draw, rng, subj_cx, subj_cy, subj_scale)
-        out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
-        img.save(out_path, quality=90)
-        return out_path
+        drawer = _SUBJECT_DRAWERS[subject]
+
+        def paint(d):
+            drawer(d, rng, subj_cx, subj_cy, subj_scale)
+
+        motion = (26 * base_scale, 30 * base_scale, 7.0, 3.7)
+        return base, paint, motion
 
     setting = _setting_for_scene(scene)
     ground_y = round(h * 0.82)
@@ -540,37 +542,87 @@ def generate_scene_image(
     if texture:
         texture(draw, rng, ground_y, w, h)
 
-    element_scale = h / 1080
+    element_scale = base_scale
     drawers = _ELEMENT_DRAWERS.get(setting, _ELEMENT_DRAWERS["default"])
-    # Alternate left/right of the centered focal element rather than picking
-    # random positions, which too easily clustered every element on one
-    # side and left the other half of the frame empty.
     left_positions = [w * 0.10, w * 0.24]
     right_positions = [w * 0.76, w * 0.90]
     li = ri = 0
     for i, drawer in enumerate(drawers):
         if i % 2 == 0 and li < len(left_positions):
-            x = left_positions[li]
-            li += 1
+            x = left_positions[li]; li += 1
         elif ri < len(right_positions):
-            x = right_positions[ri]
-            ri += 1
+            x = right_positions[ri]; ri += 1
         else:
             x = w * rng.uniform(0.1, 0.9)
         drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
 
     if subject in _SUBJECT_DRAWERS:
-        # A land subject (non-aquatic) drawn as the focal element on the ground.
-        _SUBJECT_DRAWERS[subject](draw, rng, w * 0.5, ground_y - 180 * element_scale, element_scale)
+        sd = _SUBJECT_DRAWERS[subject]
+
+        def paint(d):
+            sd(d, rng, w * 0.5, ground_y - 180 * element_scale, element_scale)
     else:
         outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
         headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
         mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
         pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
-        draw_character(draw, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose)
 
+        def paint(d):
+            draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose)
+
+    motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
+    return base, paint, motion
+
+
+def generate_scene_image(
+    scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
+    subject_fallback: Optional[str] = None,
+) -> Path:
+    rng = random.Random(index)
+    subject = _subject_for_scene(scene) or subject_fallback
+    base, paint, _motion = _compose_scene(rng, scene, config, subject)
+    paint(ImageDraw.Draw(base))
     out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
-    img.save(out_path, quality=90)
+    base.save(out_path, quality=90)
+    return out_path
+
+
+def generate_scene_clip(
+    scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
+    duration: float, subject_fallback: Optional[str] = None,
+) -> Path:
+    """Renders an animated MP4 for one scene: the static background with the
+    subject drawn on its own layer and drifted over time via an ffmpeg overlay
+    with time-varying position, so the figure floats/bobs instead of sitting
+    still. Cheap - one encode per scene, no per-frame Pillow rendering."""
+    rng = random.Random(index)
+    w, h = config.video.resolution
+    subject = _subject_for_scene(scene) or subject_fallback
+    base, paint, (ax, ay, px, py) = _compose_scene(rng, scene, config, subject)
+
+    bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
+    base.save(bg_path, quality=90)
+
+    sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    paint(ImageDraw.Draw(sprite))
+    sprite_path = work_dir / f"scene_{index:02d}_sprite.png"
+    sprite.save(sprite_path)
+
+    x_expr = f"{ax:.1f}*sin(2*PI*t/{px})" if ax and px else "0"
+    y_expr = f"{ay:.1f}*sin(2*PI*t/{py})" if ay and py else "0"
+    out_path = work_dir / f"scene_{index:02d}_anim.mp4"
+    cmd = [
+        "ffmpeg", "-y",
+        "-loop", "1", "-i", str(bg_path),
+        "-loop", "1", "-i", str(sprite_path),
+        "-filter_complex",
+        f"[0:v]fps={config.video.fps}[bg];[bg][1:v]overlay=x={x_expr}:y={y_expr}:eval=frame[v]",
+        "-map", "[v]", "-t", f"{duration:.3f}",
+        "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"scene animation ffmpeg failed:\n{' '.join(cmd)}\n\n{result.stderr[-3000:]}")
     return out_path
 
 
@@ -583,4 +635,16 @@ def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path) ->
     return [
         generate_scene_image(scene, i, config, work_dir, subject_fallback=fallback)
         for i, scene in enumerate(scenes)
+    ]
+
+
+def generate_all_clips(
+    scenes: List[Scene], durations: List[float], config: PipelineConfig, work_dir: Path
+) -> List[Path]:
+    """Animated per-scene clips (one MP4 each), sized to each scene's audio
+    duration. Same subject/fallback logic as generate_all."""
+    fallback = _dominant_subject(scenes)
+    return [
+        generate_scene_clip(scene, i, config, work_dir, dur, subject_fallback=fallback)
+        for i, (scene, dur) in enumerate(zip(scenes, durations))
     ]

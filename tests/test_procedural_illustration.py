@@ -70,6 +70,27 @@ def test_octopus_scene_renders_water_and_subject(tmp_path):
         assert img.getpixel((int(w * 0.05), int(h * 0.7))) != (255, 255, 255)
 
 
+def test_scene_clip_is_a_valid_video_of_the_right_length(tmp_path):
+    import subprocess
+    scene = Scene(narration="The octopus drifts.", visual_keywords=["octopus"])
+    clip = pi.generate_scene_clip(scene, 0, _config(), tmp_path, duration=2.0, subject_fallback="octopus")
+    assert clip.exists() and clip.suffix == ".mp4"
+    dur = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", str(clip)],
+        capture_output=True, text=True).stdout.strip()
+    assert abs(float(dur) - 2.0) < 0.3
+
+
+def test_generate_all_clips_one_per_scene(tmp_path):
+    scenes = [
+        Scene(narration="A soldier marches.", visual_keywords=["soldier"]),
+        Scene(narration="The octopus swims.", visual_keywords=["octopus"]),
+    ]
+    clips = pi.generate_all_clips(scenes, [1.5, 1.5], _config(), tmp_path)
+    assert len(clips) == 2 and all(c.exists() for c in clips)
+
+
 def test_headwear_drawers_never_leave_a_gap_above_the_head():
     # Regression test: _flat_cap's bounding box once left its flat edge
     # above the head's top edge entirely, so the cap floated free instead

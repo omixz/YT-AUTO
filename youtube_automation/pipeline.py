@@ -48,13 +48,14 @@ def _select_niche_and_format(config: PipelineConfig, format_override: Optional[s
 
 def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config: PipelineConfig, work_dir: Path) -> List[VisualAsset]:
     if config.video.format == "longform":
-        # One flat-vector-clipart illustration drawn per scene, depicting
-        # that scene's specific content directly (the drawn figure IS the
-        # subject being narrated, not a generic mascot) - see
-        # procedural_illustration.py. Ken Burns zoom applied the same way a
-        # still photo would be (VisualAsset kind="image"), via assembler.py.
-        paths = procedural_illustration.generate_all(script.scenes, config, work_dir)
-        return [VisualAsset(kind="image", path=p) for p in paths]
+        # One animated flat-vector-clipart clip per scene: the scene's setting
+        # drawn directly, with the focal subject (the thing being narrated)
+        # floating/bobbing over it - see procedural_illustration.py. Each clip
+        # is sized to its scene's narration length and handed to assembler.py
+        # as a video segment (kind="video").
+        durations = [a.duration for a in content_scene_audio]
+        paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir)
+        return [VisualAsset(kind="video", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
 
 
