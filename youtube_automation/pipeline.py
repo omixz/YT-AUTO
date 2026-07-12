@@ -63,6 +63,7 @@ def run(
     topic_override: Optional[str] = None,
     dry_run: bool = False,
     publish_at: Optional[str] = None,
+    publish_now: bool = False,
     keep_work_dir: bool = False,
     format_override: Optional[str] = None,
 ) -> dict:
@@ -154,9 +155,11 @@ def run(
         # optimal slot on the normal (passed-gate) path, and only when the
         # caller hasn't already pinned a specific publish_at themselves.
         effective_publish_at = publish_at
-        if effective_publish_at is None and passed_quality_gate:
+        if effective_publish_at is None and passed_quality_gate and not publish_now:
             effective_publish_at = scheduling.next_optimal_publish_time()
             logger.info("Scheduling publish for the next optimal slot: %s", effective_publish_at)
+        elif publish_now:
+            logger.info("publish_now set - releasing immediately instead of scheduling an optimal slot.")
 
         logger.info("Uploading to YouTube...")
         video_id = youtube_uploader.upload_video(

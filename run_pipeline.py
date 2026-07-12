@@ -22,6 +22,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Build the video but skip uploading.")
     parser.add_argument("--config", default=None, help="Path to a channel config YAML (default: config/channel.yaml).")
     parser.add_argument("--publish-at", default=None, help="RFC3339 timestamp to schedule the YouTube release.")
+    parser.add_argument("--publish-now", action="store_true", help="Release immediately instead of scheduling the next optimal slot.")
     parser.add_argument("--keep-work-dir", action="store_true", help="Keep per-scene scratch files after the run.")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
@@ -37,6 +38,7 @@ def main() -> None:
         topic_override=args.topic,
         dry_run=args.dry_run,
         publish_at=args.publish_at,
+        publish_now=args.publish_now,
         keep_work_dir=args.keep_work_dir,
         format_override=args.format,
     )

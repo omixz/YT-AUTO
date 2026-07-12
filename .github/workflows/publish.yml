@@ -27,6 +27,15 @@ on:
         required: false
         default: "false"
         type: boolean
+      publish_at:
+        description: "RFC3339 time to schedule the release (overrides the auto-picked optimal slot)"
+        required: false
+        default: ""
+      publish_now:
+        description: "Release immediately instead of scheduling the next optimal slot"
+        required: false
+        default: "false"
+        type: boolean
 
 permissions:
   contents: write
@@ -69,6 +78,12 @@ jobs:
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             ARGS+=(--dry-run)
+          fi
+          if [ -n "${{ github.event.inputs.publish_at }}" ]; then
+            ARGS+=(--publish-at "${{ github.event.inputs.publish_at }}")
+          fi
+          if [ "${{ github.event.inputs.publish_now }}" = "true" ]; then
+            ARGS+=(--publish-now)
           fi
           python run_pipeline.py "${ARGS[@]}"
 
