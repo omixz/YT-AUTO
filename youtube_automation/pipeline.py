@@ -83,9 +83,13 @@ def run(
     script = generate_script(topic, config)
     logger.info("Title: %s (%d scenes)", script.title, len(script.scenes))
 
-    passed_quality_gate, quality_reasons = quality_check.check(script, config)
-    if not passed_quality_gate:
-        logger.warning("Quality gate failed: %s", "; ".join(quality_reasons))
+    # Script-level checks run now (cheap, and useful to see in the logs
+    # before spending render time); media-level checks (below, after the
+    # video is actually built) get combined into the same final verdict -
+    # see quality_check.py's module docstring for why the two are split.
+    text_passed, text_reasons = quality_check.check(script, config)
+    if not text_passed:
+        logger.warning("Script quality gate failed: %s", "; ".join(text_reasons))
 
     logger.info("Synthesizing narration...")
     content_scene_audio, content_narration_path = tts.synthesize_script(script, config.voice, work_dir)
@@ -126,6 +130,13 @@ def run(
         all_visuals, all_scene_audio, narration_path, ass_path, config, work_dir,
         work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
     )
+
+    logger.info("Checking rendered media (video/audio/captions)...")
+    media_passed, media_reasons = quality_check.check_media(video_path, all_scene_audio, ass_path, config)
+    passed_quality_gate = text_passed and media_passed
+    quality_reasons = text_reasons + media_reasons
+    if not passed_quality_gate:
+        logger.warning("Quality gate failed: %s", "; ".join(quality_reasons))
 
     logger.info("Generating thumbnail...")
     thumb_path = thumbnail.generate(
