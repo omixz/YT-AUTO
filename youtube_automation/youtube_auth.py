@@ -18,15 +18,21 @@ from .config import PipelineConfig
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/yt-analytics.readonly",
-    # youtube.upload alone covers videos.insert (uploading, including setting
-    # privacyStatus/publishAt at creation time) but NOT a later standalone
-    # videos.update() call - that's what youtube_uploader.set_video_privacy()
-    # (publish_now.py, the workflow's "unschedule" admin step) needs. A token
-    # already issued under the two scopes above won't gain this one
-    # automatically - re-run the local OAuth flow to mint a new token.json,
-    # then re-base64 it into the YOUTUBE_TOKEN_B64 repo secret.
-    "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
+# NOTE: videos.insert (uploading, including setting privacyStatus/publishAt
+# at creation time) only needs youtube.upload, but a later standalone
+# videos.update() call - what set_video_privacy() (publish_now.py, the
+# workflow's "unschedule" admin step) needs - requires the broader
+# youtube.force-ssl scope. Do NOT add it to SCOPES above: Credentials.
+# from_authorized_user_file() and creds.refresh() both use this same list to
+# refresh the token, and Google's token endpoint rejects a refresh request
+# for a scope the existing refresh token was never actually granted
+# (invalid_scope) - discovered the hard way when this broke every upload,
+# not just the update() path, the first time it was added here. Fixing this
+# for real requires minting a brand new token.json via the interactive OAuth
+# flow with the wider scope and swapping the YOUTUBE_TOKEN_B64 secret; until
+# then, set_video_privacy() will keep failing with 403 insufficientPermissions
+# and that's the correct, contained failure mode - it must not touch this list.
 
 
 def get_credentials(config: PipelineConfig) -> Credentials:

@@ -30,9 +30,9 @@ on:
         required: false
         default: ""
       publish_now:
-        description: "Release immediately instead of scheduling the next optimal slot"
+        description: "Release immediately as public (default). Uncheck to schedule the next optimal slot instead."
         required: false
-        default: "false"
+        default: "true"
         type: boolean
       unschedule_video_id:
         description: "Admin: set this video ID to private (pulls back a scheduled/public video) and skip the normal pipeline run entirely"
@@ -88,9 +88,19 @@ jobs:
           fi
           if [ -n "${{ github.event.inputs.publish_at }}" ]; then
             ARGS+=(--publish-at "${{ github.event.inputs.publish_at }}")
-          fi
-          if [ "${{ github.event.inputs.publish_now }}" = "true" ]; then
-            ARGS+=(--publish-now)
+          else
+            # github.event.inputs is entirely absent on `schedule` (cron)
+            # triggers - workflow_dispatch's `default:` only applies when
+            # someone dispatches manually, so without this fallback the daily
+            # cron run would always fall through to the (unset) input being
+            # empty/false and get scheduled instead of posted live. Default to
+            # publish-now (post as public immediately) unless a specific
+            # publish_at was given, or the box was explicitly unchecked on a
+            # manual dispatch.
+            PUBLISH_NOW="${{ github.event.inputs.publish_now }}"
+            if [ "${PUBLISH_NOW:-true}" != "false" ]; then
+              ARGS+=(--publish-now)
+            fi
           fi
           python run_pipeline.py "${ARGS[@]}"
 

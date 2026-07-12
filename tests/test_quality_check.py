@@ -15,15 +15,20 @@ def _config():
 # --- check() (script-level) -------------------------------------------------
 
 def _script(word_count=200, n_scenes=8, first_role="hook", last_role="insight"):
-    words_per_scene = max(1, word_count // n_scenes)
+    words_per_scene = max(3, word_count // n_scenes)
+    # Distinct text per scene (not just a repeated filler word) so the
+    # duplicate-scene check doesn't flag this well-formed fixture itself.
     scenes = [
-        Scene(narration=" ".join(["word"] * words_per_scene), visual_keywords=["x"], role="build")
-        for _ in range(n_scenes)
+        Scene(narration=" ".join(f"word{i}_{j}" for j in range(words_per_scene)), visual_keywords=["x"], role="build")
+        for i in range(n_scenes)
     ]
     if scenes:
         scenes[0].role = first_role
         scenes[-1].role = last_role
-    return Script(topic="t", title="Title", description="d", tags=["t"], scenes=scenes)
+    return Script(
+        topic="t", title="A Real Title", description="A reasonably descriptive summary of the video content here.",
+        tags=["tag1", "tag2", "tag3"], scenes=scenes,
+    )
 
 
 def test_check_passes_a_well_formed_script():
@@ -41,6 +46,85 @@ def test_check_fails_on_missing_hook():
     passed, reasons = quality_check.check(_script(first_role="build"), _config())
     assert not passed
     assert any("hook" in r for r in reasons)
+
+
+def test_check_fails_on_duplicate_scenes():
+    script = _script()
+    script.scenes[3].narration = script.scenes[1].narration
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("duplicate" in r for r in reasons)
+
+
+def test_check_fails_on_too_short_scene():
+    script = _script()
+    script.scenes[2].narration = "Wow."
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("likely truncated" in r for r in reasons)
+
+
+def test_check_fails_on_refusal_text():
+    script = _script()
+    script.scenes[2].narration = "I'm sorry, but I cannot provide details about that topic."
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("refused/hedged" in r for r in reasons)
+
+
+def test_check_fails_on_markdown_artifact():
+    script = _script()
+    script.scenes[2].narration = "This is **very** important context for the story."
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("markdown" in r for r in reasons)
+
+
+def test_check_fails_on_placeholder_token():
+    script = _script()
+    script.scenes[2].narration = "The event happened in [insert year] near the coast."
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("placeholder" in r for r in reasons)
+
+
+def test_check_fails_on_weak_hook_opener():
+    script = _script()
+    script.scenes[0].narration = "Today we're looking at a strange mystery from history."
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("throat-clearing" in r for r in reasons)
+
+
+def test_check_allows_a_strong_hook_opener():
+    script = _script()
+    script.scenes[0].narration = "A plane vanished mid-radio-call, and no one ever found the wreckage."
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_check_fails_on_empty_title():
+    script = _script()
+    script.title = "   "
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("title is empty" in r for r in reasons)
+
+
+def test_check_fails_on_thin_description():
+    script = _script()
+    script.description = "Too short."
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("description is only" in r for r in reasons)
+
+
+def test_check_fails_on_too_few_tags():
+    script = _script()
+    script.tags = ["onlyone"]
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("tags" in r for r in reasons)
 
 
 # --- check_media() (rendered-file level) ------------------------------------

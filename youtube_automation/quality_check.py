@@ -47,6 +47,38 @@ MAX_DURATION_DRIFT_FRACTION = 0.10
 MAX_DURATION_DRIFT_SECONDS = 5.0
 
 
+# The checks below all target genuine generation failures - a refused/hedged
+# response, truncated output, leftover formatting artifacts, byte-identical
+# repeated scenes - not subjective judgments about whether the writing is
+# good. That distinction matters: a heuristic that scored *quality* would
+# inevitably misfire on some fraction of genuinely good scripts, which is
+# exactly the false-positive risk to avoid here. These only fire on things
+# that are unambiguously broken regardless of how good the topic/writing is.
+
+_REFUSAL_PATTERNS = (
+    "i cannot", "i can't", "i'm sorry, but", "i am sorry, but",
+    "as an ai", "as a language model", "i am unable to", "i'm unable to",
+)
+
+_MARKDOWN_ARTIFACTS = ("**", "##", "```", "](http")
+
+_PLACEHOLDER_PATTERNS = ("[insert", "[todo", "todo:", "lorem ipsum", "<placeholder>", "xxxxx")
+
+# The script prompt explicitly forbids these ("no scene-setting, no 'today
+# we're looking at...' throat-clearing") - the hook's first sentence is
+# supposed to deliver the title's promise immediately, so an opener like
+# this is a direct violation of an instruction the prompt already gives,
+# not a stylistic guess.
+_WEAK_HOOK_OPENERS = (
+    "today we're", "today, we're", "in this video", "welcome back",
+    "let's talk about", "let's dive into",
+)
+
+MIN_SCENE_WORDS = 3
+MIN_DESCRIPTION_WORDS = 8
+MIN_TAGS = 3
+
+
 def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
     reasons: List[str] = []
     q = config.quality
@@ -63,6 +95,43 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
             reasons.append("first scene is not role=hook")
         if not script.scenes or script.scenes[-1].role != "insight":
             reasons.append("last scene is not role=insight")
+
+    seen_narration = {}
+    for i, scene in enumerate(script.scenes):
+        text = scene.narration.strip()
+        lower = text.lower()
+
+        if len(text.split()) < MIN_SCENE_WORDS:
+            reasons.append(f"scene {i} narration is only {len(text.split())} word(s) (\"{text}\") - likely truncated output")
+
+        normalized = " ".join(lower.split()).rstrip(".!?")
+        if normalized and normalized in seen_narration:
+            reasons.append(f"scene {i} narration is a duplicate of scene {seen_narration[normalized]}")
+        elif normalized:
+            seen_narration[normalized] = i
+
+        if any(p in lower for p in _REFUSAL_PATTERNS):
+            reasons.append(f"scene {i} narration looks like a refused/hedged LLM response, not real content")
+
+        if any(a in text for a in _MARKDOWN_ARTIFACTS):
+            reasons.append(f"scene {i} narration has leftover markdown formatting")
+
+        if any(p in lower for p in _PLACEHOLDER_PATTERNS):
+            reasons.append(f"scene {i} narration has a placeholder token, not real content")
+
+    if script.scenes:
+        hook_text = script.scenes[0].narration.strip().lower()
+        if any(hook_text.startswith(o) for o in _WEAK_HOOK_OPENERS):
+            reasons.append("hook scene opens with generic throat-clearing instead of delivering the title's promise")
+
+    if not script.title.strip():
+        reasons.append("title is empty")
+
+    if len(script.description.split()) < MIN_DESCRIPTION_WORDS:
+        reasons.append(f"description is only {len(script.description.split())} words (min {MIN_DESCRIPTION_WORDS})")
+
+    if len(script.tags) < MIN_TAGS:
+        reasons.append(f"only {len(script.tags)} tags (min {MIN_TAGS})")
 
     return (len(reasons) == 0, reasons)
 
