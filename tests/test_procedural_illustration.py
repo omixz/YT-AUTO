@@ -45,6 +45,31 @@ def test_generate_all_produces_one_image_per_scene(tmp_path):
     assert all(p.exists() for p in paths)
 
 
+def test_marine_topic_picks_octopus_subject_and_water_setting():
+    scene = Scene(narration="The octopus hides in the reef.", visual_keywords=["octopus", "ocean"])
+    assert pi._subject_for_scene(scene) == "octopus"
+    assert pi._setting_for_scene(scene) == "water"
+
+
+def test_dominant_subject_covers_scenes_that_dont_name_it():
+    scenes = [
+        Scene(narration="The octopus has three hearts.", visual_keywords=["octopus"]),
+        Scene(narration="Its blood uses a copper-based protein.", visual_keywords=["blood"]),
+    ]
+    # The whole-video fallback keeps the subject consistent on the second
+    # scene, which never says "octopus".
+    assert pi._dominant_subject(scenes) == "octopus"
+
+
+def test_octopus_scene_renders_water_and_subject(tmp_path):
+    scene = Scene(narration="Its blood is blue.", visual_keywords=["blood"])
+    path = pi.generate_scene_image(scene, 0, _config(), tmp_path, subject_fallback="octopus")
+    with Image.open(path) as img:
+        # Lower-centre pixel should be water-blue or subject, not white sky.
+        w, h = img.size
+        assert img.getpixel((int(w * 0.05), int(h * 0.7))) != (255, 255, 255)
+
+
 def test_headwear_drawers_never_leave_a_gap_above_the_head():
     # Regression test: _flat_cap's bounding box once left its flat edge
     # above the head's top edge entirely, so the cap floated free instead

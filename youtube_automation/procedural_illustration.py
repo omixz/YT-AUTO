@@ -35,7 +35,9 @@ SKY = (255, 255, 255)
 
 _KEYWORD_TO_SETTING = [
     (("snow", "siberia", "arctic", "ice", "frozen", "winter", "cold", "blizzard"), "snow"),
-    (("ocean", "sea", "beach", "coast", "island", "ship", "boat", "wave"), "water"),
+    (("ocean", "sea", "beach", "coast", "island", "ship", "boat", "wave",
+      "octopus", "squid", "cephalopod", "marine", "underwater", "aquatic",
+      "deep-sea", "deep sea", "tentacle", "reef", "fish", "whale", "shark"), "water"),
     (("mountain", "valley", "cliff", "peak", "himalay", "andes", "alps"), "mountain"),
     (("war", "battle", "combat", "ruin", "rubble", "bomb", "wreckage", "crash"), "ruins"),
     (("forest", "jungle", "wood", "tree", "wilderness"), "forest"),
@@ -323,13 +325,161 @@ _GROUND_TEXTURES = {
 }
 
 
+# --- subjects (the actual thing the video is about) ------------------------
+#
+# The character above is the right focal element for people-driven topics
+# (a king, a soldier, a missing pilot), but a video *about an octopus* should
+# show an octopus, not a person standing near it. When a scene's subject is a
+# specific creature/object, it's drawn as the focal element instead of the
+# human - "when talking about the ocean, show water and an octopus."
+
+def _outlined_blob(draw, points, fill, line_w):
+    """Filled polygon with a thick INK outline - the flat-vector look."""
+    draw.polygon(points, fill=fill)
+    draw.line(list(points) + [points[0]], fill=INK, width=line_w, joint="curve")
+
+
+def _draw_octopus(draw, rng, cx, cy, scale):
+    body = (196, 84, 108)
+    r = 150 * scale
+    lw = int(8 * scale) or 4
+    base_y = cy + r * 0.28
+
+    # Eight tentacles fanning out below the mantle, drawn as an INK-outlined
+    # stroke (thick dark line under a slightly thinner body-colour line) so
+    # they read as solid limbs with an outline rather than flat sticks.
+    n = 8
+    for i in range(n):
+        spread = (i / (n - 1) - 0.5) * 2  # -1 .. 1
+        sx = cx + spread * r * 0.62
+        mx = cx + spread * r * 1.35
+        ex = cx + spread * r * 1.75
+        wob = (1 if i % 2 == 0 else -1) * 22 * scale
+        pts = [(sx, base_y), (mx, base_y + 120 * scale),
+               (ex + wob, base_y + 210 * scale)]
+        draw.line(pts, fill=INK, width=int(40 * scale) or 6, joint="curve")
+    for i in range(n):
+        spread = (i / (n - 1) - 0.5) * 2
+        sx = cx + spread * r * 0.62
+        mx = cx + spread * r * 1.35
+        ex = cx + spread * r * 1.75
+        wob = (1 if i % 2 == 0 else -1) * 22 * scale
+        pts = [(sx, base_y), (mx, base_y + 120 * scale),
+               (ex + wob, base_y + 210 * scale)]
+        draw.line(pts, fill=body, width=int(28 * scale) or 4, joint="curve")
+        tip = pts[-1]
+        draw.ellipse([tip[0] - 16 * scale, tip[1] - 16 * scale,
+                      tip[0] + 16 * scale, tip[1] + 16 * scale], fill=body, outline=INK, width=lw)
+
+    # Mantle (bulbous head), drawn over the tentacle roots.
+    draw.ellipse([cx - r, cy - r * 1.25, cx + r, cy + r * 0.55], fill=body, outline=INK, width=lw)
+
+    # Eyes: white with a big pupil, the flat cartoon look.
+    eye_r = r * 0.3
+    for ex in (cx - r * 0.44, cx + r * 0.44):
+        draw.ellipse([ex - eye_r, cy - eye_r * 1.2, ex + eye_r, cy + eye_r * 0.8],
+                     fill=(255, 255, 255), outline=INK, width=lw)
+        pr = eye_r * 0.5
+        pcy = cy - eye_r * 0.1
+        draw.ellipse([ex - pr, pcy - pr, ex + pr, pcy + pr], fill=INK)
+
+
+def _draw_fish(draw, rng, cx, cy, scale):
+    body = (235, 150, 60)
+    r = 130 * scale
+    lw = int(8 * scale) or 4
+    # tail
+    _outlined_blob(draw, [(cx - r * 1.05, cy), (cx - r * 1.7, cy - r * 0.6),
+                          (cx - r * 1.7, cy + r * 0.6)], body, lw)
+    # body
+    draw.ellipse([cx - r * 1.1, cy - r * 0.72, cx + r * 1.1, cy + r * 0.72],
+                 fill=body, outline=INK, width=lw)
+    # top fin
+    _outlined_blob(draw, [(cx - r * 0.3, cy - r * 0.7), (cx + r * 0.2, cy - r * 1.15),
+                          (cx + r * 0.45, cy - r * 0.65)], body, lw)
+    # eye
+    eye_r = r * 0.2
+    ex = cx + r * 0.55
+    draw.ellipse([ex - eye_r, cy - r * 0.35 - eye_r, ex + eye_r, cy - r * 0.35 + eye_r],
+                 fill=(255, 255, 255), outline=INK, width=lw)
+    pr = eye_r * 0.5
+    draw.ellipse([ex - pr, cy - r * 0.35 - pr, ex + pr, cy - r * 0.35 + pr], fill=INK)
+
+
+_SUBJECT_DRAWERS = {"octopus": _draw_octopus, "fish": _draw_fish}
+
+# Subjects that live in water, so their scenes render an underwater backdrop.
+_AQUATIC_SUBJECTS = {"octopus", "fish"}
+
+_KEYWORD_TO_SUBJECT = [
+    (("octopus", "cephalopod", "tentacle", "mollusk", "kraken", "squid", "cuttlefish"), "octopus"),
+    (("fish", "shark", "whale", "reef", "eel", "marine life", "sea creature"), "fish"),
+]
+
+
+def _subject_for_scene(scene: Scene) -> Optional[str]:
+    return _match(scene, _KEYWORD_TO_SUBJECT)
+
+
+def _dominant_subject(scenes: List[Scene], extra_text: str = "") -> Optional[str]:
+    """A video about octopuses should show an octopus in *every* scene, even
+    the ones whose narration happens not to say 'octopus' (e.g. a sentence
+    about a protein). Pick the most common subject across the whole script
+    (plus the title/topic) and use it as the per-scene fallback."""
+    haystack = extra_text.lower() + " " + " ".join(
+        f"{s.narration} {' '.join(s.visual_keywords)}" for s in scenes
+    ).lower()
+    counts = {}
+    for keywords, subject in _KEYWORD_TO_SUBJECT:
+        hits = sum(haystack.count(kw) for kw in keywords)
+        if hits:
+            counts[subject] = counts.get(subject, 0) + hits
+    if not counts:
+        return None
+    return max(counts, key=counts.get)
+
+
 # --- scene composition -----------------------------------------------------
 
-def generate_scene_image(scene: Scene, index: int, config: PipelineConfig, work_dir: Path) -> Path:
+def _draw_water_scene(draw, rng, w, h):
+    """Fills the lower half of the frame with water (wavy surface + bubbles)
+    and returns the surface y, so an aquatic subject can be placed below it."""
+    surface_y = round(h * 0.24)
+    draw.rectangle([0, surface_y, w, h], fill=(64, 132, 176))
+    crest = []
+    x = 0
+    while x <= w:
+        crest.append((x, surface_y + (15 if (x // 44) % 2 == 0 else -15)))
+        x += 44
+    draw.line(crest, fill=(200, 230, 242), width=6, joint="curve")
+    for _ in range(round(w / 90)):
+        bx = rng.uniform(0, w)
+        by = rng.uniform(surface_y + 40, h - 30)
+        br = rng.uniform(6, 18)
+        draw.ellipse([bx - br, by - br, bx + br, by + br], outline=(190, 224, 238), width=3)
+    return surface_y
+
+
+def generate_scene_image(
+    scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
+    subject_fallback: Optional[str] = None,
+) -> Path:
     rng = random.Random(index)
     w, h = config.video.resolution
     img = Image.new("RGB", (w, h), SKY)
     draw = ImageDraw.Draw(img)
+
+    subject = _subject_for_scene(scene) or subject_fallback
+
+    if subject in _AQUATIC_SUBJECTS:
+        # Underwater scene: water fills the lower frame, subject sits in it.
+        surface_y = _draw_water_scene(draw, rng, w, h)
+        subj_scale = h / 1080 * 1.15
+        subj_cy = surface_y + (h - surface_y) * 0.40
+        _SUBJECT_DRAWERS[subject](draw, rng, w * 0.5, subj_cy, subj_scale)
+        out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
+        img.save(out_path, quality=90)
+        return out_path
 
     setting = _setting_for_scene(scene)
     ground_y = round(h * 0.82)
@@ -341,7 +491,7 @@ def generate_scene_image(scene: Scene, index: int, config: PipelineConfig, work_
 
     element_scale = h / 1080
     drawers = _ELEMENT_DRAWERS.get(setting, _ELEMENT_DRAWERS["default"])
-    # Alternate left/right of the centered character rather than picking
+    # Alternate left/right of the centered focal element rather than picking
     # random positions, which too easily clustered every element on one
     # side and left the other half of the frame empty.
     left_positions = [w * 0.10, w * 0.24]
@@ -358,13 +508,15 @@ def generate_scene_image(scene: Scene, index: int, config: PipelineConfig, work_
             x = w * rng.uniform(0.1, 0.9)
         drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
 
-    outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
-    headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
-    mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
-    pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
-
-    char_scale = h / 1080 * 1.0
-    draw_character(draw, rng, w * 0.5, ground_y, char_scale, outfit, headwear, mood, pose)
+    if subject in _SUBJECT_DRAWERS:
+        # A land subject (non-aquatic) drawn as the focal element on the ground.
+        _SUBJECT_DRAWERS[subject](draw, rng, w * 0.5, ground_y - 180 * element_scale, element_scale)
+    else:
+        outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
+        headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
+        mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
+        pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
+        draw_character(draw, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose)
 
     out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
     img.save(out_path, quality=90)
@@ -372,4 +524,12 @@ def generate_scene_image(scene: Scene, index: int, config: PipelineConfig, work_
 
 
 def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path) -> List[Path]:
-    return [generate_scene_image(scene, i, config, work_dir) for i, scene in enumerate(scenes)]
+    # Fallback subject from the whole script so a single-subject video (e.g.
+    # about an octopus) shows it consistently, not only on sentences that
+    # name it. Title lives on the Script, which we don't have here, but the
+    # scenes' combined text is a good enough signal.
+    fallback = _dominant_subject(scenes)
+    return [
+        generate_scene_image(scene, i, config, work_dir, subject_fallback=fallback)
+        for i, scene in enumerate(scenes)
+    ]
