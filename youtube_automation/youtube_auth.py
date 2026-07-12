@@ -18,6 +18,14 @@ from .config import PipelineConfig
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/yt-analytics.readonly",
+    # youtube.upload alone covers videos.insert (uploading, including setting
+    # privacyStatus/publishAt at creation time) but NOT a later standalone
+    # videos.update() call - that's what youtube_uploader.set_video_privacy()
+    # (publish_now.py, the workflow's "unschedule" admin step) needs. A token
+    # already issued under the two scopes above won't gain this one
+    # automatically - re-run the local OAuth flow to mint a new token.json,
+    # then re-base64 it into the YOUTUBE_TOKEN_B64 repo secret.
+    "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
 
