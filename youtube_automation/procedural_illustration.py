@@ -411,6 +411,42 @@ _SUBJECT_DRAWERS = {"octopus": _draw_octopus, "fish": _draw_fish}
 # Subjects that live in water, so their scenes render an underwater backdrop.
 _AQUATIC_SUBJECTS = {"octopus", "fish"}
 
+
+def _draw_seaweed(draw, rng, base_x, floor_y, scale):
+    """A wavy seaweed strand rising from the seabed."""
+    color = (54, 132, 96)
+    h = rng.uniform(180, 340) * scale
+    segs = 6
+    pts = [(base_x, floor_y)]
+    for i in range(1, segs + 1):
+        sway = math.sin(i * 1.1 + rng.uniform(0, 2)) * 34 * scale
+        pts.append((base_x + sway, floor_y - h * i / segs))
+    draw.line(pts, fill=color, width=int(20 * scale) or 5, joint="curve")
+
+
+def _draw_coral(draw, rng, base_x, floor_y, scale):
+    color = rng.choice([(224, 122, 95), (210, 150, 80), (200, 100, 130)])
+    lw = int(7 * scale) or 4
+    for _ in range(3):
+        ang = rng.uniform(-0.6, 0.6)
+        length = rng.uniform(90, 150) * scale
+        tip = (base_x + math.sin(ang) * length, floor_y - math.cos(ang) * length)
+        draw.line([(base_x, floor_y), tip], fill=color, width=int(22 * scale) or 5, joint="curve")
+        draw.ellipse([tip[0] - 14 * scale, tip[1] - 14 * scale,
+                      tip[0] + 14 * scale, tip[1] + 14 * scale], fill=color, outline=INK, width=lw)
+
+
+def _draw_searock(draw, rng, base_x, floor_y, scale):
+    w = rng.uniform(120, 220) * scale
+    h = rng.uniform(50, 90) * scale
+    pts = [(base_x - w / 2, floor_y), (base_x - w * 0.3, floor_y - h),
+           (base_x + w * 0.1, floor_y - h * 1.2), (base_x + w * 0.4, floor_y - h * 0.6),
+           (base_x + w / 2, floor_y)]
+    _outlined_blob(draw, pts, (120, 120, 130), int(6 * scale) or 4)
+
+
+_SEABED_PROPS = [_draw_seaweed, _draw_seaweed, _draw_coral, _draw_searock]
+
 _KEYWORD_TO_SUBJECT = [
     (("octopus", "cephalopod", "tentacle", "mollusk", "kraken", "squid", "cuttlefish"), "octopus"),
     (("fish", "shark", "whale", "reef", "eel", "marine life", "sea creature"), "fish"),
@@ -472,11 +508,26 @@ def generate_scene_image(
     subject = _subject_for_scene(scene) or subject_fallback
 
     if subject in _AQUATIC_SUBJECTS:
-        # Underwater scene: water fills the lower frame, subject sits in it.
+        # Underwater scene: water fills the lower frame, a seabed with a few
+        # varied props runs along the bottom, and the subject is placed at a
+        # per-scene position/size so consecutive scenes don't look identical.
         surface_y = _draw_water_scene(draw, rng, w, h)
-        subj_scale = h / 1080 * 1.15
-        subj_cy = surface_y + (h - surface_y) * 0.40
-        _SUBJECT_DRAWERS[subject](draw, rng, w * 0.5, subj_cy, subj_scale)
+        base_scale = h / 1080
+
+        floor_y = h - round(40 * base_scale)
+        draw.rectangle([0, floor_y, w, h], fill=(196, 178, 140))
+        draw.line([(0, floor_y), (w, floor_y)], fill=INK, width=3)
+        # 2-4 seabed props at spread-out x positions (skip the middle third so
+        # they don't collide with the subject).
+        n_props = rng.randint(2, 4)
+        for _ in range(n_props):
+            side = rng.choice([rng.uniform(0.04, 0.30), rng.uniform(0.70, 0.96)])
+            rng.choice(_SEABED_PROPS)(draw, rng, w * side, floor_y, base_scale * rng.uniform(0.8, 1.25))
+
+        subj_scale = base_scale * rng.uniform(1.0, 1.3)
+        subj_cx = w * rng.uniform(0.34, 0.66)
+        subj_cy = surface_y + (h - surface_y) * rng.uniform(0.34, 0.5)
+        _SUBJECT_DRAWERS[subject](draw, rng, subj_cx, subj_cy, subj_scale)
         out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
         img.save(out_path, quality=90)
         return out_path

@@ -143,7 +143,12 @@ def build_video(
         next_input_idx += 1
 
     if len(audio_labels) > 1:
-        mix_filter = "".join(audio_labels) + f"amix=inputs={len(audio_labels)}:duration=first:dropout_transition=2[aout]"
+        # normalize=0 is essential: amix's default (normalize=1) divides every
+        # input - including the narration - by the number of layers, so adding
+        # a music + SFX bed would drag the whole mix ~9dB quieter and bury the
+        # beds. With normalize off, narration stays at full and the beds sit at
+        # exactly the dB offset set by their volume filters above.
+        mix_filter = "".join(audio_labels) + f"amix=inputs={len(audio_labels)}:duration=first:dropout_transition=2:normalize=0[aout]"
         filter_complex = ";".join(filter_parts + [mix_filter])
         cmd = [
             "ffmpeg", "-y", *inputs,

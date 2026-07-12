@@ -25,7 +25,8 @@ niches:
 video:
   fps: 30
   background_music: null       # path to an mp3 under youtube-automation/assets, optional
-  music_volume_db: -22
+  music_volume_db: -16         # dB below narration; with amix normalize=0 this is the real level
+  sfx_volume_db: -14           # scene-matched ambience level below narration
   resolution_shorts: [1080, 1920]
   resolution_longform: [1920, 1080]
   formats:
