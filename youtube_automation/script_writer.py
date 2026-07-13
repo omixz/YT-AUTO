@@ -190,19 +190,22 @@ Tone: {config.channel.tone}
 Topic for this video: {topic}
 
 Write the title first, then a script that delivers on it. This channel only ships 10/10,
-"how did I not know this" videos - if the topic can't support a genuinely dramatic cause-and-effect
-hook, that's a sign to find the angle that does.
-
-The title MUST follow a specific-cause -> specific-consequence template: name one concrete,
-specific triggering event or decision (a person's death, a single choice, one mistake, one
-discovery), then name the larger, surprising thing it caused. For example: "How did the death of
-[a specific named person] cause [a specific named event]?" is exactly the shape - a real named
-cause, a real named effect, connected by "caused"/"led to"/"triggered"/"sparked"/"started". Not
-"5 Facts About WWII" - "How Did One Assassination Start a World War?" The hook scene's first
-sentence must open by directly asserting or delivering on that exact cause -> effect claim - a
-title/thumbnail that oversells what the video actually opens with is the single biggest reason a
-video's retention (and therefore YouTube's willingness to keep recommending it) collapses in the
-first seconds.
+"how did I not know this" videos - never a generic listicle or topic label ("5 Facts About Rome",
+"World War II: A Documentary"). Pick whichever specific, genuinely surprising angle fits this
+particular topic best:
+- Cause -> consequence: one concrete trigger (a death, a single choice, one mistake, one
+  discovery) and the much bigger, surprising thing it caused - "How did the death of [a specific
+  named person] cause [a specific named event]?"
+- Immersive daily-life curiosity: what it actually felt like to live it - "What Was It Really
+  Like to Be a Gladiator in Ancient Rome?"
+- Myth/legend retold as a gripping real story - "The Greek Myth That Terrified an Entire
+  Civilization"
+- A hidden truth or reveal - "The Secret the Pharaohs Didn't Want Anyone to Know"
+Whichever shape you use, the title must be specific (named people/places/events, not vague
+categories) and the hook scene's first sentence must open by directly delivering on that exact
+promise - a title/thumbnail that oversells what the video actually opens with is the single
+biggest reason a video's retention (and therefore YouTube's willingness to keep recommending it)
+collapses in the first seconds.
 
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
@@ -258,15 +261,19 @@ Audience: {config.channel.audience}
 Already-used topics (do not repeat these or close variants):
 {used_list}
 
-Suggest {count} new video topics for this channel. Every topic must be shaped as a specific
-cause -> surprising consequence: one concrete triggering event (a death, a single decision, one
-mistake, one discovery) that led to something much bigger than it sounds like it should have -
-think "how did the death of X cause Y" or "how did one decision start Y." Bias hard toward
-genuinely dramatic, high-stakes, shocking, or emotionally charged stories over bland "fun fact"
-trivia - a real person facing a real crisis, a disaster, a betrayal, a narrow escape, a shocking
-twist - the kind of premise that makes someone stop scrolling. Each topic needs a clear named
-person/event on both the cause and the effect side, not a vague category. Avoid anything
-copyrighted or that would require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
+Suggest {count} new video topics for this channel. Bias hard toward genuinely dramatic,
+high-stakes, shocking, vivid, or emotionally charged stories over bland "fun fact" trivia or
+generic topic labels - the kind of premise that makes someone stop scrolling. Depending on what
+best fits this niche, each topic should be one of:
+- A specific cause -> surprising consequence (one death, decision, or mistake that led to
+  something much bigger than it sounds like it should have)
+- A vivid, specific slice of what daily life was actually like for someone in a particular time
+  and place (a specific role, a specific empire, a specific moment)
+- A specific myth or legend with real dramatic stakes, told as a gripping story
+- A real person facing a real crisis, disaster, betrayal, or narrow escape
+Each topic needs a clear, specific, named anchor (a person, role, place, or event) - not a vague
+category like "Ancient Rome" or "Greek Mythology" on their own. Avoid anything copyrighted or that
+would require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
 
     data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=500)
     return list(data["topics"])

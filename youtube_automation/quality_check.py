@@ -8,9 +8,10 @@ the pipeline:
   to follow. This is exactly what YouTube's reused/duplicative content
   policy targets, so catching it matters even before anything is rendered.
   It also enforces the one deliberate exception to the "only catch breakage,
-  not writing quality" rule below: the title must follow the causal-hook
-  template ("how did the death of X cause Y") the channel is meant to only
-  ever ship - see require_causal_hook.
+  not writing quality" rule below: the title must use one of a handful of
+  genuinely-interesting hook shapes (cause-and-effect, immersive daily-life
+  curiosity, myth/legend, hidden-truth reveal) rather than a vague listicle
+  or topic label - see require_strong_hook.
 - `check_media()` runs after the final video is assembled - it actually
   inspects the rendered file (via ffprobe) rather than trusting that every
   upstream step worked, catching the class of bug where a renderer or mixer
@@ -27,6 +28,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import subprocess
 from pathlib import Path
 from typing import List, Tuple
@@ -82,24 +84,47 @@ MIN_SCENE_WORDS = 3
 MIN_DESCRIPTION_WORDS = 8
 MIN_TAGS = 3
 
-# The "10/10, super interesting" bar: the title must make an explicit
-# cause-and-effect claim - e.g. "How did the death of [named person] cause
-# [named event]?" - not a vague listicle ("5 Facts About WWII"). A causal
-# connector is a reliable, cheap signal for this; a "has a named entity"
-# check was considered too (checking for a capitalized word) but real
-# titles come back in Title Case ("How A Small Mistake Caused A Huge
-# Disaster"), which capitalizes every word regardless of whether any of
-# them name something specific - that check would have given false
-# confidence rather than real detection, so it was dropped.
-_CAUSAL_CONNECTORS = (
+# The "10/10, super interesting" bar: the title must use a genuinely
+# interesting hook shape, not a vague listicle ("5 Facts About Rome") or
+# bare topic label ("Ancient Rome: A Documentary"). This isn't limited to
+# cause-and-effect - "how did the death of X cause Y" was the first version
+# of this gate, but that excluded exactly the content that performs well:
+# immersive daily-life stories, mythology retellings, hidden-truth reveals.
+# Each marker group below is a cheap, low-collision signal for one of the
+# hook shapes the script prompt asks for; the title only needs to match one.
+#
+# A "has a named entity" check was also considered (checking for a
+# capitalized word) but real titles come back in Title Case ("How A Small
+# Mistake Caused A Huge Disaster"), which capitalizes every word regardless
+# of whether any of them name something specific - that check would have
+# given false confidence rather than real detection, so it was dropped.
+_STRONG_HOOK_MARKERS = (
+    # cause -> consequence
     "caus", "trigger", "spark", "led to", "leads to", "lead to",
     "start", "set off", "unleash", "result in", "resulted in", "chang",
+    # immersive daily-life curiosity
+    "what was it really like", "what it was really like", "what life was really like",
+    "really like to be", "really like to live", "daily life",
+    # myth/legend (excluding "myth" itself - see _MYTH_WORD_RE below)
+    "legend", "the god ", "the goddess ",
+    # hidden-truth reveal
+    "the secret", "the truth about", "what really happened", "the untold",
+    "didn't want", "never told", "hidden truth",
 )
 
+# "myth" needs its own word-boundary check rather than a plain substring
+# match: "myth" is literally a substring of "mythology" (as in "Greek
+# Mythology Explained", the exact bare topic-label title this gate exists
+# to reject), so a naive `"myth" in title` let precisely the wrong titles
+# through. Found this via testing before shipping, not in production.
+_MYTH_WORD_RE = re.compile(r"\bmyths?\b")
 
-def _has_causal_connector(text: str) -> bool:
+
+def _has_strong_hook_marker(text: str) -> bool:
     lower = f" {text.lower()} "
-    return any(c in lower for c in _CAUSAL_CONNECTORS)
+    if _MYTH_WORD_RE.search(lower):
+        return True
+    return any(m in lower for m in _STRONG_HOOK_MARKERS)
 
 
 def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
@@ -149,10 +174,11 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
 
     if not script.title.strip():
         reasons.append("title is empty")
-    elif q.require_causal_hook and not _has_causal_connector(script.title):
+    elif q.require_strong_hook and not _has_strong_hook_marker(script.title):
         reasons.append(
-            "title doesn't make a cause-and-effect claim (needs a connector like "
-            "'caused'/'led to'/'triggered' - e.g. \"How did the death of X cause Y?\")"
+            "title doesn't use a strong hook shape (cause-and-effect, immersive daily-life "
+            "curiosity, myth/legend, or hidden-truth reveal) - reads like a vague listicle "
+            "or topic label instead"
         )
 
     if len(script.description.split()) < MIN_DESCRIPTION_WORDS:

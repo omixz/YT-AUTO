@@ -98,7 +98,7 @@ class QualityConfig:
     min_words: int = 90
     min_scenes: int = 6
     require_hook_and_insight: bool = True
-    require_causal_hook: bool = True
+    require_strong_hook: bool = True
     fallback_privacy_status: str = "private"
 
 

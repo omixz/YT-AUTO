@@ -31,6 +31,14 @@ niches:
     niche: "consequential decisions and turning points of 20th-21st century history"
     tone: "dramatic, high-stakes, cause-and-effect - one decision that changed everything"
     weight: 1.0
+  - key: ancient_civilizations
+    niche: "what daily life was actually like in ancient empires and civilizations (Rome, Egypt, Persia, the Maya, and beyond)"
+    tone: "vivid, immersive, you-are-there curiosity - what it actually felt like to live it"
+    weight: 1.2
+  - key: mythology
+    niche: "Greek, Norse, Egyptian, and other mythology retold as gripping stories"
+    tone: "dramatic, mythic, larger-than-life storytelling"
+    weight: 1.2
 
 video:
   fps: 30

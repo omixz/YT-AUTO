@@ -128,11 +128,32 @@ def test_check_fails_on_too_few_tags():
     assert any("tags" in r for r in reasons)
 
 
-# --- causal-hook gate (the "10/10, super interesting" bar) -----------------
+# --- strong-hook gate (the "10/10, super interesting" bar) ------------------
 
-def test_check_passes_a_real_causal_hook_title():
+def test_check_passes_a_causal_hook_title():
     script = _script()
     script.title = "How Did One Assassination Trigger a World War?"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_check_passes_an_immersive_daily_life_title():
+    script = _script()
+    script.title = "What Was It Really Like to Be a Gladiator in Ancient Rome?"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_check_passes_a_mythology_title():
+    script = _script()
+    script.title = "The Greek Myth That Terrified an Entire Civilization"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_check_passes_a_hidden_truth_title():
+    script = _script()
+    script.title = "The Secret the Pharaohs Didn't Want Anyone to Know"
     passed, reasons = quality_check.check(script, _config())
     assert passed, reasons
 
@@ -142,22 +163,37 @@ def test_check_fails_a_vague_listicle_title():
     script.title = "5 Facts About World War II You Didn't Know"
     passed, reasons = quality_check.check(script, _config())
     assert not passed
-    assert any("cause-and-effect claim" in r for r in reasons)
+    assert any("vague listicle" in r for r in reasons)
 
 
-def test_check_passes_a_causal_title_even_without_a_year_or_number():
-    # The gate only requires an explicit causal claim, not a specific date -
-    # a heuristic "named entity" check was considered and dropped (see
-    # quality_check.py's comment) since Title Case defeats it.
+def test_check_fails_a_bare_topic_label_title():
     script = _script()
-    script.title = "How a Small Mistake Caused a Huge Disaster"
+    script.title = "Ancient Rome: A Documentary"
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("vague listicle" in r for r in reasons)
+
+
+def test_check_fails_bare_mythology_label_despite_containing_myth_substring():
+    # Regression test: "myth" is a substring of "Mythology", so a naive
+    # substring check let this exact bare-label title through.
+    script = _script()
+    script.title = "Greek Mythology Explained"
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("vague listicle" in r for r in reasons)
+
+
+def test_check_passes_a_title_using_the_standalone_word_myth():
+    script = _script()
+    script.title = "The Myth That Terrified an Ancient Civilization"
     passed, reasons = quality_check.check(script, _config())
     assert passed, reasons
 
 
-def test_causal_hook_gate_can_be_disabled():
+def test_strong_hook_gate_can_be_disabled():
     config = _config()
-    config.quality.require_causal_hook = False
+    config.quality.require_strong_hook = False
     script = _script()
     script.title = "5 Facts About World War II You Didn't Know"
     passed, reasons = quality_check.check(script, config)
