@@ -23,9 +23,13 @@ niches:
     niche: "history's darkest, strangest, and most shocking moments"
     tone: "dramatic, high-stakes, told like a mini-documentary"
     weight: 1.2
-  - key: wild_facts
-    niche: "wild, surprising 'did you know' facts about science, nature, and the world"
-    tone: "dramatic curiosity-gap hooks, punchy, surprising"
+  - key: world_wars
+    niche: "pivotal moments, decisions, and turning points of World War I and World War II"
+    tone: "dramatic, high-stakes, cause-and-effect - one decision that changed everything"
+    weight: 1.2
+  - key: modern_history
+    niche: "consequential decisions and turning points of 20th-21st century history"
+    tone: "dramatic, high-stakes, cause-and-effect - one decision that changed everything"
     weight: 1.0
 
 video:

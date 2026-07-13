@@ -189,11 +189,20 @@ Audience: {config.channel.audience}
 Tone: {config.channel.tone}
 Topic for this video: {topic}
 
-Write the title first, then a script that delivers on it. The title must make one specific,
-curiosity-gap promise (not a vague topic label), and the hook scene's first sentence must open by
-directly delivering on that exact promise - a title/thumbnail that oversells what the video
-actually opens with is the single biggest reason a video's retention (and therefore YouTube's
-willingness to keep recommending it) collapses in the first seconds.
+Write the title first, then a script that delivers on it. This channel only ships 10/10,
+"how did I not know this" videos - if the topic can't support a genuinely dramatic cause-and-effect
+hook, that's a sign to find the angle that does.
+
+The title MUST follow a specific-cause -> specific-consequence template: name one concrete,
+specific triggering event or decision (a person's death, a single choice, one mistake, one
+discovery), then name the larger, surprising thing it caused. For example: "How did the death of
+[a specific named person] cause [a specific named event]?" is exactly the shape - a real named
+cause, a real named effect, connected by "caused"/"led to"/"triggered"/"sparked"/"started". Not
+"5 Facts About WWII" - "How Did One Assassination Start a World War?" The hook scene's first
+sentence must open by directly asserting or delivering on that exact cause -> effect claim - a
+title/thumbnail that oversells what the video actually opens with is the single biggest reason a
+video's retention (and therefore YouTube's willingness to keep recommending it) collapses in the
+first seconds.
 
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
@@ -249,12 +258,15 @@ Audience: {config.channel.audience}
 Already-used topics (do not repeat these or close variants):
 {used_list}
 
-Suggest {count} new video topics for this channel. Bias hard toward genuinely dramatic, high-stakes,
-shocking, or emotionally charged stories over bland "fun fact" trivia - a real person facing a real
-crisis, a disaster, a betrayal, a narrow escape, a shocking twist - the kind of premise that makes
-someone stop scrolling. Each topic should be specific enough to have a clear central character or
-moment (a name, an event, a decision), not a vague category. Avoid anything copyrighted or that would
-require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
+Suggest {count} new video topics for this channel. Every topic must be shaped as a specific
+cause -> surprising consequence: one concrete triggering event (a death, a single decision, one
+mistake, one discovery) that led to something much bigger than it sounds like it should have -
+think "how did the death of X cause Y" or "how did one decision start Y." Bias hard toward
+genuinely dramatic, high-stakes, shocking, or emotionally charged stories over bland "fun fact"
+trivia - a real person facing a real crisis, a disaster, a betrayal, a narrow escape, a shocking
+twist - the kind of premise that makes someone stop scrolling. Each topic needs a clear named
+person/event on both the cause and the effect side, not a vague category. Avoid anything
+copyrighted or that would require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
 
     data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=500)
     return list(data["topics"])

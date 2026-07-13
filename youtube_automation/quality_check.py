@@ -7,6 +7,10 @@ the pipeline:
   scenes, or missing the hook/insight structure the script prompt was told
   to follow. This is exactly what YouTube's reused/duplicative content
   policy targets, so catching it matters even before anything is rendered.
+  It also enforces the one deliberate exception to the "only catch breakage,
+  not writing quality" rule below: the title must follow the causal-hook
+  template ("how did the death of X cause Y") the channel is meant to only
+  ever ship - see require_causal_hook.
 - `check_media()` runs after the final video is assembled - it actually
   inspects the rendered file (via ffprobe) rather than trusting that every
   upstream step worked, catching the class of bug where a renderer or mixer
@@ -78,6 +82,25 @@ MIN_SCENE_WORDS = 3
 MIN_DESCRIPTION_WORDS = 8
 MIN_TAGS = 3
 
+# The "10/10, super interesting" bar: the title must make an explicit
+# cause-and-effect claim - e.g. "How did the death of [named person] cause
+# [named event]?" - not a vague listicle ("5 Facts About WWII"). A causal
+# connector is a reliable, cheap signal for this; a "has a named entity"
+# check was considered too (checking for a capitalized word) but real
+# titles come back in Title Case ("How A Small Mistake Caused A Huge
+# Disaster"), which capitalizes every word regardless of whether any of
+# them name something specific - that check would have given false
+# confidence rather than real detection, so it was dropped.
+_CAUSAL_CONNECTORS = (
+    "caus", "trigger", "spark", "led to", "leads to", "lead to",
+    "start", "set off", "unleash", "result in", "resulted in", "chang",
+)
+
+
+def _has_causal_connector(text: str) -> bool:
+    lower = f" {text.lower()} "
+    return any(c in lower for c in _CAUSAL_CONNECTORS)
+
 
 def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
     reasons: List[str] = []
@@ -126,6 +149,11 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
 
     if not script.title.strip():
         reasons.append("title is empty")
+    elif q.require_causal_hook and not _has_causal_connector(script.title):
+        reasons.append(
+            "title doesn't make a cause-and-effect claim (needs a connector like "
+            "'caused'/'led to'/'triggered' - e.g. \"How did the death of X cause Y?\")"
+        )
 
     if len(script.description.split()) < MIN_DESCRIPTION_WORDS:
         reasons.append(f"description is only {len(script.description.split())} words (min {MIN_DESCRIPTION_WORDS})")

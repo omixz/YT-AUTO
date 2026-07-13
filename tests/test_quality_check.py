@@ -26,7 +26,8 @@ def _script(word_count=200, n_scenes=8, first_role="hook", last_role="insight"):
         scenes[0].role = first_role
         scenes[-1].role = last_role
     return Script(
-        topic="t", title="A Real Title", description="A reasonably descriptive summary of the video content here.",
+        topic="t", title="How Did the Death of Franz Ferdinand Cause World War I?",
+        description="A reasonably descriptive summary of the video content here.",
         tags=["tag1", "tag2", "tag3"], scenes=scenes,
     )
 
@@ -125,6 +126,42 @@ def test_check_fails_on_too_few_tags():
     passed, reasons = quality_check.check(script, _config())
     assert not passed
     assert any("tags" in r for r in reasons)
+
+
+# --- causal-hook gate (the "10/10, super interesting" bar) -----------------
+
+def test_check_passes_a_real_causal_hook_title():
+    script = _script()
+    script.title = "How Did One Assassination Trigger a World War?"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_check_fails_a_vague_listicle_title():
+    script = _script()
+    script.title = "5 Facts About World War II You Didn't Know"
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("cause-and-effect claim" in r for r in reasons)
+
+
+def test_check_passes_a_causal_title_even_without_a_year_or_number():
+    # The gate only requires an explicit causal claim, not a specific date -
+    # a heuristic "named entity" check was considered and dropped (see
+    # quality_check.py's comment) since Title Case defeats it.
+    script = _script()
+    script.title = "How a Small Mistake Caused a Huge Disaster"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_causal_hook_gate_can_be_disabled():
+    config = _config()
+    config.quality.require_causal_hook = False
+    script = _script()
+    script.title = "5 Facts About World War II You Didn't Know"
+    passed, reasons = quality_check.check(script, config)
+    assert passed, reasons
 
 
 # --- check_media() (rendered-file level) ------------------------------------
