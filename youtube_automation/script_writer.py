@@ -70,10 +70,13 @@ SCRIPT_SCHEMA = {
 EMIT_SCRIPT = "emit_script"
 EMIT_TOPICS = "emit_topics"
 
-# Transient 503 "model overloaded" responses are common and worth one retry
-# rather than failing a whole scheduled run over it.
-_RETRY_STATUSES = {503}
-_MAX_RETRIES = 2
+# Transient 429/503 "overloaded/rate-limited" responses, and read timeouts
+# under load, are common and worth retrying rather than failing a whole
+# scheduled run over it (this has actually happened: a 503 and, separately,
+# a bare ReadTimeout - the latter isn't an HTTP status at all, so it needs
+# its own except clause below rather than just growing this set).
+_RETRY_STATUSES = {429, 503}
+_MAX_RETRIES = 4
 
 
 @dataclass
@@ -124,13 +127,24 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
     }
 
     last_error = None
+    response = None
     for attempt in range(_MAX_RETRIES + 1):
-        response = requests.post(
-            API_URL,
-            params={"key": config.secrets.gemini_api_key},
-            json=body,
-            timeout=120,
-        )
+        try:
+            response = requests.post(
+                API_URL,
+                params={"key": config.secrets.gemini_api_key},
+                json=body,
+                timeout=180,
+            )
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
+            last_error = str(exc)
+            if attempt < _MAX_RETRIES:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(
+                f"Gemini API request timed out after {_MAX_RETRIES + 1} attempts: {last_error}"
+            ) from exc
+
         if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
             last_error = response.text
             time.sleep(2 ** attempt)
