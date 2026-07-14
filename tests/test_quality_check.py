@@ -137,6 +137,16 @@ def test_check_passes_a_causal_hook_title():
     assert passed, reasons
 
 
+def test_check_passes_an_averted_disaster_title():
+    # Regression test: this exact real title was rejected in production
+    # before the "averted disaster" marker group was added - a prevented
+    # catastrophe is just as strong a hook as a caused one.
+    script = _script()
+    script.title = "How One Stubborn Soviet Submarine Officer Single-Handedly Saved the World"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
 def test_check_passes_an_immersive_daily_life_title():
     script = _script()
     script.title = "What Was It Really Like to Be a Gladiator in Ancient Rome?"

@@ -99,9 +99,18 @@ MIN_TAGS = 3
 # of whether any of them name something specific - that check would have
 # given false confidence rather than real detection, so it was dropped.
 _STRONG_HOOK_MARKERS = (
-    # cause -> consequence
+    # cause -> consequence (a trigger that set something off)
     "caus", "trigger", "spark", "led to", "leads to", "lead to",
     "start", "set off", "unleash", "result in", "resulted in", "chang",
+    # averted disaster: just as causally significant as triggering one, but
+    # inverted polarity ("prevented/stopped/saved" instead of "caused") -
+    # missing this class of connector is what let a genuinely great title
+    # ("How One Stubborn Soviet Submarine Officer Single-Handedly Saved the
+    # World") get rejected in real production; this whole group was added
+    # in direct response to that.
+    "saved the world", "single-handedly", "prevented", "averted", "stopped",
+    "foiled", "thwarted", "narrowly avoided", "nearly caused", "almost started",
+    "stood between", "on the brink of",
     # immersive daily-life curiosity
     "what was it really like", "what it was really like", "what life was really like",
     "really like to be", "really like to live", "daily life",
