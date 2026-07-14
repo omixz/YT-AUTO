@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import math
 import random
+import re
 import subprocess
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -32,18 +33,45 @@ INK = (25, 25, 25)
 SKY = (255, 255, 255)
 
 
+def _contains_keyword(haystack: str, keyword: str) -> bool:
+    """Word-boundary-aware match for single-word keywords; plain substring
+    match for multi-word phrases (which are collision-safe on their own).
+    Bare substring matching on short single words was a real, wide-reaching
+    bug: "ice" is a substring of "officer", "war" of "warning"/"warrior",
+    "sand" of "thousand", "city" of "capacity"/"velocity", "cell" of
+    "excellent" - all common words in historical narration, silently
+    misrouting scenes to the wrong setting/subject/outfit."""
+    if " " in keyword or "-" in keyword:
+        return keyword in haystack
+    return re.search(rf"\b{re.escape(keyword)}\b", haystack) is not None
+
+
+def _count_keyword(haystack: str, keyword: str) -> int:
+    if " " in keyword or "-" in keyword:
+        return haystack.count(keyword)
+    return len(re.findall(rf"\b{re.escape(keyword)}\b", haystack))
+
+
 # --- environment settings (ground + background elements) -------------------
 
 _KEYWORD_TO_SETTING = [
     (("snow", "siberia", "arctic", "ice", "frozen", "winter", "cold", "blizzard"), "snow"),
-    (("ocean", "sea", "beach", "coast", "island", "ship", "boat", "wave",
+    (("ocean", "sea", "beach", "coast", "island", "ship", "boat", "wave", "submarine",
+      "navy", "naval", "destroyer", "warship", "periscope", "fleet", "harbor",
       "octopus", "squid", "cephalopod", "marine", "underwater", "aquatic",
       "deep-sea", "deep sea", "tentacle", "reef", "fish", "whale", "shark"), "water"),
     (("mountain", "valley", "cliff", "peak", "himalay", "andes", "alps"), "mountain"),
-    (("war", "battle", "combat", "ruin", "rubble", "bomb", "wreckage", "crash"), "ruins"),
+    (("war", "battle", "combat", "trench", "front line", "rubble", "bomb",
+      "wreckage", "crash", "invasion", "siege"), "ruins"),
     (("forest", "jungle", "wood", "tree", "wilderness"), "forest"),
     (("desert", "sand", "sahara", "dune"), "desert"),
-    (("room", "office", "lab", "laboratory", "indoor", "house", "building", "factory"), "indoor"),
+    (("room", "office", "lab", "laboratory", "indoor", "house", "factory", "bunker", "cell"), "indoor"),
+    (("palace", "throne", "castle", "fortress", "court", "coronation", "monarchy"), "palace"),
+    (("temple", "pyramid", "tomb", "pharaoh", "sphinx", "ziggurat", "acropolis",
+      "parthenon", "ancient egypt", "mesopotamia", "ruins of"), "ancient"),
+    (("city", "street", "capital", "town square", "market", "urban", "metropolis"), "city"),
+    (("olympus", "zeus", "poseidon", "hades", "underworld", "the gods", "god of",
+      "goddess of", "pantheon", "valhalla", "asgard", "mythology", "mythical"), "mythic"),
 ]
 
 GROUND_COLORS = {
@@ -54,6 +82,10 @@ GROUND_COLORS = {
     "forest": (160, 195, 140),
     "desert": (225, 200, 150),
     "indoor": (210, 190, 160),
+    "palace": (222, 210, 188),
+    "ancient": (218, 198, 160),
+    "city": (188, 192, 198),
+    "mythic": (232, 222, 196),
     "default": (200, 210, 190),
 }
 
@@ -61,7 +93,7 @@ GROUND_COLORS = {
 def _setting_for_scene(scene: Scene) -> str:
     haystack = f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
     for keywords, setting in _KEYWORD_TO_SETTING:
-        if any(kw in haystack for kw in keywords):
+        if any(_contains_keyword(haystack, kw) for kw in keywords):
             return setting
     return "default"
 
@@ -132,6 +164,51 @@ def _draw_wave(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y:
     _sketchy_polyline(draw, rng, pts, width=4)
 
 
+def _draw_temple(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y: float, scale: float) -> None:
+    """A simplified ancient temple: a triangular pediment over a row of
+    columns - distinct silhouette from the house, for ancient/mythic scenes."""
+    w, h = 380 * scale, 220 * scale
+    col_w = w / 5
+    for i in range(5):
+        cx_i = cx - w / 2 + col_w * i + col_w / 2
+        col = [(cx_i - col_w * 0.28, base_y), (cx_i - col_w * 0.28, base_y - h),
+               (cx_i + col_w * 0.28, base_y - h), (cx_i + col_w * 0.28, base_y)]
+        _sketchy_polyline(draw, rng, col, fill=(225, 215, 195), width=int(4 * scale) or 3)
+    deck = [(cx - w / 2, base_y - h), (cx + w / 2, base_y - h), (cx + w / 2, base_y - h * 1.08), (cx - w / 2, base_y - h * 1.08)]
+    _sketchy_polyline(draw, rng, deck, fill=(200, 190, 170), close=True, width=int(5 * scale) or 3)
+    pediment = [(cx - w / 2 - 15 * scale, base_y - h * 1.08), (cx, base_y - h * 1.5), (cx + w / 2 + 15 * scale, base_y - h * 1.08)]
+    _sketchy_polyline(draw, rng, pediment, fill=(190, 175, 150), close=True, width=int(5 * scale) or 3)
+
+
+def _draw_castle(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y: float, scale: float) -> None:
+    w, h = 300 * scale, 260 * scale
+    keep = [(cx - w * 0.3, base_y), (cx - w * 0.3, base_y - h * 0.75), (cx + w * 0.3, base_y - h * 0.75), (cx + w * 0.3, base_y)]
+    _sketchy_polyline(draw, rng, keep, fill=(150, 145, 140), close=True, width=int(5 * scale) or 3)
+    for side in (-1, 1):
+        tx = cx + side * w * 0.42
+        tower = [(tx - w * 0.12, base_y), (tx - w * 0.12, base_y - h), (tx + w * 0.12, base_y - h), (tx + w * 0.12, base_y)]
+        _sketchy_polyline(draw, rng, tower, fill=(135, 130, 128), close=True, width=int(5 * scale) or 3)
+        roof = [(tx - w * 0.15, base_y - h), (tx, base_y - h * 1.22), (tx + w * 0.15, base_y - h)]
+        _sketchy_polyline(draw, rng, roof, fill=(120, 60, 60), close=True, width=int(4 * scale) or 3)
+    flag = [(cx, base_y - h * 0.75), (cx, base_y - h * 0.95), (cx + w * 0.14, base_y - h * 0.88)]
+    _sketchy_polyline(draw, rng, flag, fill=(200, 60, 60), close=True, width=int(3 * scale) or 3)
+
+
+def _draw_city_building(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y: float, scale: float) -> None:
+    w = rng.uniform(150, 220) * scale
+    h = rng.uniform(260, 420) * scale
+    color = rng.choice([(150, 155, 165), (170, 165, 155), (140, 150, 150)])
+    body = [(cx - w / 2, base_y), (cx - w / 2, base_y - h), (cx + w / 2, base_y - h), (cx + w / 2, base_y)]
+    _sketchy_polyline(draw, rng, body, fill=color, close=True, width=int(5 * scale) or 3)
+    rows, cols = 4, 3
+    for r in range(rows):
+        for c in range(cols):
+            wx = cx - w * 0.36 + (w * 0.72) * c / (cols - 1)
+            wy = base_y - h * 0.15 - (h * 0.7) * r / (rows - 1)
+            wr = w * 0.06
+            draw.rectangle([wx - wr, wy - wr, wx + wr, wy + wr], fill=(230, 225, 200))
+
+
 _ELEMENT_DRAWERS = {
     "indoor": [_draw_house],
     "snow": [_draw_house, _draw_tree],
@@ -140,6 +217,14 @@ _ELEMENT_DRAWERS = {
     "forest": [_draw_tree, _draw_tree, _draw_house],
     "desert": [_draw_ruin],
     "water": [_draw_wave],
+    "palace": [_draw_castle],
+    "ancient": [_draw_temple],
+    "city": [_draw_city_building, _draw_city_building],
+    # mythic scenes already get floating sky clouds from the general
+    # cloud-adding logic below (any non-indoor setting) - _draw_cloud takes
+    # an independent (cx, cy) sky position, not the base_y ground-anchor
+    # convention every _ELEMENT_DRAWERS entry uses, so it can't be listed here.
+    "mythic": [_draw_temple],
     "default": [_draw_house, _draw_tree],
 }
 
@@ -162,7 +247,8 @@ _KEYWORD_TO_HEADWEAR = [
 ]
 
 _KEYWORD_TO_MOOD = [
-    (("died", "death", "killed", "dead", "disaster", "destroyed", "collapse", "vanished", "gone"), "shocked"),
+    (("died", "death", "killed", "dead", "disaster", "destroyed", "collapse", "collapsed",
+      "collapsing", "vanished", "gone"), "shocked"),
     (("shock", "twist", "sudden", "surprise", "warning", "danger"), "shocked"),
 ]
 
@@ -170,7 +256,7 @@ _KEYWORD_TO_MOOD = [
 def _match(scene: Scene, table) -> Optional[str]:
     haystack = f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
     for keywords, value in table:
-        if any(kw in haystack for kw in keywords):
+        if any(_contains_keyword(haystack, kw) for kw in keywords):
             return value
     return None
 
@@ -497,8 +583,8 @@ def _subject_for_scene(scene: Scene) -> Optional[str]:
 
 
 def _dominant_subject(scenes: List[Scene], extra_text: str = "") -> Optional[str]:
-    """A video about octopuses should show an octopus in *every* scene, even
-    the ones whose narration happens not to say 'octopus' (e.g. a sentence
+    """A video about octopuses should show an octopus regularly, even in
+    scenes whose narration happens not to say 'octopus' (e.g. a sentence
     about a protein). Pick the most common subject across the whole script
     (plus the title/topic) and use it as the per-scene fallback."""
     haystack = extra_text.lower() + " " + " ".join(
@@ -506,12 +592,29 @@ def _dominant_subject(scenes: List[Scene], extra_text: str = "") -> Optional[str
     ).lower()
     counts = {}
     for keywords, subject in _KEYWORD_TO_SUBJECT:
-        hits = sum(haystack.count(kw) for kw in keywords)
+        hits = sum(_count_keyword(haystack, kw) for kw in keywords)
         if hits:
             counts[subject] = counts.get(subject, 0) + hits
     if not counts:
         return None
     return max(counts, key=counts.get)
+
+
+def _resolve_subject(scene: Scene, index: int, subject_fallback: Optional[str]) -> Optional[str]:
+    """A scene's own keywords always win. Failing that, the whole-video
+    fallback subject only applies to *half* the remaining scenes (odd/even
+    by index) rather than every single one - applying it everywhere is what
+    caused "the same fish in every frame" for a whole video, since most
+    scenes in a real script don't literally re-mention the subject by name.
+    The other half fall through to the ordinary environment/character scene
+    (still driven by that scene's own setting keywords), which is a
+    genuinely different visual, not just a repositioned creature."""
+    matched = _subject_for_scene(scene)
+    if matched:
+        return matched
+    if subject_fallback and index % 2 == 0:
+        return subject_fallback
+    return None
 
 
 # --- scene composition -----------------------------------------------------
@@ -640,7 +743,7 @@ def generate_scene_image(
     subject_fallback: Optional[str] = None,
 ) -> Path:
     rng = random.Random(index)
-    subject = _subject_for_scene(scene) or subject_fallback
+    subject = _resolve_subject(scene, index, subject_fallback)
     base, paint, _motion = _compose_scene(rng, scene, config, subject)
     paint(ImageDraw.Draw(base))
     out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
@@ -717,7 +820,7 @@ def generate_scene_clip(
     rendering."""
     rng = random.Random(index)
     w, h = config.video.resolution
-    subject = _subject_for_scene(scene) or subject_fallback
+    subject = _resolve_subject(scene, index, subject_fallback)
     base, paint, (ax, ay, px, py) = _compose_scene(rng, scene, config, subject)
 
     bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
