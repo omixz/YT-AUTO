@@ -128,7 +128,13 @@ def test_check_fails_on_too_few_tags():
     assert any("tags" in r for r in reasons)
 
 
-# --- strong-hook gate (the "10/10, super interesting" bar) ------------------
+# --- vague-title gate (the "10/10, super interesting" bar) ------------------
+# This gate is a deny-list (reject known-vague patterns), not an allow-list
+# (require a known-good pattern) - see the comment above
+# _VAGUE_TITLE_PATTERNS for why. The "passes a ... title" tests below mostly
+# document real production titles that got wrongly rejected back when this
+# was an allow-list; they still matter now as a regression sweep proving the
+# deny-list doesn't misfire on genuinely good, specific titles.
 
 def test_check_passes_a_causal_hook_title():
     script = _script()
@@ -202,13 +208,39 @@ def test_check_passes_a_title_using_the_standalone_word_myth():
 
 
 def test_check_passes_an_accidental_cause_and_effect_title():
-    # Regression test: this exact real title was rejected in production -
-    # "accidentally X-ed" is just as much a cause->consequence hook as
-    # "triggered/caused", it just doesn't use any of those literal words.
+    # Regression test: this exact real title was rejected in production
+    # back when this gate was an allow-list of marker phrases.
     script = _script()
     script.title = "How a Politician's Single Typo Accidentally Destroyed the Berlin Wall"
     passed, reasons = quality_check.check(script, _config())
     assert passed, reasons
+
+
+def test_check_passes_a_bizarre_historical_event_title():
+    # Regression test: a third real production title rejected by the old
+    # allow-list, which is exactly why it was replaced with a deny-list -
+    # this is a genuinely striking, specific hook that just doesn't happen
+    # to use any of "caused/triggered/secret/myth/accidentally/etc".
+    script = _script()
+    script.title = "The Day a Rotting Pope's Corpse Was Put on Trial"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
+def test_check_fails_a_top_n_listicle_title():
+    script = _script()
+    script.title = "Top 10 Facts About the Roman Empire"
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("vague listicle" in r for r in reasons)
+
+
+def test_check_fails_a_brief_history_of_title():
+    script = _script()
+    script.title = "A History of Ancient Rome"
+    passed, reasons = quality_check.check(script, _config())
+    assert not passed
+    assert any("vague listicle" in r for r in reasons)
 
 
 def test_strong_hook_gate_can_be_disabled():

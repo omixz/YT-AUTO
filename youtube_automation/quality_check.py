@@ -8,10 +8,8 @@ the pipeline:
   to follow. This is exactly what YouTube's reused/duplicative content
   policy targets, so catching it matters even before anything is rendered.
   It also enforces the one deliberate exception to the "only catch breakage,
-  not writing quality" rule below: the title must use one of a handful of
-  genuinely-interesting hook shapes (cause-and-effect, immersive daily-life
-  curiosity, myth/legend, hidden-truth reveal) rather than a vague listicle
-  or topic label - see require_strong_hook.
+  not writing quality" rule below: the title must not read like a vague
+  listicle or bare topic label - see require_strong_hook.
 - `check_media()` runs after the final video is assembled - it actually
   inspects the rendered file (via ffprobe) rather than trusting that every
   upstream step worked, catching the class of bug where a renderer or mixer
@@ -84,61 +82,38 @@ MIN_SCENE_WORDS = 3
 MIN_DESCRIPTION_WORDS = 8
 MIN_TAGS = 3
 
-# The "10/10, super interesting" bar: the title must use a genuinely
-# interesting hook shape, not a vague listicle ("5 Facts About Rome") or
-# bare topic label ("Ancient Rome: A Documentary"). This isn't limited to
-# cause-and-effect - "how did the death of X cause Y" was the first version
-# of this gate, but that excluded exactly the content that performs well:
-# immersive daily-life stories, mythology retellings, hidden-truth reveals.
-# Each marker group below is a cheap, low-collision signal for one of the
-# hook shapes the script prompt asks for; the title only needs to match one.
+# The "10/10, super interesting" bar: reject vague listicles ("5 Facts About
+# Rome") and bare topic labels ("Ancient Rome: A Documentary" / "Greek
+# Mythology Explained"), not require the title to match a specific "strong
+# hook" phrasing.
 #
-# A "has a named entity" check was also considered (checking for a
-# capitalized word) but real titles come back in Title Case ("How A Small
-# Mistake Caused A Huge Disaster"), which capitalizes every word regardless
-# of whether any of them name something specific - that check would have
-# given false confidence rather than real detection, so it was dropped.
-_STRONG_HOOK_MARKERS = (
-    # cause -> consequence (a trigger that set something off)
-    "caus", "trigger", "spark", "led to", "leads to", "lead to",
-    "start", "set off", "unleash", "result in", "resulted in", "chang",
-    # regression: "How a Politician's Single Typo Accidentally Destroyed the
-    # Berlin Wall" is a textbook cause->consequence hook but used none of the
-    # above connectors - real production title, rejected before this was added.
-    "accidentally", "by accident", "by mistake", "single typo", "one typo",
-    "single mistake", "one mistake",
-    # averted disaster: just as causally significant as triggering one, but
-    # inverted polarity ("prevented/stopped/saved" instead of "caused") -
-    # missing this class of connector is what let a genuinely great title
-    # ("How One Stubborn Soviet Submarine Officer Single-Handedly Saved the
-    # World") get rejected in real production; this whole group was added
-    # in direct response to that.
-    "saved the world", "single-handedly", "prevented", "averted", "stopped",
-    "foiled", "thwarted", "narrowly avoided", "nearly caused", "almost started",
-    "stood between", "on the brink of",
-    # immersive daily-life curiosity
-    "what was it really like", "what it was really like", "what life was really like",
-    "really like to be", "really like to live", "daily life",
-    # myth/legend (excluding "myth" itself - see _MYTH_WORD_RE below)
-    "legend", "the god ", "the goddess ",
-    # hidden-truth reveal
-    "the secret", "the truth about", "what really happened", "the untold",
-    "didn't want", "never told", "hidden truth",
+# This used to be the other way around: an allow-list of marker phrases
+# ("caused", "triggered", "secret", "myth", ...) that the title had to match
+# one of. That approach kept failing in production - three different times,
+# on three different genuinely good, specific, curiosity-driving titles
+# ("...Single-Handedly Saved the World", "...Accidentally Destroyed the
+# Berlin Wall", "The Day a Rotting Pope's Corpse Was Put on Trial") - because
+# the space of ways to phrase a genuinely interesting hook is effectively
+# unbounded, so any fixed marker list is always one real title away from a
+# false negative. The space of ways to phrase a genuinely *vague* title is
+# far smaller and more enumerable (a listicle count, "Explained", "X: A
+# Documentary/Overview/Guide"), so a deny-list of those specific patterns
+# catches the actual problem (lazy, unspecific titles) without needing to
+# anticipate every good title's wording in advance.
+_VAGUE_TITLE_PATTERNS = (
+    # "5 Facts About X", "Top 10 Things About Y", "7 Reasons Why..."
+    re.compile(r"^\s*(top\s*)?\d+\s+(facts|things|reasons|ways|secrets|myths|mistakes|events|stories)\b", re.I),
+    # "X: A Documentary", "Y: An Overview", "Z: A Guide"
+    re.compile(r":\s*(a|an)?\s*(documentary|overview|retrospective|explainer|guide|summary)\s*$", re.I),
+    # "Greek Mythology Explained"
+    re.compile(r"\bexplained\s*$", re.I),
+    # "A History of X", "An Introduction to Y", "A Guide to Z"
+    re.compile(r"^\s*(a|an)\s+(brief\s+)?(history|overview|guide|introduction)\s+(of|to)\b", re.I),
 )
 
-# "myth" needs its own word-boundary check rather than a plain substring
-# match: "myth" is literally a substring of "mythology" (as in "Greek
-# Mythology Explained", the exact bare topic-label title this gate exists
-# to reject), so a naive `"myth" in title` let precisely the wrong titles
-# through. Found this via testing before shipping, not in production.
-_MYTH_WORD_RE = re.compile(r"\bmyths?\b")
 
-
-def _has_strong_hook_marker(text: str) -> bool:
-    lower = f" {text.lower()} "
-    if _MYTH_WORD_RE.search(lower):
-        return True
-    return any(m in lower for m in _STRONG_HOOK_MARKERS)
+def _is_vague_listicle_title(title: str) -> bool:
+    return any(p.search(title) for p in _VAGUE_TITLE_PATTERNS)
 
 
 def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
@@ -188,11 +163,10 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
 
     if not script.title.strip():
         reasons.append("title is empty")
-    elif q.require_strong_hook and not _has_strong_hook_marker(script.title):
+    elif q.require_strong_hook and _is_vague_listicle_title(script.title):
         reasons.append(
-            "title doesn't use a strong hook shape (cause-and-effect, immersive daily-life "
-            "curiosity, myth/legend, or hidden-truth reveal) - reads like a vague listicle "
-            "or topic label instead"
+            "title reads like a vague listicle or bare topic label (e.g. \"N Facts About X\", "
+            "\"X: A Documentary\", \"X Explained\") instead of a specific, curiosity-driving hook"
         )
 
     if len(script.description.split()) < MIN_DESCRIPTION_WORDS:
