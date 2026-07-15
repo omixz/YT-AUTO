@@ -102,6 +102,11 @@ _STRONG_HOOK_MARKERS = (
     # cause -> consequence (a trigger that set something off)
     "caus", "trigger", "spark", "led to", "leads to", "lead to",
     "start", "set off", "unleash", "result in", "resulted in", "chang",
+    # regression: "How a Politician's Single Typo Accidentally Destroyed the
+    # Berlin Wall" is a textbook cause->consequence hook but used none of the
+    # above connectors - real production title, rejected before this was added.
+    "accidentally", "by accident", "by mistake", "single typo", "one typo",
+    "single mistake", "one mistake",
     # averted disaster: just as causally significant as triggering one, but
     # inverted polarity ("prevented/stopped/saved" instead of "caused") -
     # missing this class of connector is what let a genuinely great title

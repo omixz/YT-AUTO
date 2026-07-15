@@ -201,6 +201,16 @@ def test_check_passes_a_title_using_the_standalone_word_myth():
     assert passed, reasons
 
 
+def test_check_passes_an_accidental_cause_and_effect_title():
+    # Regression test: this exact real title was rejected in production -
+    # "accidentally X-ed" is just as much a cause->consequence hook as
+    # "triggered/caused", it just doesn't use any of those literal words.
+    script = _script()
+    script.title = "How a Politician's Single Typo Accidentally Destroyed the Berlin Wall"
+    passed, reasons = quality_check.check(script, _config())
+    assert passed, reasons
+
+
 def test_strong_hook_gate_can_be_disabled():
     config = _config()
     config.quality.require_strong_hook = False

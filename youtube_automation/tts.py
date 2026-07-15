@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
@@ -17,6 +18,12 @@ import edge_tts
 
 from .config import VoiceConfig
 from .script_writer import Script
+
+# edge-tts's free endpoint occasionally drops a request with NoAudioReceived
+# for no discernible reason (no malformed input involved) - worth a few
+# retries rather than failing a whole scheduled run over it, same rationale
+# as the Gemini retry logic in script_writer.py.
+_MAX_TTS_RETRIES = 3
 
 
 @dataclass
@@ -53,6 +60,22 @@ async def _synthesize_one(text: str, voice: VoiceConfig, out_path: Path) -> List
                     )
                 )
     return cues
+
+
+def _synthesize_one_with_retry(text: str, voice: VoiceConfig, out_path: Path) -> List[WordCue]:
+    last_error = None
+    for attempt in range(_MAX_TTS_RETRIES + 1):
+        try:
+            return asyncio.run(_synthesize_one(text, voice, out_path))
+        except edge_tts.exceptions.NoAudioReceived as exc:
+            last_error = exc
+            if attempt < _MAX_TTS_RETRIES:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(
+                f"edge-tts returned no audio after {_MAX_TTS_RETRIES + 1} attempts: {last_error}"
+            ) from exc
+    raise AssertionError("unreachable")  # loop always returns or raises
 
 
 def _probe_duration(path: Path) -> float:
@@ -93,7 +116,7 @@ def synthesize_script(script: Script, voice: VoiceConfig, work_dir: Path) -> Tup
 
     for i, scene in enumerate(script.scenes):
         out_path = work_dir / f"scene_{i:02d}.mp3"
-        cues = asyncio.run(_synthesize_one(scene.narration, voice, out_path))
+        cues = _synthesize_one_with_retry(scene.narration, voice, out_path)
         duration = _probe_duration(out_path)
         scenes.append(SceneAudio(scene_index=i, audio_path=out_path, duration=duration, cues=cues))
 
