@@ -38,10 +38,18 @@ SCRIPT_SCHEMA = {
                             "promise in its very first sentence - no scene-setting, no 'today we're "
                             "looking at...' throat-clearing, since viewers decide whether to keep "
                             "watching within seconds and a slow open loses them before the rest of "
-                            "the script gets a chance. "
+                            "the script gets a chance. Vary the opening device by topic - a blunt "
+                            "shocking statement, a direct 'Did you know...' curiosity trigger, or a "
+                            "rhetorical question that opens a loop - whichever creates the sharpest "
+                            "curiosity gap for this specific topic. "
                             "build: 3+ middle scenes that develop connected facts into a mini-story "
                             "(use transitions like 'but here's the twist' / 'and that's not even "
-                            "the strangest part' - don't just list isolated trivia). "
+                            "the strangest part' - don't just list isolated trivia). The SECOND scene "
+                            "specifically must land a fresh escalation or twist of its own (not just "
+                            "restate/explain the hook) - this is the point, roughly 20-30 seconds in, "
+                            "where most viewers who clicked decide whether to keep watching, and a "
+                            "scene that merely elaborates on what the hook already said is exactly "
+                            "what makes them leave. "
                             "insight: exactly the last scene - a genuine 'why this matters' "
                             "synthesis, not just another fact."
                         ),
@@ -220,6 +228,13 @@ categories) and the hook scene's first sentence must open by directly delivering
 promise - a title/thumbnail that oversells what the video actually opens with is the single
 biggest reason a video's retention (and therefore YouTube's willingness to keep recommending it)
 collapses in the first seconds.
+
+Retention doesn't only collapse in the first seconds - there's a second, just as real drop-off
+around the 20-30 second mark, once the initial hook's payoff has been delivered and a viewer
+subconsciously asks "is there more, or was that it?". Guard against this explicitly: the scene
+right after the hook must introduce a new escalation, twist, or complication - not restate or
+explain the hook in different words - so a viewer who's still there at 30 seconds gets rewarded
+with fresh curiosity, not a lull.
 
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
