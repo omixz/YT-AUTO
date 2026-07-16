@@ -252,9 +252,36 @@ _KEYWORD_TO_MOOD = [
     (("shock", "twist", "sudden", "surprise", "warning", "danger"), "shocked"),
 ]
 
+# Two-person melee - distinct from large-scale "battle" (which stays a single
+# character in a war-torn setting): a personal fight/duel/brawl gets two
+# characters actually swinging at each other, see _compose_fight_scene.
+_FIGHT_KEYWORDS = ("fight", "fought", "duel", "brawl", "melee", "wrestl", "punch", "sparr",
+                    "sword fight", "swordfight", "clashed swords", "clash", "grapple")
+
+# A scene set among a crowd of onlookers - court, market, gathering - gets a
+# handful of small background figures instead of the lone focal character,
+# see _CROWD_COLORS / _draw_background_person.
+_CROWD_KEYWORDS = ("court", "courtiers", "crowd", "chatter", "gathered", "gathering",
+                    "marketplace", "town square", "audience", "onlookers", "spectators",
+                    "townsfolk", "villagers", "murmur", "assembly", "council")
+
+
+def _scene_haystack(scene: Scene) -> str:
+    return f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
+
+
+def _is_fight_scene(scene: Scene) -> bool:
+    haystack = _scene_haystack(scene)
+    return any(_contains_keyword(haystack, kw) for kw in _FIGHT_KEYWORDS)
+
+
+def _is_crowd_scene(scene: Scene) -> bool:
+    haystack = _scene_haystack(scene)
+    return any(_contains_keyword(haystack, kw) for kw in _CROWD_KEYWORDS)
+
 
 def _match(scene: Scene, table) -> Optional[str]:
-    haystack = f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
+    haystack = _scene_haystack(scene)
     for keywords, value in table:
         if any(_contains_keyword(haystack, kw) for kw in keywords):
             return value
@@ -321,7 +348,7 @@ def _flat_cap(draw, cx, head_cy, r):
 _HEADWEAR_DRAWERS = {"crown": _crown, "hat": _tophat, "helmet": _helmet, "cap": _flat_cap}
 
 
-def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides", phase: float = 0.0) -> None:
+def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides", phase: float = 0.0, facing: int = 1) -> None:
     head_r = 95 * scale
     hip_y = ground_y - 210 * scale
     shoulder_y = hip_y - 225 * scale
@@ -350,6 +377,20 @@ def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, gro
     elif pose == "crossed":
         _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx + 35 * scale, shoulder_y + 70 * scale)], width=int(18 * scale) or 4)
         _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx - 35 * scale, shoulder_y + 70 * scale)], width=int(18 * scale) or 4)
+    elif pose == "fighting":
+        # One arm (the side facing the opponent, per `facing`) throws a
+        # punch that extends toward them as phase sweeps 0..pi, then
+        # withdraws; the other arm stays back in a guard near the chest.
+        # Two fighters share this same code with opposite `facing` and a
+        # phase offset (see _compose_fight_scene), so they alternate
+        # throwing punches at each other rather than mirroring in sync.
+        punch = max(0.0, math.sin(phase))
+        front_shoulder_x = cx + 80 * scale * facing
+        front_fist = (cx + facing * (60 + 155 * punch) * scale, shoulder_y - 10 * scale)
+        _sketchy_polyline(draw, rng, [(front_shoulder_x, shoulder_y), front_fist], width=int(18 * scale) or 4)
+        rear_shoulder_x = cx - 80 * scale * facing
+        rear_fist = (cx - facing * 45 * scale, shoulder_y + 45 * scale)
+        _sketchy_polyline(draw, rng, [(rear_shoulder_x, shoulder_y), rear_fist], width=int(18 * scale) or 4)
     else:
         _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 100 * scale + arm_swing, hip_y - 10 * scale)], width=int(18 * scale) or 4)
         _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 100 * scale - arm_swing, hip_y - 10 * scale)], width=int(18 * scale) or 4)
@@ -446,6 +487,48 @@ _GROUND_TEXTURES = {
     "ruins": _texture_rock,
     "default": _texture_grass,
 }
+
+
+# --- fight scenes: two characters trading swings, plus an impact spark -----
+
+def _draw_impact_burst(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: float) -> None:
+    """A jagged starburst flashed at the collision point on a punch's peak
+    extension - the classic comic-panel "POW" shape, cheap to draw and reads
+    instantly as impact even as a single still frame."""
+    color = (255, 205, 60)
+    pts = []
+    for i in range(12):
+        ang = i * math.pi / 6
+        r = (60 if i % 2 == 0 else 24) * scale
+        pts.append((cx + r * math.cos(ang), cy + r * math.sin(ang)))
+    draw.polygon(pts, fill=color, outline=INK, width=max(3, round(4 * scale)))
+
+
+# --- background crowd: several small, simplified figures behind the focal
+# character - for court/market/gathering scenes so "a crowd murmured" or
+# "the court fell silent" doesn't render as one giant alone on an empty
+# stage. Deliberately much simpler than draw_character (no outfit/headwear
+# detail) so they read as background, not competing focal points. ----------
+
+_CROWD_COLORS = [(150, 130, 190), (190, 150, 110), (110, 150, 150), (170, 110, 120), (140, 160, 110), (120, 130, 170)]
+
+
+def _draw_background_person(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, color: tuple, phase: float, idx: int) -> None:
+    # Each figure sways on its own phase offset (seeded by index) so a crowd
+    # of them doesn't move in unison like one repeated stamp.
+    sway = math.sin(phase * 0.8 + idx * 1.7) * 6 * scale
+    head_r = 30 * scale
+    hip_y = ground_y - 62 * scale
+    shoulder_y = hip_y - 70 * scale
+    head_cy = shoulder_y - head_r * 1.1
+    leg_w = max(3, round(8 * scale))
+    draw.line([(cx + sway, hip_y), (cx - 16 * scale + sway, ground_y)], fill=INK, width=leg_w)
+    draw.line([(cx + sway, hip_y), (cx + 16 * scale + sway, ground_y)], fill=INK, width=leg_w)
+    body = [(cx - 24 * scale + sway, shoulder_y), (cx + 24 * scale + sway, shoulder_y),
+            (cx + 18 * scale + sway, hip_y), (cx - 18 * scale + sway, hip_y)]
+    _outlined_blob(draw, body, color, max(3, round(5 * scale)))
+    draw.ellipse([cx - head_r + sway, head_cy - head_r, cx + head_r + sway, head_cy + head_r],
+                 fill=(235, 205, 175), outline=INK, width=max(3, round(4 * scale)))
 
 
 # --- subjects (the actual thing the video is about) ------------------------
@@ -743,13 +826,42 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
 
         def paint(d, phase=0.0):
             sd(d, rng, w * 0.5, ground_y - 180 * element_scale, element_scale, phase)
+    elif _is_fight_scene(scene):
+        # Two characters trading punches instead of one lone figure - "more
+        # than one stick figure" for scuffle/duel/brawl scenes, with an
+        # impact spark flashed at each punch's peak extension.
+        headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
+        outfit_a = _match(scene, _KEYWORD_TO_OUTFIT) or (85, 95, 65)
+        outfit_b = (150, 60, 60) if outfit_a != (150, 60, 60) else (60, 90, 140)
+        fight_scale = element_scale * 0.85
+        cx_a, cx_b = w * 0.40, w * 0.60
+
+        def paint(d, phase=0.0):
+            draw_character(d, rng, cx_a, ground_y, fight_scale, outfit_a, headwear, "neutral", "fighting", phase, facing=1)
+            draw_character(d, rng, cx_b, ground_y, fight_scale, outfit_b, headwear, "neutral", "fighting", phase + math.pi, facing=-1)
+            punch_a = max(0.0, math.sin(phase))
+            punch_b = max(0.0, math.sin(phase + math.pi))
+            if max(punch_a, punch_b) > 0.9:
+                _draw_impact_burst(d, (cx_a + cx_b) / 2, ground_y - 235 * fight_scale, fight_scale)
     else:
         outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
         headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
         mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
         pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
+        crowd = _is_crowd_scene(scene)
+        crowd_specs = []
+        if crowd:
+            # A handful of small background figures at varied x/scale/depth
+            # behind the focal character - "the court murmured" shouldn't
+            # render as one giant alone on an empty stage.
+            positions = [w * 0.14, w * 0.24, w * 0.76, w * 0.86, w * 0.32, w * 0.68]
+            for idx in range(rng.randint(3, 5)):
+                x = positions[idx % len(positions)] + rng.uniform(-w * 0.03, w * 0.03)
+                crowd_specs.append((x, rng.choice(_CROWD_COLORS), idx, element_scale * rng.uniform(0.45, 0.6)))
 
         def paint(d, phase=0.0):
+            for x, color, idx, cscale in crowd_specs:
+                _draw_background_person(d, rng, x, ground_y, cscale, color, phase, idx)
             draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose, phase)
 
     motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob

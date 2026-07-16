@@ -1,3 +1,5 @@
+import math
+
 from PIL import Image
 
 from youtube_automation.config import PipelineConfig
@@ -115,6 +117,55 @@ def test_generate_all_clips_one_per_scene(tmp_path):
     ]
     clips = pi.generate_all_clips(scenes, [1.5, 1.5], _config(), tmp_path)
     assert len(clips) == 2 and all(c.exists() for c in clips)
+
+
+def test_fight_scene_detected_by_keyword():
+    scene = Scene(narration="The two knights fought outside the gates.", visual_keywords=["sword fight"])
+    assert pi._is_fight_scene(scene)
+    calm = Scene(narration="The farmer tended his field.", visual_keywords=["farm"])
+    assert not pi._is_fight_scene(calm)
+
+
+def test_crowd_scene_detected_by_keyword():
+    scene = Scene(narration="The court murmured as the king entered.", visual_keywords=["court"])
+    assert pi._is_crowd_scene(scene)
+    calm = Scene(narration="The farmer tended his field alone.", visual_keywords=["farm"])
+    assert not pi._is_crowd_scene(calm)
+
+
+def test_fight_scene_renders_two_figures_not_one(tmp_path):
+    # Regression guard for "show more than one stick if needed": a fight
+    # scene must not fall through to the single centred-character
+    # composition - its painted content should span both fighters, not
+    # cluster in the width of a single figure.
+    from PIL import ImageChops, ImageDraw
+
+    scene = Scene(narration="The two soldiers fought in the ruins.", visual_keywords=["sword fight", "ruins"])
+    rng = pi.random.Random(0)
+    _base, paint, _motion = pi._compose_scene(rng, scene, _config(), subject=None)
+    size = tuple(_config().video.resolution_longform)
+    img = Image.new("RGB", size, (255, 255, 255))
+    paint(ImageDraw.Draw(img), phase=math.pi / 2)
+    diff = ImageChops.difference(img, Image.new("RGB", size, (255, 255, 255)))
+    bbox = diff.getbbox()
+    assert bbox is not None
+    left, _top, right, _bottom = bbox
+    assert (right - left) > size[0] * 0.25, "painted content is too narrow to be two separate figures"
+
+
+def test_crowd_scene_adds_background_figures(tmp_path):
+    scene = Scene(narration="The court murmured as the king entered the hall.", visual_keywords=["court", "king"])
+    rng = pi.random.Random(0)
+    _base, paint, _motion = pi._compose_scene(rng, scene, _config(), subject=None)
+    img = Image.new("RGB", tuple(_config().video.resolution_longform), (255, 255, 255))
+    from PIL import ImageDraw
+    paint(ImageDraw.Draw(img), phase=0.0)
+    # A crowd scene should paint content off to the sides (background
+    # figures), not just the single centred focal character.
+    w = img.size[0]
+    pixels = img.load()
+    side_has_content = any(pixels[x, 850] != (255, 255, 255) for x in range(0, w // 5))
+    assert side_has_content
 
 
 def test_headwear_drawers_never_leave_a_gap_above_the_head():
