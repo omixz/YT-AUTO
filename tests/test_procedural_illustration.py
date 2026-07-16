@@ -82,6 +82,32 @@ def test_scene_clip_is_a_valid_video_of_the_right_length(tmp_path):
     assert abs(float(dur) - 2.0) < 0.3
 
 
+def test_scene_clip_background_actually_pans_not_a_frozen_still(tmp_path):
+    # Regression test: a scene with no subject at all used to render as a
+    # single frozen frame for its whole duration (the Ken Burns pan/zoom is
+    # the fix for that) - assert the background genuinely moves, not just
+    # that a video file of the right length exists.
+    import subprocess
+    from PIL import ImageChops
+
+    scene = Scene(narration="The city stood in silence.", visual_keywords=["city"])
+    clip = pi.generate_scene_clip(scene, 3, _config(), tmp_path, duration=3.0)
+
+    first = tmp_path / "first.png"
+    last = tmp_path / "last.png"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(clip), "-vf", "select=eq(n\\,0)", "-vframes", "1", str(first)],
+        capture_output=True, check=True,
+    )
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(clip), "-vf", "select=eq(n\\,60)", "-vframes", "1", str(last)],
+        capture_output=True, check=True,
+    )
+    with Image.open(first) as a, Image.open(last) as b:
+        diff = ImageChops.difference(a.convert("RGB"), b.convert("RGB"))
+    assert diff.getbbox() is not None, "background frame is identical at t=0 and t=2s - pan/zoom isn't happening"
+
+
 def test_generate_all_clips_one_per_scene(tmp_path):
     scenes = [
         Scene(narration="A soldier marches.", visual_keywords=["soldier"]),

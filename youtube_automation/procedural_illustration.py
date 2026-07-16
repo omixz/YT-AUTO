@@ -809,9 +809,12 @@ def generate_scene_clip(
     scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
     duration: float, subject_fallback: Optional[str] = None,
 ) -> Path:
-    """Renders an animated MP4 for one scene: the static background with the
-    subject drawn on its own layer and drifted over time via an ffmpeg overlay
-    with time-varying position, so the figure floats/bobs instead of sitting
+    """Renders an animated MP4 for one scene: a slow Ken Burns pan/zoom across
+    the background (every scene, subject or not - a scene with no subject
+    used to just be a single frozen frame for its whole duration, which was
+    the single biggest source of "this looks bland"), plus the subject drawn
+    on its own layer and drifted over time via an ffmpeg overlay with
+    time-varying position, so the figure floats/bobs instead of sitting
     still. Aquatic subjects additionally get a short looping alpha-video
     sprite (tentacle-sway/fin-wiggle + rising bubbles - see
     _build_aquatic_sprite_loop) instead of a single static PNG, so the
@@ -836,15 +839,35 @@ def generate_scene_clip(
         sprite.save(sprite_path)
         sprite_input = ["-loop", "1", "-i", str(sprite_path)]
 
-    x_expr = f"{ax:.1f}*sin(2*PI*t/{px})" if ax and px else "0"
-    y_expr = f"{ay:.1f}*sin(2*PI*t/{py})" if ay and py else "0"
+    # Ken Burns: render the background oversized and slide/zoom a w x h
+    # window across it over the scene's duration, instead of feeding the
+    # native-resolution still straight through. Direction/axis/zoom amount
+    # are seeded per-scene (rng, and index parity for direction) so
+    # consecutive scenes don't all crawl the same way.
+    zoom = rng.uniform(1.10, 1.22)
+    ow, oh = round(w * zoom), round(h * zoom)
+    max_dx, max_dy = ow - w, oh - h
+    horizontal = rng.random() < 0.7  # horizontal pans read better than vertical most of the time
+    forward = index % 2 == 0
+    safe_duration = max(duration, 0.01)
+    if horizontal:
+        bg_x = f"{max_dx:.1f}*(t/{safe_duration:.3f})" if forward else f"{max_dx:.1f}*(1-t/{safe_duration:.3f})"
+        bg_y = f"{max_dy / 2:.1f}"
+    else:
+        bg_x = f"{max_dx / 2:.1f}"
+        bg_y = f"{max_dy:.1f}*(t/{safe_duration:.3f})" if forward else f"{max_dy:.1f}*(1-t/{safe_duration:.3f})"
+
+    subj_x = f"{ax:.1f}*sin(2*PI*t/{px})" if ax and px else "0"
+    subj_y = f"{ay:.1f}*sin(2*PI*t/{py})" if ay and py else "0"
     out_path = work_dir / f"scene_{index:02d}_anim.mp4"
     cmd = [
         "ffmpeg", "-y",
         "-loop", "1", "-i", str(bg_path),
         *sprite_input,
         "-filter_complex",
-        f"[0:v]fps={config.video.fps}[bg];[bg][1:v]overlay=x={x_expr}:y={y_expr}:eval=frame[v]",
+        f"[0:v]scale={ow}:{oh},fps={config.video.fps},"
+        f"crop=w={w}:h={h}:x='{bg_x}':y='{bg_y}'[bg];"
+        f"[bg][1:v]overlay=x={subj_x}:y={subj_y}:eval=frame[v]",
         "-map", "[v]", "-t", f"{duration:.3f}",
         "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
     ]
