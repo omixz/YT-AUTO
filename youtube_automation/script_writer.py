@@ -83,8 +83,18 @@ EMIT_TOPICS = "emit_topics"
 # scheduled run over it (this has actually happened: a 503 and, separately,
 # a bare ReadTimeout - the latter isn't an HTTP status at all, so it needs
 # its own except clause below rather than just growing this set).
+#
+# A real scheduled run hit a Gemini 503 "high demand" spike that outlasted
+# the old 4-retry/~15s-total budget (1+2+4+8s) and killed the whole day's
+# video before any content was generated. Google's own guidance for these is
+# "usually temporary" on the order of a minute or so, not 15 seconds, so the
+# budget is widened to ~2 minutes of total backoff (capped per-sleep so it
+# doesn't runaway) - a scheduled job losing an extra minute to retries is
+# free; losing the whole day's video to a spike that would've cleared 30
+# seconds later is not.
 _RETRY_STATUSES = {429, 503}
-_MAX_RETRIES = 4
+_MAX_RETRIES = 7
+_MAX_BACKOFF_SECONDS = 60
 
 
 @dataclass
@@ -147,7 +157,7 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
             last_error = str(exc)
             if attempt < _MAX_RETRIES:
-                time.sleep(2 ** attempt)
+                time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
                 continue
             raise RuntimeError(
                 f"Gemini API request timed out after {_MAX_RETRIES + 1} attempts: {last_error}"
@@ -155,7 +165,7 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
 
         if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
             last_error = response.text
-            time.sleep(2 ** attempt)
+            time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
             continue
         break
 
