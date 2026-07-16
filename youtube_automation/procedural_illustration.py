@@ -321,15 +321,23 @@ def _flat_cap(draw, cx, head_cy, r):
 _HEADWEAR_DRAWERS = {"crown": _crown, "hat": _tophat, "helmet": _helmet, "cap": _flat_cap}
 
 
-def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides") -> None:
+def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides", phase: float = 0.0) -> None:
     head_r = 95 * scale
     hip_y = ground_y - 210 * scale
     shoulder_y = hip_y - 225 * scale
     head_cy = shoulder_y - head_r * 1.15
 
+    # Idle weight-shift sway, driven by phase (one full cycle per loop):
+    # legs swing gently opposite each other and arms swing opposite the
+    # legs, like a person shifting weight in place rather than a frozen
+    # mannequin - the sprite-frame loop in generate_scene_clip renders this
+    # across a handful of phases so the character actually moves.
+    leg_swing = math.sin(phase) * 14 * scale
+    arm_swing = math.sin(phase + math.pi) * 10 * scale
+
     # legs
-    _sketchy_polyline(draw, rng, [(cx - 52 * scale, hip_y), (cx - 60 * scale, ground_y)], width=int(20 * scale) or 4)
-    _sketchy_polyline(draw, rng, [(cx + 52 * scale, hip_y), (cx + 60 * scale, ground_y)], width=int(20 * scale) or 4)
+    _sketchy_polyline(draw, rng, [(cx - 52 * scale, hip_y), (cx - 60 * scale + leg_swing, ground_y)], width=int(20 * scale) or 4)
+    _sketchy_polyline(draw, rng, [(cx + 52 * scale, hip_y), (cx + 60 * scale - leg_swing, ground_y)], width=int(20 * scale) or 4)
 
     # torso
     torso = [(cx - 80 * scale, shoulder_y), (cx + 80 * scale, shoulder_y), (cx + 62 * scale, hip_y), (cx - 62 * scale, hip_y)]
@@ -337,26 +345,36 @@ def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, gro
 
     # arms
     if pose == "raised":
-        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 130 * scale, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
-        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 130 * scale, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 130 * scale + arm_swing, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 130 * scale + arm_swing, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
     elif pose == "crossed":
         _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx + 35 * scale, shoulder_y + 70 * scale)], width=int(18 * scale) or 4)
         _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx - 35 * scale, shoulder_y + 70 * scale)], width=int(18 * scale) or 4)
     else:
-        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 100 * scale, hip_y - 10 * scale)], width=int(18 * scale) or 4)
-        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 100 * scale, hip_y - 10 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 100 * scale + arm_swing, hip_y - 10 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 100 * scale - arm_swing, hip_y - 10 * scale)], width=int(18 * scale) or 4)
 
     # head
     skin = (245, 210, 175)
     draw.ellipse([cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r], fill=skin, outline=INK, width=int(9 * scale) or 4)
     _highlight_ellipse(draw, cx - head_r * 0.32, head_cy - head_r * 0.38, head_r * 0.28, head_r * 0.2, skin)
     brow_w = max(3, round(head_r * 0.05))
+    # A brief closed-eyes blink once per loop cycle, instead of eyes that
+    # never move at all across the whole scene.
+    blinking = mood != "shocked" and (phase % (2 * math.pi)) < 0.3
     if mood == "shocked":
         _x_eyes(draw, cx, head_cy, spacing=head_r * 0.35, r=head_r * 0.16)
         _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=False)
         for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
             draw.line([(ex - head_r * 0.2, head_cy - head_r * 0.32), (ex + head_r * 0.2, head_cy - head_r * 0.42)],
                       fill=INK, width=brow_w)
+    elif blinking:
+        for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+            draw.line([(ex - head_r * 0.1, head_cy), (ex + head_r * 0.1, head_cy)], fill=INK, width=brow_w)
+        _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=True)
+        for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+            draw.arc([ex - head_r * 0.2, head_cy - head_r * 0.42, ex + head_r * 0.2, head_cy - head_r * 0.22],
+                      start=200, end=340, fill=INK, width=brow_w)
     else:
         _dot_eyes(draw, cx, head_cy, spacing=head_r * 0.35, r=head_r * 0.1)
         _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=True)
@@ -732,7 +750,7 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
         pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
 
         def paint(d, phase=0.0):
-            draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose)
+            draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose, phase)
 
     motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
     return base, paint, motion
@@ -782,23 +800,30 @@ def _draw_bubbles(draw: ImageDraw.ImageDraw, bubbles: list, t: float, h: int) ->
         draw.ellipse([b["x"] - r, y - r, b["x"] + r, y + r], outline=(215, 238, 248), width=3)
 
 
-def _build_aquatic_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int) -> Path:
+def _build_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int, bubbles: bool = False) -> Path:
     """Writes the looping RGBA frame sequence to disk and returns its
     printf-style pattern path. Fed straight into ffmpeg's image2 demuxer
     (with -stream_loop) rather than pre-encoded to a video, since VP9's
     alpha channel is lossy through some libvpx builds (alt-ref frames can
     silently drop it, rendering the "transparent" areas as opaque black) -
-    a raw PNG sequence has no such risk and every ffmpeg build reads it."""
+    a raw PNG sequence has no such risk and every ffmpeg build reads it.
+
+    Used for any subject/character whose `paint` callback varies by phase -
+    aquatic creatures (tentacle-sway/fin-wiggle, plus rising bubbles) and the
+    land character (idle weight-shift + blink) alike - not just aquatic ones,
+    since a rigid static PNG was the single biggest source of "this looks
+    like a slideshow" for every character-driven scene."""
     frame_dir = work_dir / f"scene_{index:02d}_frames"
     frame_dir.mkdir(exist_ok=True)
-    bubbles = _rising_bubbles(rng, w, h)
+    bubble_specs = _rising_bubbles(rng, w, h) if bubbles else None
 
     for i in range(_LOOP_FRAMES):
         t = i / _LOOP_FPS
         phase = 2 * math.pi * i / _LOOP_FRAMES
         frame = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         d = ImageDraw.Draw(frame)
-        _draw_bubbles(d, bubbles, t, h)
+        if bubble_specs is not None:
+            _draw_bubbles(d, bubble_specs, t, h)
         paint(d, phase)
         frame.save(frame_dir / f"f_{i:03d}.png")
 
@@ -829,8 +854,13 @@ def generate_scene_clip(
     bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
     base.save(bg_path, quality=90)
 
-    if subject in _AQUATIC_SUBJECTS:
-        frame_pattern = _build_aquatic_sprite_frames(rng, paint, w, h, work_dir, index)
+    if subject in _AQUATIC_SUBJECTS or subject is None:
+        # Aquatic creatures and the plain land character both have a
+        # phase-varying paint() (tentacle-sway/blink respectively), so both
+        # render as a looping animated frame sequence rather than one frozen
+        # pose. Other subject drawers (none currently non-aquatic) fall
+        # through to the static sprite below.
+        frame_pattern = _build_sprite_frames(rng, paint, w, h, work_dir, index, bubbles=subject in _AQUATIC_SUBJECTS)
         sprite_input = ["-framerate", str(_LOOP_FPS), "-stream_loop", "-1", "-i", str(frame_pattern)]
     else:
         sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
