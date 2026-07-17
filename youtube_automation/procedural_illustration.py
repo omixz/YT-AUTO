@@ -40,10 +40,15 @@ def _contains_keyword(haystack: str, keyword: str) -> bool:
     bug: "ice" is a substring of "officer", "war" of "warning"/"warrior",
     "sand" of "thousand", "city" of "capacity"/"velocity", "cell" of
     "excellent" - all common words in historical narration, silently
-    misrouting scenes to the wrong setting/subject/outfit."""
+    misrouting scenes to the wrong setting/subject/outfit.
+
+    Allows an optional trailing "s"/"es" so a singular keyword still matches
+    its plural - a real published title ("...Octopuses Have 3 Hearts...")
+    wouldn't match keyword "octopus" without this, since \\b requires a
+    boundary immediately after "octopus" and "octopuses" has none there."""
     if " " in keyword or "-" in keyword:
         return keyword in haystack
-    return re.search(rf"\b{re.escape(keyword)}\b", haystack) is not None
+    return re.search(rf"\b{re.escape(keyword)}(?:es|s)?\b", haystack) is not None
 
 
 def _count_keyword(haystack: str, keyword: str) -> int:
@@ -63,7 +68,7 @@ _KEYWORD_TO_SETTING = [
     (("mountain", "valley", "cliff", "peak", "himalay", "andes", "alps"), "mountain"),
     (("war", "battle", "combat", "trench", "front line", "rubble", "bomb",
       "wreckage", "crash", "invasion", "siege"), "ruins"),
-    (("forest", "jungle", "wood", "tree", "wilderness"), "forest"),
+    (("forest", "jungle", "wood", "tree", "wilderness", "mistletoe", "branch", "oak", "grove"), "forest"),
     (("desert", "sand", "sahara", "dune"), "desert"),
     (("room", "office", "lab", "laboratory", "indoor", "house", "factory", "bunker", "cell"), "indoor"),
     (("palace", "throne", "castle", "fortress", "court", "coronation", "monarchy"), "palace"),
@@ -684,21 +689,37 @@ def _subject_for_scene(scene: Scene) -> Optional[str]:
 
 
 def _dominant_subject(scenes: List[Scene], extra_text: str = "") -> Optional[str]:
-    """A video about octopuses should show an octopus regularly, even in
-    scenes whose narration happens not to say 'octopus' (e.g. a sentence
-    about a protein). Pick the most common subject across the whole script
-    (plus the title/topic) and use it as the per-scene fallback."""
-    haystack = extra_text.lower() + " " + " ".join(
-        f"{s.narration} {' '.join(s.visual_keywords)}" for s in scenes
-    ).lower()
-    counts = {}
+    """A video genuinely about octopuses should show an octopus regularly,
+    even in scenes whose narration happens not to say 'octopus' (e.g. a
+    sentence about a protein) - that's what subject_fallback is for.
+
+    But a video is not "about" a creature just because it's mentioned once,
+    anywhere. This used to count raw keyword hits across the whole script's
+    combined text, so a single incidental mention deep in one scene of a
+    multi-character narrative video (e.g. Jörmungandr, the sea serpent,
+    named once in a Norse mythology video that's mostly about Baldur, Loki,
+    and Ragnarok - nothing to do with fish) was enough to make "fish" win
+    and then get slapped onto half of every OTHER scene by _resolve_subject,
+    including ones about a completely unrelated character. Real single-
+    subject videos have the subject explicitly named in a real *fraction* of
+    scenes, not one passing mention - so that's what's required now, rather
+    than any hit count above zero."""
+    title_lower = extra_text.lower()
     for keywords, subject in _KEYWORD_TO_SUBJECT:
-        hits = sum(_count_keyword(haystack, kw) for kw in keywords)
-        if hits:
-            counts[subject] = counts.get(subject, 0) + hits
-    if not counts:
+        if any(_contains_keyword(title_lower, kw) for kw in keywords):
+            return subject
+
+    scene_hits: dict = {}
+    for scene in scenes:
+        matched = _subject_for_scene(scene)
+        if matched:
+            scene_hits[matched] = scene_hits.get(matched, 0) + 1
+    if not scene_hits:
         return None
-    return max(counts, key=counts.get)
+    subject, hits = max(scene_hits.items(), key=lambda kv: kv[1])
+    if hits / len(scenes) < 0.3:
+        return None
+    return subject
 
 
 def _resolve_subject(scene: Scene, index: int, subject_fallback: Optional[str]) -> Optional[str]:
@@ -1019,12 +1040,13 @@ def generate_scene_clip(
     return out_path
 
 
-def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path) -> List[Path]:
-    # Fallback subject from the whole script so a single-subject video (e.g.
-    # about an octopus) shows it consistently, not only on sentences that
-    # name it. Title lives on the Script, which we don't have here, but the
-    # scenes' combined text is a good enough signal.
-    fallback = _dominant_subject(scenes)
+def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path, title: str = "") -> List[Path]:
+    # Fallback subject from the whole script (plus the title, the strongest
+    # signal of what the video's actually about) so a single-subject video
+    # (e.g. about an octopus) shows it consistently, not only on sentences
+    # that name it - see _dominant_subject's docstring for why a title/
+    # scene-fraction bar is required rather than any keyword hit at all.
+    fallback = _dominant_subject(scenes, extra_text=title)
     return [
         generate_scene_image(scene, i, config, work_dir, subject_fallback=fallback)
         for i, scene in enumerate(scenes)
@@ -1032,11 +1054,11 @@ def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path) ->
 
 
 def generate_all_clips(
-    scenes: List[Scene], durations: List[float], config: PipelineConfig, work_dir: Path
+    scenes: List[Scene], durations: List[float], config: PipelineConfig, work_dir: Path, title: str = "",
 ) -> List[Path]:
     """Animated per-scene clips (one MP4 each), sized to each scene's audio
     duration. Same subject/fallback logic as generate_all."""
-    fallback = _dominant_subject(scenes)
+    fallback = _dominant_subject(scenes, extra_text=title)
     return [
         generate_scene_clip(scene, i, config, work_dir, dur, subject_fallback=fallback)
         for i, (scene, dur) in enumerate(zip(scenes, durations))

@@ -54,7 +54,7 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
         # is sized to its scene's narration length and handed to assembler.py
         # as a video segment (kind="video").
         durations = [a.duration for a in content_scene_audio]
-        paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir)
+        paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir, title=script.title)
         return [VisualAsset(kind="video", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
 

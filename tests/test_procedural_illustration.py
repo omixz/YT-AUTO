@@ -63,6 +63,38 @@ def test_dominant_subject_covers_scenes_that_dont_name_it():
     assert pi._dominant_subject(scenes) == "octopus"
 
 
+def test_dominant_subject_ignores_one_incidental_mention_in_a_narrative_video():
+    # Regression test: a Norse mythology video (Baldur's death, Loki's
+    # punishment, Ragnarok) mentioned Jormungandr - the sea serpent - once,
+    # in one scene among many. That single incidental "sea"/"eel"-adjacent
+    # mention used to be enough to make "fish" the video's dominant subject,
+    # which then got slapped onto unrelated scenes (e.g. Baldur's death by
+    # mistletoe) purely by index parity. One mention out of many unrelated
+    # scenes must not count as the video being "about" that creature.
+    scenes = [
+        Scene(narration="Baldur was the most beloved of all the gods.", visual_keywords=["baldur", "god"]),
+        Scene(narration="Loki alone knew mistletoe could kill him.", visual_keywords=["mistletoe", "loki"]),
+        Scene(narration="Baldur fell dead, pierced by the dart.", visual_keywords=["baldur", "death"]),
+        Scene(narration="Loki was bound beneath a venomous serpent.", visual_keywords=["loki", "punishment"]),
+        Scene(narration="Even Jormungandr, the great sea serpent, stirred in the depths.", visual_keywords=["ocean", "eel"]),
+        Scene(narration="Ragnarok, the end of all things, was coming.", visual_keywords=["ragnarok", "apocalypse"]),
+    ]
+    assert pi._dominant_subject(scenes) is None
+
+
+def test_dominant_subject_still_wins_when_title_names_it():
+    scenes = [
+        Scene(narration="It has three hearts.", visual_keywords=["heart"]),
+        Scene(narration="Its blood is blue.", visual_keywords=["blood"]),
+    ]
+    assert pi._dominant_subject(scenes, extra_text="Why Octopuses Have Blue Blood") == "octopus"
+
+
+def test_mistletoe_scene_gets_forest_setting_not_default():
+    scene = Scene(narration="Loki alone knew mistletoe could kill him.", visual_keywords=["mistletoe"])
+    assert pi._setting_for_scene(scene) == "forest"
+
+
 def test_octopus_scene_renders_water_and_subject(tmp_path):
     scene = Scene(narration="Its blood is blue.", visual_keywords=["blood"])
     path = pi.generate_scene_image(scene, 0, _config(), tmp_path, subject_fallback="octopus")

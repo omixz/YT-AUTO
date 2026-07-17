@@ -248,7 +248,7 @@ def _contains_keyword(haystack: str, keyword: str) -> bool:
     the identical fix (and rationale) in procedural_illustration.py."""
     if " " in keyword or "-" in keyword:
         return keyword in haystack
-    return re.search(rf"\b{re.escape(keyword)}\b", haystack) is not None
+    return re.search(rf"\b{re.escape(keyword)}(?:es|s)?\b", haystack) is not None
 
 
 def sfx_for_scene(scene: Scene) -> Optional[str]:
