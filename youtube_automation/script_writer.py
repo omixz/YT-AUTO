@@ -38,10 +38,18 @@ SCRIPT_SCHEMA = {
                             "promise in its very first sentence - no scene-setting, no 'today we're "
                             "looking at...' throat-clearing, since viewers decide whether to keep "
                             "watching within seconds and a slow open loses them before the rest of "
-                            "the script gets a chance. "
+                            "the script gets a chance. Vary the opening device by topic - a blunt "
+                            "shocking statement, a direct 'Did you know...' curiosity trigger, or a "
+                            "rhetorical question that opens a loop - whichever creates the sharpest "
+                            "curiosity gap for this specific topic. "
                             "build: 3+ middle scenes that develop connected facts into a mini-story "
                             "(use transitions like 'but here's the twist' / 'and that's not even "
-                            "the strangest part' - don't just list isolated trivia). "
+                            "the strangest part' - don't just list isolated trivia). The SECOND scene "
+                            "specifically must land a fresh escalation or twist of its own (not just "
+                            "restate/explain the hook) - this is the point, roughly 20-30 seconds in, "
+                            "where most viewers who clicked decide whether to keep watching, and a "
+                            "scene that merely elaborates on what the hook already said is exactly "
+                            "what makes them leave. "
                             "insight: exactly the last scene - a genuine 'why this matters' "
                             "synthesis, not just another fact."
                         ),
@@ -75,8 +83,18 @@ EMIT_TOPICS = "emit_topics"
 # scheduled run over it (this has actually happened: a 503 and, separately,
 # a bare ReadTimeout - the latter isn't an HTTP status at all, so it needs
 # its own except clause below rather than just growing this set).
+#
+# A real scheduled run hit a Gemini 503 "high demand" spike that outlasted
+# the old 4-retry/~15s-total budget (1+2+4+8s) and killed the whole day's
+# video before any content was generated. Google's own guidance for these is
+# "usually temporary" on the order of a minute or so, not 15 seconds, so the
+# budget is widened to ~2 minutes of total backoff (capped per-sleep so it
+# doesn't runaway) - a scheduled job losing an extra minute to retries is
+# free; losing the whole day's video to a spike that would've cleared 30
+# seconds later is not.
 _RETRY_STATUSES = {429, 503}
-_MAX_RETRIES = 4
+_MAX_RETRIES = 7
+_MAX_BACKOFF_SECONDS = 60
 
 
 @dataclass
@@ -139,7 +157,7 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
             last_error = str(exc)
             if attempt < _MAX_RETRIES:
-                time.sleep(2 ** attempt)
+                time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
                 continue
             raise RuntimeError(
                 f"Gemini API request timed out after {_MAX_RETRIES + 1} attempts: {last_error}"
@@ -147,7 +165,7 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
 
         if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
             last_error = response.text
-            time.sleep(2 ** attempt)
+            time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
             continue
         break
 
@@ -220,6 +238,13 @@ categories) and the hook scene's first sentence must open by directly delivering
 promise - a title/thumbnail that oversells what the video actually opens with is the single
 biggest reason a video's retention (and therefore YouTube's willingness to keep recommending it)
 collapses in the first seconds.
+
+Retention doesn't only collapse in the first seconds - there's a second, just as real drop-off
+around the 20-30 second mark, once the initial hook's payoff has been delivered and a viewer
+subconsciously asks "is there more, or was that it?". Guard against this explicitly: the scene
+right after the hook must introduce a new escalation, twist, or complication - not restate or
+explain the hook in different words - so a viewer who's still there at 30 seconds gets rewarded
+with fresh curiosity, not a lull.
 
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with

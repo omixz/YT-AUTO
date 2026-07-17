@@ -40,10 +40,15 @@ def _contains_keyword(haystack: str, keyword: str) -> bool:
     bug: "ice" is a substring of "officer", "war" of "warning"/"warrior",
     "sand" of "thousand", "city" of "capacity"/"velocity", "cell" of
     "excellent" - all common words in historical narration, silently
-    misrouting scenes to the wrong setting/subject/outfit."""
+    misrouting scenes to the wrong setting/subject/outfit.
+
+    Allows an optional trailing "s"/"es" so a singular keyword still matches
+    its plural - a real published title ("...Octopuses Have 3 Hearts...")
+    wouldn't match keyword "octopus" without this, since \\b requires a
+    boundary immediately after "octopus" and "octopuses" has none there."""
     if " " in keyword or "-" in keyword:
         return keyword in haystack
-    return re.search(rf"\b{re.escape(keyword)}\b", haystack) is not None
+    return re.search(rf"\b{re.escape(keyword)}(?:es|s)?\b", haystack) is not None
 
 
 def _count_keyword(haystack: str, keyword: str) -> int:
@@ -63,7 +68,7 @@ _KEYWORD_TO_SETTING = [
     (("mountain", "valley", "cliff", "peak", "himalay", "andes", "alps"), "mountain"),
     (("war", "battle", "combat", "trench", "front line", "rubble", "bomb",
       "wreckage", "crash", "invasion", "siege"), "ruins"),
-    (("forest", "jungle", "wood", "tree", "wilderness"), "forest"),
+    (("forest", "jungle", "wood", "tree", "wilderness", "mistletoe", "branch", "oak", "grove"), "forest"),
     (("desert", "sand", "sahara", "dune"), "desert"),
     (("room", "office", "lab", "laboratory", "indoor", "house", "factory", "bunker", "cell"), "indoor"),
     (("palace", "throne", "castle", "fortress", "court", "coronation", "monarchy"), "palace"),
@@ -252,9 +257,36 @@ _KEYWORD_TO_MOOD = [
     (("shock", "twist", "sudden", "surprise", "warning", "danger"), "shocked"),
 ]
 
+# Two-person melee - distinct from large-scale "battle" (which stays a single
+# character in a war-torn setting): a personal fight/duel/brawl gets two
+# characters actually swinging at each other, see _compose_fight_scene.
+_FIGHT_KEYWORDS = ("fight", "fought", "duel", "brawl", "melee", "wrestl", "punch", "sparr",
+                    "sword fight", "swordfight", "clashed swords", "clash", "grapple")
+
+# A scene set among a crowd of onlookers - court, market, gathering - gets a
+# handful of small background figures instead of the lone focal character,
+# see _CROWD_COLORS / _draw_background_person.
+_CROWD_KEYWORDS = ("court", "courtiers", "crowd", "chatter", "gathered", "gathering",
+                    "marketplace", "town square", "audience", "onlookers", "spectators",
+                    "townsfolk", "villagers", "murmur", "assembly", "council")
+
+
+def _scene_haystack(scene: Scene) -> str:
+    return f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
+
+
+def _is_fight_scene(scene: Scene) -> bool:
+    haystack = _scene_haystack(scene)
+    return any(_contains_keyword(haystack, kw) for kw in _FIGHT_KEYWORDS)
+
+
+def _is_crowd_scene(scene: Scene) -> bool:
+    haystack = _scene_haystack(scene)
+    return any(_contains_keyword(haystack, kw) for kw in _CROWD_KEYWORDS)
+
 
 def _match(scene: Scene, table) -> Optional[str]:
-    haystack = f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
+    haystack = _scene_haystack(scene)
     for keywords, value in table:
         if any(_contains_keyword(haystack, kw) for kw in keywords):
             return value
@@ -321,15 +353,23 @@ def _flat_cap(draw, cx, head_cy, r):
 _HEADWEAR_DRAWERS = {"crown": _crown, "hat": _tophat, "helmet": _helmet, "cap": _flat_cap}
 
 
-def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides") -> None:
+def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides", phase: float = 0.0, facing: int = 1) -> None:
     head_r = 95 * scale
     hip_y = ground_y - 210 * scale
     shoulder_y = hip_y - 225 * scale
     head_cy = shoulder_y - head_r * 1.15
 
+    # Idle weight-shift sway, driven by phase (one full cycle per loop):
+    # legs swing gently opposite each other and arms swing opposite the
+    # legs, like a person shifting weight in place rather than a frozen
+    # mannequin - the sprite-frame loop in generate_scene_clip renders this
+    # across a handful of phases so the character actually moves.
+    leg_swing = math.sin(phase) * 14 * scale
+    arm_swing = math.sin(phase + math.pi) * 10 * scale
+
     # legs
-    _sketchy_polyline(draw, rng, [(cx - 52 * scale, hip_y), (cx - 60 * scale, ground_y)], width=int(20 * scale) or 4)
-    _sketchy_polyline(draw, rng, [(cx + 52 * scale, hip_y), (cx + 60 * scale, ground_y)], width=int(20 * scale) or 4)
+    _sketchy_polyline(draw, rng, [(cx - 52 * scale, hip_y), (cx - 60 * scale + leg_swing, ground_y)], width=int(20 * scale) or 4)
+    _sketchy_polyline(draw, rng, [(cx + 52 * scale, hip_y), (cx + 60 * scale - leg_swing, ground_y)], width=int(20 * scale) or 4)
 
     # torso
     torso = [(cx - 80 * scale, shoulder_y), (cx + 80 * scale, shoulder_y), (cx + 62 * scale, hip_y), (cx - 62 * scale, hip_y)]
@@ -337,26 +377,50 @@ def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, gro
 
     # arms
     if pose == "raised":
-        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 130 * scale, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
-        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 130 * scale, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 130 * scale + arm_swing, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 130 * scale + arm_swing, shoulder_y - 140 * scale)], width=int(18 * scale) or 4)
     elif pose == "crossed":
         _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx + 35 * scale, shoulder_y + 70 * scale)], width=int(18 * scale) or 4)
         _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx - 35 * scale, shoulder_y + 70 * scale)], width=int(18 * scale) or 4)
+    elif pose == "fighting":
+        # One arm (the side facing the opponent, per `facing`) throws a
+        # punch that extends toward them as phase sweeps 0..pi, then
+        # withdraws; the other arm stays back in a guard near the chest.
+        # Two fighters share this same code with opposite `facing` and a
+        # phase offset (see _compose_fight_scene), so they alternate
+        # throwing punches at each other rather than mirroring in sync.
+        punch = max(0.0, math.sin(phase))
+        front_shoulder_x = cx + 80 * scale * facing
+        front_fist = (cx + facing * (60 + 155 * punch) * scale, shoulder_y - 10 * scale)
+        _sketchy_polyline(draw, rng, [(front_shoulder_x, shoulder_y), front_fist], width=int(18 * scale) or 4)
+        rear_shoulder_x = cx - 80 * scale * facing
+        rear_fist = (cx - facing * 45 * scale, shoulder_y + 45 * scale)
+        _sketchy_polyline(draw, rng, [(rear_shoulder_x, shoulder_y), rear_fist], width=int(18 * scale) or 4)
     else:
-        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 100 * scale, hip_y - 10 * scale)], width=int(18 * scale) or 4)
-        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 100 * scale, hip_y - 10 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx - 80 * scale, shoulder_y), (cx - 100 * scale + arm_swing, hip_y - 10 * scale)], width=int(18 * scale) or 4)
+        _sketchy_polyline(draw, rng, [(cx + 80 * scale, shoulder_y), (cx + 100 * scale - arm_swing, hip_y - 10 * scale)], width=int(18 * scale) or 4)
 
     # head
     skin = (245, 210, 175)
     draw.ellipse([cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r], fill=skin, outline=INK, width=int(9 * scale) or 4)
     _highlight_ellipse(draw, cx - head_r * 0.32, head_cy - head_r * 0.38, head_r * 0.28, head_r * 0.2, skin)
     brow_w = max(3, round(head_r * 0.05))
+    # A brief closed-eyes blink once per loop cycle, instead of eyes that
+    # never move at all across the whole scene.
+    blinking = mood != "shocked" and (phase % (2 * math.pi)) < 0.3
     if mood == "shocked":
         _x_eyes(draw, cx, head_cy, spacing=head_r * 0.35, r=head_r * 0.16)
         _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=False)
         for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
             draw.line([(ex - head_r * 0.2, head_cy - head_r * 0.32), (ex + head_r * 0.2, head_cy - head_r * 0.42)],
                       fill=INK, width=brow_w)
+    elif blinking:
+        for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+            draw.line([(ex - head_r * 0.1, head_cy), (ex + head_r * 0.1, head_cy)], fill=INK, width=brow_w)
+        _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=True)
+        for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+            draw.arc([ex - head_r * 0.2, head_cy - head_r * 0.42, ex + head_r * 0.2, head_cy - head_r * 0.22],
+                      start=200, end=340, fill=INK, width=brow_w)
     else:
         _dot_eyes(draw, cx, head_cy, spacing=head_r * 0.35, r=head_r * 0.1)
         _mouth(draw, cx, head_cy + head_r * 0.35, w=head_r * 0.4, up=True)
@@ -428,6 +492,48 @@ _GROUND_TEXTURES = {
     "ruins": _texture_rock,
     "default": _texture_grass,
 }
+
+
+# --- fight scenes: two characters trading swings, plus an impact spark -----
+
+def _draw_impact_burst(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: float) -> None:
+    """A jagged starburst flashed at the collision point on a punch's peak
+    extension - the classic comic-panel "POW" shape, cheap to draw and reads
+    instantly as impact even as a single still frame."""
+    color = (255, 205, 60)
+    pts = []
+    for i in range(12):
+        ang = i * math.pi / 6
+        r = (60 if i % 2 == 0 else 24) * scale
+        pts.append((cx + r * math.cos(ang), cy + r * math.sin(ang)))
+    draw.polygon(pts, fill=color, outline=INK, width=max(3, round(4 * scale)))
+
+
+# --- background crowd: several small, simplified figures behind the focal
+# character - for court/market/gathering scenes so "a crowd murmured" or
+# "the court fell silent" doesn't render as one giant alone on an empty
+# stage. Deliberately much simpler than draw_character (no outfit/headwear
+# detail) so they read as background, not competing focal points. ----------
+
+_CROWD_COLORS = [(150, 130, 190), (190, 150, 110), (110, 150, 150), (170, 110, 120), (140, 160, 110), (120, 130, 170)]
+
+
+def _draw_background_person(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, color: tuple, phase: float, idx: int) -> None:
+    # Each figure sways on its own phase offset (seeded by index) so a crowd
+    # of them doesn't move in unison like one repeated stamp.
+    sway = math.sin(phase * 0.8 + idx * 1.7) * 6 * scale
+    head_r = 30 * scale
+    hip_y = ground_y - 62 * scale
+    shoulder_y = hip_y - 70 * scale
+    head_cy = shoulder_y - head_r * 1.1
+    leg_w = max(3, round(8 * scale))
+    draw.line([(cx + sway, hip_y), (cx - 16 * scale + sway, ground_y)], fill=INK, width=leg_w)
+    draw.line([(cx + sway, hip_y), (cx + 16 * scale + sway, ground_y)], fill=INK, width=leg_w)
+    body = [(cx - 24 * scale + sway, shoulder_y), (cx + 24 * scale + sway, shoulder_y),
+            (cx + 18 * scale + sway, hip_y), (cx - 18 * scale + sway, hip_y)]
+    _outlined_blob(draw, body, color, max(3, round(5 * scale)))
+    draw.ellipse([cx - head_r + sway, head_cy - head_r, cx + head_r + sway, head_cy + head_r],
+                 fill=(235, 205, 175), outline=INK, width=max(3, round(4 * scale)))
 
 
 # --- subjects (the actual thing the video is about) ------------------------
@@ -583,21 +689,37 @@ def _subject_for_scene(scene: Scene) -> Optional[str]:
 
 
 def _dominant_subject(scenes: List[Scene], extra_text: str = "") -> Optional[str]:
-    """A video about octopuses should show an octopus regularly, even in
-    scenes whose narration happens not to say 'octopus' (e.g. a sentence
-    about a protein). Pick the most common subject across the whole script
-    (plus the title/topic) and use it as the per-scene fallback."""
-    haystack = extra_text.lower() + " " + " ".join(
-        f"{s.narration} {' '.join(s.visual_keywords)}" for s in scenes
-    ).lower()
-    counts = {}
+    """A video genuinely about octopuses should show an octopus regularly,
+    even in scenes whose narration happens not to say 'octopus' (e.g. a
+    sentence about a protein) - that's what subject_fallback is for.
+
+    But a video is not "about" a creature just because it's mentioned once,
+    anywhere. This used to count raw keyword hits across the whole script's
+    combined text, so a single incidental mention deep in one scene of a
+    multi-character narrative video (e.g. Jörmungandr, the sea serpent,
+    named once in a Norse mythology video that's mostly about Baldur, Loki,
+    and Ragnarok - nothing to do with fish) was enough to make "fish" win
+    and then get slapped onto half of every OTHER scene by _resolve_subject,
+    including ones about a completely unrelated character. Real single-
+    subject videos have the subject explicitly named in a real *fraction* of
+    scenes, not one passing mention - so that's what's required now, rather
+    than any hit count above zero."""
+    title_lower = extra_text.lower()
     for keywords, subject in _KEYWORD_TO_SUBJECT:
-        hits = sum(_count_keyword(haystack, kw) for kw in keywords)
-        if hits:
-            counts[subject] = counts.get(subject, 0) + hits
-    if not counts:
+        if any(_contains_keyword(title_lower, kw) for kw in keywords):
+            return subject
+
+    scene_hits: dict = {}
+    for scene in scenes:
+        matched = _subject_for_scene(scene)
+        if matched:
+            scene_hits[matched] = scene_hits.get(matched, 0) + 1
+    if not scene_hits:
         return None
-    return max(counts, key=counts.get)
+    subject, hits = max(scene_hits.items(), key=lambda kv: kv[1])
+    if hits / len(scenes) < 0.3:
+        return None
+    return subject
 
 
 def _resolve_subject(scene: Scene, index: int, subject_fallback: Optional[str]) -> Optional[str]:
@@ -725,14 +847,43 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
 
         def paint(d, phase=0.0):
             sd(d, rng, w * 0.5, ground_y - 180 * element_scale, element_scale, phase)
+    elif _is_fight_scene(scene):
+        # Two characters trading punches instead of one lone figure - "more
+        # than one stick figure" for scuffle/duel/brawl scenes, with an
+        # impact spark flashed at each punch's peak extension.
+        headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
+        outfit_a = _match(scene, _KEYWORD_TO_OUTFIT) or (85, 95, 65)
+        outfit_b = (150, 60, 60) if outfit_a != (150, 60, 60) else (60, 90, 140)
+        fight_scale = element_scale * 0.85
+        cx_a, cx_b = w * 0.40, w * 0.60
+
+        def paint(d, phase=0.0):
+            draw_character(d, rng, cx_a, ground_y, fight_scale, outfit_a, headwear, "neutral", "fighting", phase, facing=1)
+            draw_character(d, rng, cx_b, ground_y, fight_scale, outfit_b, headwear, "neutral", "fighting", phase + math.pi, facing=-1)
+            punch_a = max(0.0, math.sin(phase))
+            punch_b = max(0.0, math.sin(phase + math.pi))
+            if max(punch_a, punch_b) > 0.9:
+                _draw_impact_burst(d, (cx_a + cx_b) / 2, ground_y - 235 * fight_scale, fight_scale)
     else:
         outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
         headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
         mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
         pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
+        crowd = _is_crowd_scene(scene)
+        crowd_specs = []
+        if crowd:
+            # A handful of small background figures at varied x/scale/depth
+            # behind the focal character - "the court murmured" shouldn't
+            # render as one giant alone on an empty stage.
+            positions = [w * 0.14, w * 0.24, w * 0.76, w * 0.86, w * 0.32, w * 0.68]
+            for idx in range(rng.randint(3, 5)):
+                x = positions[idx % len(positions)] + rng.uniform(-w * 0.03, w * 0.03)
+                crowd_specs.append((x, rng.choice(_CROWD_COLORS), idx, element_scale * rng.uniform(0.45, 0.6)))
 
         def paint(d, phase=0.0):
-            draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose)
+            for x, color, idx, cscale in crowd_specs:
+                _draw_background_person(d, rng, x, ground_y, cscale, color, phase, idx)
+            draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose, phase)
 
     motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
     return base, paint, motion
@@ -782,23 +933,30 @@ def _draw_bubbles(draw: ImageDraw.ImageDraw, bubbles: list, t: float, h: int) ->
         draw.ellipse([b["x"] - r, y - r, b["x"] + r, y + r], outline=(215, 238, 248), width=3)
 
 
-def _build_aquatic_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int) -> Path:
+def _build_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int, bubbles: bool = False) -> Path:
     """Writes the looping RGBA frame sequence to disk and returns its
     printf-style pattern path. Fed straight into ffmpeg's image2 demuxer
     (with -stream_loop) rather than pre-encoded to a video, since VP9's
     alpha channel is lossy through some libvpx builds (alt-ref frames can
     silently drop it, rendering the "transparent" areas as opaque black) -
-    a raw PNG sequence has no such risk and every ffmpeg build reads it."""
+    a raw PNG sequence has no such risk and every ffmpeg build reads it.
+
+    Used for any subject/character whose `paint` callback varies by phase -
+    aquatic creatures (tentacle-sway/fin-wiggle, plus rising bubbles) and the
+    land character (idle weight-shift + blink) alike - not just aquatic ones,
+    since a rigid static PNG was the single biggest source of "this looks
+    like a slideshow" for every character-driven scene."""
     frame_dir = work_dir / f"scene_{index:02d}_frames"
     frame_dir.mkdir(exist_ok=True)
-    bubbles = _rising_bubbles(rng, w, h)
+    bubble_specs = _rising_bubbles(rng, w, h) if bubbles else None
 
     for i in range(_LOOP_FRAMES):
         t = i / _LOOP_FPS
         phase = 2 * math.pi * i / _LOOP_FRAMES
         frame = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         d = ImageDraw.Draw(frame)
-        _draw_bubbles(d, bubbles, t, h)
+        if bubble_specs is not None:
+            _draw_bubbles(d, bubble_specs, t, h)
         paint(d, phase)
         frame.save(frame_dir / f"f_{i:03d}.png")
 
@@ -829,8 +987,13 @@ def generate_scene_clip(
     bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
     base.save(bg_path, quality=90)
 
-    if subject in _AQUATIC_SUBJECTS:
-        frame_pattern = _build_aquatic_sprite_frames(rng, paint, w, h, work_dir, index)
+    if subject in _AQUATIC_SUBJECTS or subject is None:
+        # Aquatic creatures and the plain land character both have a
+        # phase-varying paint() (tentacle-sway/blink respectively), so both
+        # render as a looping animated frame sequence rather than one frozen
+        # pose. Other subject drawers (none currently non-aquatic) fall
+        # through to the static sprite below.
+        frame_pattern = _build_sprite_frames(rng, paint, w, h, work_dir, index, bubbles=subject in _AQUATIC_SUBJECTS)
         sprite_input = ["-framerate", str(_LOOP_FPS), "-stream_loop", "-1", "-i", str(frame_pattern)]
     else:
         sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -877,12 +1040,13 @@ def generate_scene_clip(
     return out_path
 
 
-def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path) -> List[Path]:
-    # Fallback subject from the whole script so a single-subject video (e.g.
-    # about an octopus) shows it consistently, not only on sentences that
-    # name it. Title lives on the Script, which we don't have here, but the
-    # scenes' combined text is a good enough signal.
-    fallback = _dominant_subject(scenes)
+def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path, title: str = "") -> List[Path]:
+    # Fallback subject from the whole script (plus the title, the strongest
+    # signal of what the video's actually about) so a single-subject video
+    # (e.g. about an octopus) shows it consistently, not only on sentences
+    # that name it - see _dominant_subject's docstring for why a title/
+    # scene-fraction bar is required rather than any keyword hit at all.
+    fallback = _dominant_subject(scenes, extra_text=title)
     return [
         generate_scene_image(scene, i, config, work_dir, subject_fallback=fallback)
         for i, scene in enumerate(scenes)
@@ -890,11 +1054,11 @@ def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path) ->
 
 
 def generate_all_clips(
-    scenes: List[Scene], durations: List[float], config: PipelineConfig, work_dir: Path
+    scenes: List[Scene], durations: List[float], config: PipelineConfig, work_dir: Path, title: str = "",
 ) -> List[Path]:
     """Animated per-scene clips (one MP4 each), sized to each scene's audio
     duration. Same subject/fallback logic as generate_all."""
-    fallback = _dominant_subject(scenes)
+    fallback = _dominant_subject(scenes, extra_text=title)
     return [
         generate_scene_clip(scene, i, config, work_dir, dur, subject_fallback=fallback)
         for i, (scene, dur) in enumerate(zip(scenes, durations))

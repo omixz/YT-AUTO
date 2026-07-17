@@ -7,13 +7,45 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from typing import List, Optional
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 from .fonts import load_bold
 from .visuals import VisualAsset
 
 THUMB_SIZE = (1280, 720)
+
+# A bright, high-contrast accent distinct from the white body text - the
+# classic "one word in a different color" thumbnail trick to draw the eye
+# in a crowded feed. Deliberately not config.animation.accent_color (that
+# defaults to white, which wouldn't read as a highlight against white text).
+HIGHLIGHT_COLOR = (255, 209, 0)
+
+# Words that make a title's specific curiosity-gap payoff legible at a
+# glance - if the title contains one, highlighting it (rather than an
+# arbitrary word) is what actually earns the click. Deliberately not used
+# to gate/reject titles (see quality_check.py's docstring on why an
+# allow-list of "hook phrases" was a bad idea) - this only picks which
+# word gets colored differently, a good title with none of these still
+# renders fine via the numeral/last-word fallbacks below.
+_POWER_WORDS = {
+    "secret", "secrets", "hidden", "banned", "forbidden", "cursed", "vanished",
+    "disappeared", "died", "death", "killed", "murder", "murdered", "destroyed",
+    "collapse", "collapsed", "shocking", "terrifying", "true", "real", "actually",
+    "never", "lost", "betrayed", "betrayal", "escape", "trapped", "doomed",
+    "warning", "danger", "mystery", "unsolved", "revealed", "truth", "why",
+}
+
+
+def _pick_highlight_word(title_words: List[str]) -> Optional[str]:
+    for word in title_words:
+        if word.strip(".,!?:;\"'’").lower() in _POWER_WORDS:
+            return word
+    for word in title_words:
+        if any(ch.isdigit() for ch in word):
+            return word
+    return title_words[-1] if title_words else None
 
 
 def _extract_frame(asset: VisualAsset, out_path: Path) -> Path:
@@ -52,18 +84,20 @@ def _cover_resize(img: Image.Image, size: tuple) -> Image.Image:
     return resized.crop((left, top, left + target_w, top + target_h))
 
 
-def _wrap_title(draw: ImageDraw.ImageDraw, title: str, font: ImageFont.ImageFont, max_width: int) -> list:
-    words = title.upper().split()
-    lines = []
-    current = ""
+def _wrap_title(draw: ImageDraw.ImageDraw, words: List[str], font: ImageFont.ImageFont, max_width: int) -> List[List[str]]:
+    """Wraps into lines of words (not joined strings) so the caller can
+    render - and color - each word individually, for the highlight-word
+    treatment in generate()."""
+    lines: List[List[str]] = []
+    current: List[str] = []
     for word in words:
-        candidate = f"{current} {word}".strip()
+        candidate = " ".join(current + [word])
         if draw.textlength(candidate, font=font) <= max_width:
-            current = candidate
+            current.append(word)
         else:
             if current:
                 lines.append(current)
-            current = word
+            current = [word]
     if current:
         lines.append(current)
     return lines[:3]
@@ -73,7 +107,14 @@ def generate(title: str, background_asset: VisualAsset, work_dir: Path, out_path
     frame_path = _extract_frame(background_asset, work_dir / "thumb_source.jpg")
 
     bg = Image.open(frame_path).convert("RGB")
-    bg = _cover_resize(bg, THUMB_SIZE).convert("RGBA")
+    bg = _cover_resize(bg, THUMB_SIZE)
+
+    # Punchier colors read better at thumbnail size in a crowded, scrollable
+    # feed than the source frame's natural contrast/saturation - a flat
+    # boost here is the same trick most high-CTR thumbnails use.
+    bg = ImageEnhance.Color(bg).enhance(1.35)
+    bg = ImageEnhance.Contrast(bg).enhance(1.12)
+    bg = bg.convert("RGBA")
 
     # Dark gradient at the bottom so white title text stays legible over any photo.
     overlay = Image.new("RGBA", THUMB_SIZE, (0, 0, 0, 0))
@@ -90,15 +131,22 @@ def generate(title: str, background_asset: VisualAsset, work_dir: Path, out_path
     margin = 60
     max_width = THUMB_SIZE[0] - 2 * margin
 
-    lines = _wrap_title(draw, title, font, max_width)
+    words = title.upper().split()
+    highlight = _pick_highlight_word(words)
+    lines = _wrap_title(draw, words, font, max_width)
     line_height = font_size + 14
     y = THUMB_SIZE[1] - margin - line_height * len(lines)
+    space_width = draw.textlength(" ", font=font)
 
-    for line in lines:
-        draw.text(
-            (margin, y), line, font=font, fill=(255, 255, 255, 255),
-            stroke_width=4, stroke_fill=(0, 0, 0, 255),
-        )
+    for line_words in lines:
+        x = margin
+        for word in line_words:
+            color = HIGHLIGHT_COLOR if word == highlight else (255, 255, 255)
+            draw.text(
+                (x, y), word, font=font, fill=color,
+                stroke_width=4, stroke_fill=(0, 0, 0, 255),
+            )
+            x += draw.textlength(word, font=font) + space_width
         y += line_height
 
     bg.convert("RGB").save(out_path, quality=92)

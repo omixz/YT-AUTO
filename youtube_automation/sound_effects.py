@@ -11,6 +11,7 @@ rather than shipping something that sounds obviously synthetic.
 """
 from __future__ import annotations
 
+import re
 import wave
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
@@ -144,6 +145,51 @@ def _synth_battle(duration: float) -> np.ndarray:
     return np.clip(base + booms * 0.5, -1, 1)
 
 
+def _synth_clash(duration: float) -> np.ndarray:
+    """Sword-clash / punch-impact texture for personal fight/duel/brawl
+    scenes - distinct from _synth_battle's distant artillery booms. Sparse
+    sharp transients (a short high-frequency metallic ring, or a lower
+    noise-burst thud) scattered over a quiet noise bed, so it reads as a
+    scuffle rather than one clean isolated hit."""
+    base = _lowpass(_white_noise(duration), 300) * 0.12
+    n = len(base)
+    rng = np.random.default_rng(6)
+    out = base.copy()
+    t = 0.0
+    while t < duration:
+        pos = int(t * SAMPLE_RATE)
+        if rng.random() < 0.5:
+            ring_len = int(0.18 * SAMPLE_RATE)
+            freq = rng.uniform(1800, 3200)
+            tt = np.linspace(0, ring_len / SAMPLE_RATE, ring_len)
+            hit = np.sin(2 * np.pi * freq * tt) * np.exp(-tt * 18) * 0.5
+            transient = rng.uniform(-1, 1, min(200, ring_len)) * 0.3
+            hit[: len(transient)] += transient
+        else:
+            thud_len = int(0.12 * SAMPLE_RATE)
+            hit = _lowpass(rng.uniform(-1, 1, thud_len), 10) * np.linspace(1, 0, thud_len) * 0.6
+        end = min(n, pos + len(hit))
+        out[pos:end] += hit[: end - pos]
+        t += rng.uniform(0.25, 0.55)
+    return np.clip(out, -1, 1)
+
+
+def _synth_crowd(duration: float) -> np.ndarray:
+    """'Walla' crowd murmur: several band-passed noise voices in the rough
+    speech range, each independently amplitude-modulated at a slow random
+    rate, summed together - the standard trick for a plausible background
+    chatter bed without needing real recorded voices."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    out = np.zeros(n)
+    rng = np.random.default_rng(7)
+    t = np.linspace(0, duration, n)
+    for i in range(6):
+        voice = _lowpass(_white_noise(duration, seed=100 + i), int(rng.integers(15, 35)))
+        mod = 0.5 + 0.5 * np.sin(2 * np.pi * rng.uniform(0.5, 1.4) * t + rng.uniform(0, 6.28))
+        out += voice * mod
+    return np.clip(out / 6 * 0.35, -1, 1)
+
+
 def _synth_farm(duration: float) -> np.ndarray:
     return _synth_wind(duration) * 0.5 + _synth_birds(duration)
 
@@ -168,6 +214,8 @@ _SFX_SYNTH: Dict[str, Callable[[float], np.ndarray]] = {
     "farm": _synth_farm,
     "birds": _synth_birds,
     "battle": _synth_battle,
+    "clash": _synth_clash,
+    "crowd": _synth_crowd,
     "air": _synth_air,
 }
 
@@ -178,16 +226,35 @@ _KEYWORD_TO_SFX: List[Tuple[Tuple[str, ...], str]] = [
     (("horse", "cavalry", "stable", "hooves", "galloping"), "horse"),
     (("farm", "crop", "harvest", "barn", "countryside", "plowing", "planting", "field"), "farm"),
     (("ocean", "sea", "wave", "beach", "coast", "shore", "tide"), "ocean"),
+    # Personal fight/duel/brawl gets a clash/impact texture; large-scale war
+    # keeps the distant-boom "battle" bed - checked first since e.g. "sword
+    # fight" would otherwise also match nothing more specific.
+    (("duel", "sword fight", "swordfight", "brawl", "melee", "fistfight", "fist fight",
+      "wrestl", "sparring", "clashed swords", "grappl"), "clash"),
     (("battle", "war", "combat", "explosion", "artillery", "gunfire"), "battle"),
+    (("court", "courtiers", "marketplace", "town square", "gathered crowd", "spectators",
+      "onlookers", "murmur", "chatter", "assembly hall"), "crowd"),
     (("forest", "jungle", "wilderness", "nature", "woods"), "birds"),
     (("wind", "gale", "blizzard"), "wind"),
 ]
 
 
+def _contains_keyword(haystack: str, keyword: str) -> bool:
+    """Word-boundary-aware match for single-word keywords; plain substring
+    match for multi-word phrases (which are collision-safe on their own).
+    Needed now that the haystack includes full narration, not just short
+    visual-keyword tags: bare substring matching let "field" (farm) match
+    "battlefield", misrouting a war scene's ambience to farm sounds - see
+    the identical fix (and rationale) in procedural_illustration.py."""
+    if " " in keyword or "-" in keyword:
+        return keyword in haystack
+    return re.search(rf"\b{re.escape(keyword)}(?:es|s)?\b", haystack) is not None
+
+
 def sfx_for_scene(scene: Scene) -> Optional[str]:
-    haystack = " ".join(scene.visual_keywords).lower()
+    haystack = f"{scene.narration} {' '.join(scene.visual_keywords)}".lower()
     for keywords, name in _KEYWORD_TO_SFX:
-        if any(kw in haystack for kw in keywords):
+        if any(_contains_keyword(haystack, kw) for kw in keywords):
             return name
     return None
 

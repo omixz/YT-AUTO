@@ -51,3 +51,23 @@ def test_matched_scene_is_louder_than_the_air_default(tmp_path):
 
 def test_air_default_is_registered():
     assert "air" in sound_effects._SFX_SYNTH
+
+
+def test_fight_scene_gets_clash_sfx_not_battle():
+    scene = Scene(narration="The two knights fought a duel outside the gates.", visual_keywords=["sword fight"])
+    assert sound_effects.sfx_for_scene(scene) == "clash"
+
+
+def test_war_scene_still_gets_battle_sfx():
+    scene = Scene(narration="The armies clashed on the battlefield.", visual_keywords=["war", "battle"])
+    assert sound_effects.sfx_for_scene(scene) == "battle"
+
+
+def test_court_scene_gets_crowd_sfx():
+    scene = Scene(narration="The court murmured as the king entered.", visual_keywords=["court"])
+    assert sound_effects.sfx_for_scene(scene) == "crowd"
+
+
+def test_clash_and_crowd_synths_produce_nonzero_audio():
+    assert np.abs(sound_effects._synth_clash(2.0)).max() > 0.0
+    assert np.abs(sound_effects._synth_crowd(2.0)).max() > 0.0

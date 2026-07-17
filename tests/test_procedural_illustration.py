@@ -1,3 +1,5 @@
+import math
+
 from PIL import Image
 
 from youtube_automation.config import PipelineConfig
@@ -61,6 +63,38 @@ def test_dominant_subject_covers_scenes_that_dont_name_it():
     assert pi._dominant_subject(scenes) == "octopus"
 
 
+def test_dominant_subject_ignores_one_incidental_mention_in_a_narrative_video():
+    # Regression test: a Norse mythology video (Baldur's death, Loki's
+    # punishment, Ragnarok) mentioned Jormungandr - the sea serpent - once,
+    # in one scene among many. That single incidental "sea"/"eel"-adjacent
+    # mention used to be enough to make "fish" the video's dominant subject,
+    # which then got slapped onto unrelated scenes (e.g. Baldur's death by
+    # mistletoe) purely by index parity. One mention out of many unrelated
+    # scenes must not count as the video being "about" that creature.
+    scenes = [
+        Scene(narration="Baldur was the most beloved of all the gods.", visual_keywords=["baldur", "god"]),
+        Scene(narration="Loki alone knew mistletoe could kill him.", visual_keywords=["mistletoe", "loki"]),
+        Scene(narration="Baldur fell dead, pierced by the dart.", visual_keywords=["baldur", "death"]),
+        Scene(narration="Loki was bound beneath a venomous serpent.", visual_keywords=["loki", "punishment"]),
+        Scene(narration="Even Jormungandr, the great sea serpent, stirred in the depths.", visual_keywords=["ocean", "eel"]),
+        Scene(narration="Ragnarok, the end of all things, was coming.", visual_keywords=["ragnarok", "apocalypse"]),
+    ]
+    assert pi._dominant_subject(scenes) is None
+
+
+def test_dominant_subject_still_wins_when_title_names_it():
+    scenes = [
+        Scene(narration="It has three hearts.", visual_keywords=["heart"]),
+        Scene(narration="Its blood is blue.", visual_keywords=["blood"]),
+    ]
+    assert pi._dominant_subject(scenes, extra_text="Why Octopuses Have Blue Blood") == "octopus"
+
+
+def test_mistletoe_scene_gets_forest_setting_not_default():
+    scene = Scene(narration="Loki alone knew mistletoe could kill him.", visual_keywords=["mistletoe"])
+    assert pi._setting_for_scene(scene) == "forest"
+
+
 def test_octopus_scene_renders_water_and_subject(tmp_path):
     scene = Scene(narration="Its blood is blue.", visual_keywords=["blood"])
     path = pi.generate_scene_image(scene, 0, _config(), tmp_path, subject_fallback="octopus")
@@ -115,6 +149,55 @@ def test_generate_all_clips_one_per_scene(tmp_path):
     ]
     clips = pi.generate_all_clips(scenes, [1.5, 1.5], _config(), tmp_path)
     assert len(clips) == 2 and all(c.exists() for c in clips)
+
+
+def test_fight_scene_detected_by_keyword():
+    scene = Scene(narration="The two knights fought outside the gates.", visual_keywords=["sword fight"])
+    assert pi._is_fight_scene(scene)
+    calm = Scene(narration="The farmer tended his field.", visual_keywords=["farm"])
+    assert not pi._is_fight_scene(calm)
+
+
+def test_crowd_scene_detected_by_keyword():
+    scene = Scene(narration="The court murmured as the king entered.", visual_keywords=["court"])
+    assert pi._is_crowd_scene(scene)
+    calm = Scene(narration="The farmer tended his field alone.", visual_keywords=["farm"])
+    assert not pi._is_crowd_scene(calm)
+
+
+def test_fight_scene_renders_two_figures_not_one(tmp_path):
+    # Regression guard for "show more than one stick if needed": a fight
+    # scene must not fall through to the single centred-character
+    # composition - its painted content should span both fighters, not
+    # cluster in the width of a single figure.
+    from PIL import ImageChops, ImageDraw
+
+    scene = Scene(narration="The two soldiers fought in the ruins.", visual_keywords=["sword fight", "ruins"])
+    rng = pi.random.Random(0)
+    _base, paint, _motion = pi._compose_scene(rng, scene, _config(), subject=None)
+    size = tuple(_config().video.resolution_longform)
+    img = Image.new("RGB", size, (255, 255, 255))
+    paint(ImageDraw.Draw(img), phase=math.pi / 2)
+    diff = ImageChops.difference(img, Image.new("RGB", size, (255, 255, 255)))
+    bbox = diff.getbbox()
+    assert bbox is not None
+    left, _top, right, _bottom = bbox
+    assert (right - left) > size[0] * 0.25, "painted content is too narrow to be two separate figures"
+
+
+def test_crowd_scene_adds_background_figures(tmp_path):
+    scene = Scene(narration="The court murmured as the king entered the hall.", visual_keywords=["court", "king"])
+    rng = pi.random.Random(0)
+    _base, paint, _motion = pi._compose_scene(rng, scene, _config(), subject=None)
+    img = Image.new("RGB", tuple(_config().video.resolution_longform), (255, 255, 255))
+    from PIL import ImageDraw
+    paint(ImageDraw.Draw(img), phase=0.0)
+    # A crowd scene should paint content off to the sides (background
+    # figures), not just the single centred focal character.
+    w = img.size[0]
+    pixels = img.load()
+    side_has_content = any(pixels[x, 850] != (255, 255, 255) for x in range(0, w // 5))
+    assert side_has_content
 
 
 def test_headwear_drawers_never_leave_a_gap_above_the_head():
