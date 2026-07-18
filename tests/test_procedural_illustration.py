@@ -37,6 +37,49 @@ def test_generate_scene_image_writes_a_real_image_file(tmp_path):
         assert img.size == tuple(_config().video.resolution_longform)
 
 
+def test_human_scale_keeps_character_shorter_than_a_house():
+    # Regression test: draw_character's raw proportions came out TALLER than
+    # a house at the same scale value (~640 units vs a house's ~460), which
+    # is exactly the "giant" bug reported against real output - a person
+    # towering over their own house. HUMAN_SCALE is applied at the call site
+    # (not inside draw_character itself, since fight/crowd scenes tune their
+    # own scale separately), so assert on actual rendered bounding boxes
+    # rather than trusting the raw constants line up with intent.
+    from PIL import ImageChops, ImageDraw
+    scale = 1.0
+    size = (900, 900)
+    ground_y = 800
+    white = (255, 255, 255)
+
+    char_img = Image.new("RGB", size, white)
+    pi.draw_character(ImageDraw.Draw(char_img), pi.random.Random(0), 450, ground_y, scale * pi.HUMAN_SCALE,
+                       (150, 130, 110), None, "neutral")
+    char_bbox = ImageChops.difference(char_img, Image.new("RGB", size, white)).getbbox()
+
+    house_img = Image.new("RGB", size, white)
+    pi._draw_house(ImageDraw.Draw(house_img), pi.random.Random(0), 450, ground_y, scale)
+    house_bbox = ImageChops.difference(house_img, Image.new("RGB", size, white)).getbbox()
+
+    char_height = char_bbox[3] - char_bbox[1]
+    house_height = house_bbox[3] - house_bbox[1]
+    assert char_height < house_height, (
+        f"character ({char_height}px tall) is not shorter than a house ({house_height}px tall) at the same scale"
+    )
+
+
+def test_indoor_scene_renders_a_wall_not_open_sky(tmp_path):
+    # Regression test: "indoor" used to draw a house prop standing on grass
+    # under an open sky - a literal exterior shot regardless of the setting
+    # name - so the top-left corner (pure white "sky") is a direct proxy for
+    # whether the room actually reads as an interior.
+    scene = Scene(narration="He worked alone in his laboratory late at night.", visual_keywords=["laboratory", "indoor"])
+    assert pi._setting_for_scene(scene) == "indoor"
+    path = pi.generate_scene_image(scene, 0, _config(), tmp_path)
+    with Image.open(path) as img:
+        top_left = img.getpixel((5, 5))
+    assert top_left != (255, 255, 255), "indoor scene still has blank white sky at the top - not a real interior"
+
+
 def test_generate_all_produces_one_image_per_scene(tmp_path):
     scenes = [
         Scene(narration="A soldier marched through the ruins.", visual_keywords=["soldier", "ruins"]),
@@ -163,6 +206,13 @@ def test_crowd_scene_detected_by_keyword():
     assert pi._is_crowd_scene(scene)
     calm = Scene(narration="The farmer tended his field alone.", visual_keywords=["farm"])
     assert not pi._is_crowd_scene(calm)
+
+
+def test_crowd_scene_covers_everyday_group_words_not_just_royal_court():
+    # "always only 1 person" was the reported complaint - crowd detection
+    # shouldn't only fire on throne-room vocabulary.
+    scene = Scene(narration="His family gathered around him at the end.", visual_keywords=["family"])
+    assert pi._is_crowd_scene(scene)
 
 
 def test_fight_scene_renders_two_figures_not_one(tmp_path):
