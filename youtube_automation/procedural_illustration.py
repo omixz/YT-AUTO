@@ -32,6 +32,12 @@ from .script_writer import Scene
 INK = (25, 25, 25)
 SKY = (255, 255, 255)
 
+# draw_character's raw geometry (see its own docstring/comment for the math)
+# comes out taller than a house at scale=1.0 - this brings it down to
+# roughly person-sized against the environment drawers below, which weren't
+# touched and still use element_scale directly.
+HUMAN_SCALE = 0.5
+
 
 def _contains_keyword(haystack: str, keyword: str) -> bool:
     """Word-boundary-aware match for single-word keywords; plain substring
@@ -215,7 +221,10 @@ def _draw_city_building(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float
 
 
 _ELEMENT_DRAWERS = {
-    "indoor": [_draw_house],
+    # "indoor" is handled separately by _draw_indoor_scene - a real interior
+    # (wall/floor/window/furniture), not this exterior-props dict, since a
+    # house prop standing on grass under an open sky (what this used to map
+    # to) reads as outside no matter what the setting is named.
     "snow": [_draw_house, _draw_tree],
     "mountain": [_draw_mountain, _draw_tree],
     "ruins": [_draw_ruin],
@@ -268,7 +277,9 @@ _FIGHT_KEYWORDS = ("fight", "fought", "duel", "brawl", "melee", "wrestl", "punch
 # see _CROWD_COLORS / _draw_background_person.
 _CROWD_KEYWORDS = ("court", "courtiers", "crowd", "chatter", "gathered", "gathering",
                     "marketplace", "town square", "audience", "onlookers", "spectators",
-                    "townsfolk", "villagers", "murmur", "assembly", "council")
+                    "townsfolk", "villagers", "murmur", "assembly", "council",
+                    "family", "crew", "followers", "companions", "soldiers", "guards",
+                    "citizens", "worshippers", "pilgrims", "colleagues", "delegation")
 
 
 def _scene_haystack(scene: Scene) -> str:
@@ -774,6 +785,82 @@ def _draw_water_scene(draw, rng, w, h):
     return surface_y
 
 
+# --- indoor scenes: a real interior, not a house prop standing outside -----
+
+_WALL_COLORS = [(224, 210, 184), (210, 200, 188), (198, 206, 200), (216, 198, 176)]
+
+
+def _draw_window(draw, rng, cx, cy, win_w, win_h, line_w):
+    draw.rectangle([cx - win_w / 2, cy - win_h / 2, cx + win_w / 2, cy + win_h / 2],
+                    fill=(197, 224, 233), outline=INK, width=line_w)
+    draw.line([(cx, cy - win_h / 2), (cx, cy + win_h / 2)], fill=INK, width=max(2, line_w - 1))
+    draw.line([(cx - win_w / 2, cy), (cx + win_w / 2, cy)], fill=INK, width=max(2, line_w - 1))
+
+
+def _draw_table(draw, rng, cx, floor_y, scale):
+    top_w, top_h = 220 * scale, 26 * scale
+    leg_h = 130 * scale
+    lw = max(3, round(4 * scale))
+    draw.rectangle([cx - top_w / 2, floor_y - leg_h - top_h, cx + top_w / 2, floor_y - leg_h],
+                    fill=(150, 105, 70), outline=INK, width=lw)
+    for lx in (cx - top_w / 2 + 16 * scale, cx + top_w / 2 - 16 * scale):
+        draw.rectangle([lx - 9 * scale, floor_y - leg_h, lx + 9 * scale, floor_y],
+                        fill=(120, 82, 55), outline=INK, width=max(2, round(3 * scale)))
+
+
+def _draw_crate(draw, rng, cx, floor_y, scale):
+    w_, h_ = 120 * scale, 120 * scale
+    lw = max(3, round(4 * scale))
+    draw.rectangle([cx - w_ / 2, floor_y - h_, cx + w_ / 2, floor_y], fill=(160, 120, 80), outline=INK, width=lw)
+    draw.line([(cx - w_ / 2, floor_y - h_), (cx + w_ / 2, floor_y)], fill=INK, width=max(2, round(3 * scale)))
+    draw.line([(cx + w_ / 2, floor_y - h_), (cx - w_ / 2, floor_y)], fill=INK, width=max(2, round(3 * scale)))
+
+
+def _draw_bookshelf(draw, rng, cx, floor_y, scale):
+    w_, h_ = 150 * scale, 300 * scale
+    lw = max(3, round(4 * scale))
+    draw.rectangle([cx - w_ / 2, floor_y - h_, cx + w_ / 2, floor_y], fill=(110, 78, 55), outline=INK, width=lw)
+    shelves = 4
+    for i in range(1, shelves):
+        y = floor_y - h_ * i / shelves
+        draw.line([(cx - w_ / 2, y), (cx + w_ / 2, y)], fill=INK, width=max(2, round(3 * scale)))
+        for _ in range(rng.randint(2, 4)):
+            bx = rng.uniform(cx - w_ / 2 + 8 * scale, cx + w_ / 2 - 20 * scale)
+            bw = rng.uniform(10, 18) * scale
+            bh = h_ / shelves - 14 * scale
+            color = rng.choice([(180, 70, 70), (70, 100, 150), (200, 170, 70), (90, 130, 90)])
+            draw.rectangle([bx, y - bh - 4 * scale, bx + bw, y - 4 * scale], fill=color, outline=INK, width=2)
+
+
+_INDOOR_FURNITURE = [_draw_table, _draw_crate, _draw_bookshelf]
+
+
+def _draw_indoor_scene(draw, rng, w, h, base_scale) -> int:
+    """A real interior (wall, floor, window, a piece of furniture) instead of
+    the old behaviour, where the "indoor" setting just drew a house sitting
+    on grass under an open sky - a house prop is still an EXTERIOR shot no
+    matter what the setting is called, which is exactly why every scene used
+    to read as outside. Returns floor_y so the caller grounds the character
+    on the same line."""
+    floor_y = round(h * 0.82)
+    draw.rectangle([0, 0, w, floor_y], fill=rng.choice(_WALL_COLORS))
+    draw.rectangle([0, floor_y, w, h], fill=GROUND_COLORS["indoor"])
+    draw.line([(0, floor_y), (w, floor_y)], fill=INK, width=3)
+    draw.rectangle([0, floor_y - round(10 * base_scale), w, floor_y], fill=(180, 165, 140))
+    for i in range(1, 4):
+        y = floor_y + (h - floor_y) * i / 4
+        draw.line([(0, y), (w, y)], fill=(150, 138, 118), width=2)
+
+    win_w, win_h = 210 * base_scale, 260 * base_scale
+    win_cx = w * rng.uniform(0.12, 0.22)
+    win_cy = floor_y * rng.uniform(0.30, 0.42)
+    _draw_window(draw, rng, win_cx, win_cy, win_w, win_h, max(3, round(6 * base_scale)))
+
+    furniture = rng.choice(_INDOOR_FURNITURE)
+    furniture(draw, rng, w * rng.uniform(0.74, 0.88), floor_y, base_scale * rng.uniform(0.9, 1.2))
+    return floor_y
+
+
 def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[str]):
     """Draws the background (everything except the focal subject) onto a fresh
     image and returns (background, paint_subject, motion).
@@ -812,35 +899,42 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
         return base, paint, motion
 
     setting = _setting_for_scene(scene)
-    ground_y = round(h * 0.82)
+    element_scale = base_scale
 
-    # A couple of flat clouds in the sky band above the ground - otherwise
-    # that whole upper region is empty white, which reads as unfinished.
-    if setting != "indoor":
+    if setting == "indoor":
+        # A real interior, not a house prop standing outside under an open
+        # sky - see _draw_indoor_scene's docstring for why the old behaviour
+        # meant "indoor" scenes still read as outdoor shots.
+        ground_y = _draw_indoor_scene(draw, rng, w, h, base_scale)
+    else:
+        ground_y = round(h * 0.82)
+
+        # A couple of flat clouds in the sky band above the ground -
+        # otherwise that whole upper region is empty white, which reads as
+        # unfinished.
         for _ in range(rng.randint(1, 2)):
             cx = w * rng.uniform(0.08, 0.92)
             cy = h * rng.uniform(0.10, 0.34)
             _draw_cloud(draw, rng, cx, cy, base_scale * rng.uniform(0.8, 1.2))
 
-    draw.rectangle([0, ground_y, w, h], fill=GROUND_COLORS.get(setting, GROUND_COLORS["default"]))
-    draw.line([(0, ground_y), (w, ground_y)], fill=INK, width=3)
-    texture = _GROUND_TEXTURES.get(setting)
-    if texture:
-        texture(draw, rng, ground_y, w, h)
+        draw.rectangle([0, ground_y, w, h], fill=GROUND_COLORS.get(setting, GROUND_COLORS["default"]))
+        draw.line([(0, ground_y), (w, ground_y)], fill=INK, width=3)
+        texture = _GROUND_TEXTURES.get(setting)
+        if texture:
+            texture(draw, rng, ground_y, w, h)
 
-    element_scale = base_scale
-    drawers = _ELEMENT_DRAWERS.get(setting, _ELEMENT_DRAWERS["default"])
-    left_positions = [w * 0.10, w * 0.24]
-    right_positions = [w * 0.76, w * 0.90]
-    li = ri = 0
-    for i, drawer in enumerate(drawers):
-        if i % 2 == 0 and li < len(left_positions):
-            x = left_positions[li]; li += 1
-        elif ri < len(right_positions):
-            x = right_positions[ri]; ri += 1
-        else:
-            x = w * rng.uniform(0.1, 0.9)
-        drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
+        drawers = _ELEMENT_DRAWERS.get(setting, _ELEMENT_DRAWERS["default"])
+        left_positions = [w * 0.10, w * 0.24]
+        right_positions = [w * 0.76, w * 0.90]
+        li = ri = 0
+        for i, drawer in enumerate(drawers):
+            if i % 2 == 0 and li < len(left_positions):
+                x = left_positions[li]; li += 1
+            elif ri < len(right_positions):
+                x = right_positions[ri]; ri += 1
+            else:
+                x = w * rng.uniform(0.1, 0.9)
+            drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
 
     if subject in _SUBJECT_DRAWERS:
         sd = _SUBJECT_DRAWERS[subject]
@@ -880,10 +974,20 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
                 x = positions[idx % len(positions)] + rng.uniform(-w * 0.03, w * 0.03)
                 crowd_specs.append((x, rng.choice(_CROWD_COLORS), idx, element_scale * rng.uniform(0.45, 0.6)))
 
+        # draw_character's proportions were tuned once against no real
+        # reference and ended up human-shaped but building-sized - at
+        # element_scale a person came out TALLER than the house next to them
+        # (~640 units vs a house's ~460). HUMAN_SCALE brings the figure down
+        # to roughly person-sized against its own environment; the extra
+        # per-scene jitter is a cheap stand-in for camera distance (a
+        # "medium" shot some scenes, a smaller "wide" shot on others) so
+        # consecutive scenes aren't identically framed.
+        character_scale = element_scale * HUMAN_SCALE * rng.uniform(0.85, 1.3)
+
         def paint(d, phase=0.0):
             for x, color, idx, cscale in crowd_specs:
                 _draw_background_person(d, rng, x, ground_y, cscale, color, phase, idx)
-            draw_character(d, rng, w * 0.5, ground_y, element_scale, outfit, headwear, mood, pose, phase)
+            draw_character(d, rng, w * 0.5, ground_y, character_scale, outfit, headwear, mood, pose, phase)
 
     motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
     return base, paint, motion
