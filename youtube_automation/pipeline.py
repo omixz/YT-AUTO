@@ -14,8 +14,9 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    assembler, branding, growth_ledger, music, niche_selector, procedural_illustration,
-    quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
+    assembler, branding, buffer_publisher, growth_ledger, media_host, music, niche_selector,
+    procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
+    visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
 from .script_writer import generate_script
@@ -181,19 +182,46 @@ def run(
             logger.info("publish_now set - releasing immediately instead of scheduling an optimal slot.")
 
         logger.info("Uploading to YouTube...")
-        video_id = youtube_uploader.upload_video(
-            video_path, script.title, script.description, script.tags, config,
-            thumbnail_path=thumb_path, publish_at=effective_publish_at,
-            privacy_status_override=effective_privacy,
-        )
-        manifest["youtube_video_id"] = video_id
-        manifest["youtube_url"] = f"https://youtu.be/{video_id}"
-        manifest["privacy_status"] = effective_privacy
-        manifest["publish_at"] = effective_publish_at
+        try:
+            video_id = youtube_uploader.upload_video(
+                video_path, script.title, script.description, script.tags, config,
+                thumbnail_path=thumb_path, publish_at=effective_publish_at,
+                privacy_status_override=effective_privacy,
+            )
+            manifest["youtube_video_id"] = video_id
+            manifest["youtube_url"] = f"https://youtu.be/{video_id}"
+            manifest["privacy_status"] = effective_privacy
+            manifest["publish_at"] = effective_publish_at
+            manifest["published_via"] = "youtube_api"
 
-        growth_ledger.record_published(
-            niche_key, format_name, video_id, title=script.title, topic=topic,
-        )
+            growth_ledger.record_published(
+                niche_key, format_name, video_id, title=script.title, topic=topic,
+            )
+        except Exception as exc:
+            # The direct YouTube OAuth path is primary; Buffer (posting
+            # through its own connected-channel auth, entirely separate from
+            # this project's token) is only a fallback for exactly this
+            # failure mode - e.g. the OAuth token expired/was revoked - not
+            # a general retry-anything handler. See buffer_publisher.py's
+            # module docstring for why it's deliberately not the default:
+            # no title/tags/privacy-status/custom-thumbnail control. If
+            # Buffer isn't configured, or also fails, this re-raises and the
+            # run fails loudly, same as before - a day's video should never
+            # silently vanish.
+            logger.warning("Direct YouTube upload failed (%s) - trying the Buffer fallback...", exc)
+            video_url = media_host.upload_public(video_path, f"{run_id}.mp4", config)
+            buffer_post_id = buffer_publisher.publish_video(
+                video_url, script.title, script.description, config, publish_at=effective_publish_at,
+            )
+            manifest["buffer_post_id"] = buffer_post_id
+            manifest["published_via"] = "buffer_fallback"
+            manifest["privacy_status"] = effective_privacy
+            manifest["publish_at"] = effective_publish_at
+            logger.warning(
+                "Published via the Buffer fallback (post %s) - no YouTube video ID is known yet "
+                "(Buffer publishes asynchronously), so this run is NOT recorded in the growth ledger.",
+                buffer_post_id,
+            )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
