@@ -60,8 +60,13 @@ video:
       weight: 1.0
 
 voice:
-  provider: edge-tts
-  name: en-US-AvaMultilingualNeural   # newer, more expressive/natural neural model than the standard voices
+  # Google Cloud TTS Neural2 voices - noticeably more natural than edge-tts,
+  # 1M characters/month free (a daily longform script is ~15-25K chars, so
+  # this covers daily use with room to spare). Requires GOOGLE_TTS_API_KEY;
+  # tts.py automatically falls back to edge-tts if that secret isn't set,
+  # so this is safe to leave here even before the key is configured.
+  provider: google
+  name: en-US-Neural2-D   # a deep, natural male voice - good fit for documentary narration
   rate: "+0%"
   pitch: "+0Hz"
 

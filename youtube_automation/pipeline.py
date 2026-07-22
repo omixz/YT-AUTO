@@ -93,7 +93,9 @@ def run(
         logger.warning("Script quality gate failed: %s", "; ".join(text_reasons))
 
     logger.info("Synthesizing narration...")
-    content_scene_audio, content_narration_path = tts.synthesize_script(script, config.voice, work_dir)
+    content_scene_audio, content_narration_path = tts.synthesize_script(
+        script, config.voice, work_dir, google_api_key=config.secrets.google_tts_api_key,
+    )
 
     logger.info("Building %s visuals...", "illustrated" if format_name == "longform" else "stock")
     content_visuals = _build_content_visuals(script, content_scene_audio, config, work_dir)

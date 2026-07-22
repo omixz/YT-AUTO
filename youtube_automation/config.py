@@ -124,6 +124,11 @@ class Secrets:
     youtube_client_secret_file: str = "client_secret.json"
     youtube_token_file: str = "token.json"
 
+    # google_tts.py (voice.provider == "google" in channel.yaml) - Neural2
+    # voices, 1M characters/month free. tts.py falls back to edge-tts
+    # automatically if this is unset, so leaving it blank never breaks a run.
+    google_tts_api_key: Optional[str] = None
+
     # buffer_publisher.py's fallback path (only used when the direct YouTube
     # OAuth upload fails, e.g. an expired/revoked token) - posts through
     # Buffer's connected YouTube channel instead. See media_host.py for the
@@ -146,6 +151,7 @@ class Secrets:
             pexels_api_key=os.getenv("PEXELS_API_KEY"),
             youtube_client_secret_file=os.getenv("YOUTUBE_CLIENT_SECRET_FILE", "client_secret.json"),
             youtube_token_file=os.getenv("YOUTUBE_TOKEN_FILE", "token.json"),
+            google_tts_api_key=os.getenv("GOOGLE_TTS_API_KEY"),
             buffer_api_key=os.getenv("BUFFER_API_KEY"),
             buffer_youtube_channel_id=os.getenv("BUFFER_YOUTUBE_CHANNEL_ID"),
             media_host_bucket=os.getenv("MEDIA_HOST_BUCKET"),

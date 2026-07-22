@@ -1,4 +1,6 @@
-"""Text-to-speech narration via Microsoft Edge's free neural voices (edge-tts).
+"""Text-to-speech narration - Microsoft Edge's free neural voices (edge-tts)
+by default, or Google Cloud TTS's Neural2 voices (see google_tts.py) when
+config.voice.provider == "google" and GOOGLE_TTS_API_KEY is set.
 
 Each scene is synthesized to its own audio file so the assembler knows exactly
 how long to hold that scene's visuals for, and word-boundary timestamps are
@@ -8,16 +10,20 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import edge_tts
 
+from . import google_tts
 from .config import VoiceConfig
 from .script_writer import Script
+
+logger = logging.getLogger(__name__)
 
 # edge-tts's free endpoint occasionally drops a request with NoAudioReceived
 # for no discernible reason (no malformed input involved) - worth a few
@@ -78,6 +84,24 @@ def _synthesize_one_with_retry(text: str, voice: VoiceConfig, out_path: Path) ->
     raise AssertionError("unreachable")  # loop always returns or raises
 
 
+def _synthesize_one_google_with_retry(text: str, voice: VoiceConfig, api_key: str, out_path: Path) -> List[WordCue]:
+    cues = google_tts.synthesize_one(text, voice, api_key, out_path)
+    return [WordCue(text=word, start=start, end=end) for word, start, end in cues]
+
+
+def _resolve_synthesizer(voice: VoiceConfig, google_api_key: Optional[str]):
+    """Picks which provider actually synthesizes each scene. Falls back to
+    edge-tts (never hard-fails a run) if voice.provider == "google" but no
+    key is configured yet - see config.py's Secrets.google_tts_api_key."""
+    if voice.provider == "google":
+        if google_api_key:
+            return lambda text, out_path: _synthesize_one_google_with_retry(text, voice, google_api_key, out_path)
+        logger.warning(
+            "voice.provider is 'google' but GOOGLE_TTS_API_KEY is not set - falling back to edge-tts for this run."
+        )
+    return lambda text, out_path: _synthesize_one_with_retry(text, voice, out_path)
+
+
 def _probe_duration(path: Path) -> float:
     result = subprocess.run(
         [
@@ -108,15 +132,18 @@ def concat_audio(paths: List[Path], out_path: Path) -> Path:
     return out_path
 
 
-def synthesize_script(script: Script, voice: VoiceConfig, work_dir: Path) -> Tuple[List[SceneAudio], Path]:
+def synthesize_script(
+    script: Script, voice: VoiceConfig, work_dir: Path, google_api_key: Optional[str] = None,
+) -> Tuple[List[SceneAudio], Path]:
     """Synthesize every scene's narration, returning per-scene audio and a
     single concatenated narration track for the final mix."""
     work_dir.mkdir(parents=True, exist_ok=True)
     scenes: List[SceneAudio] = []
+    synthesize_one = _resolve_synthesizer(voice, google_api_key)
 
     for i, scene in enumerate(script.scenes):
         out_path = work_dir / f"scene_{i:02d}.mp3"
-        cues = _synthesize_one_with_retry(scene.narration, voice, out_path)
+        cues = synthesize_one(scene.narration, out_path)
         duration = _probe_duration(out_path)
         scenes.append(SceneAudio(scene_index=i, audio_path=out_path, duration=duration, cues=cues))
 

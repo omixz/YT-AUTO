@@ -75,6 +75,8 @@ jobs:
           # PEXELS_API_KEY since that's what the Python code reads via os.getenv.
           GEMINI_API_KEY: ${{ secrets.GEMINI_API }}
           PEXELS_API_KEY: ${{ secrets.PEXELSAPI }}
+          # Optional - tts.py falls back to edge-tts automatically if unset.
+          GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
           # Buffer fallback publish path (buffer_publisher.py/media_host.py)
           # - only exercised when the direct YouTube OAuth upload fails.
           # Safe to leave unset: pipeline.py's fallback then fails with a
