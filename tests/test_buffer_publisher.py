@@ -28,10 +28,33 @@ def test_publish_video_returns_post_id_on_success():
         post_id = buffer_publisher.publish_video(
             "https://example.com/video.mp4", "Title", "Description", _config())
     assert post_id == "post-1"
-    sent_body = post.call_args.kwargs["json"]
-    assert sent_body["variables"]["input"]["channelId"] == "channel-123"
-    assert sent_body["variables"]["input"]["assets"] == [{"video": {"url": "https://example.com/video.mp4"}}]
-    assert sent_body["variables"]["input"]["mode"] == "addToQueue"
+    sent_input = post.call_args.kwargs["json"]["variables"]["input"]
+    assert sent_input["channelId"] == "channel-123"
+    assert sent_input["assets"] == [{"video": {"url": "https://example.com/video.mp4"}}]
+    assert sent_input["mode"] == "addToQueue"
+    assert sent_input["text"] == "Description"
+
+
+def test_publish_video_sends_youtube_metadata_buffer_actually_requires():
+    # Buffer's public docs/examples don't show these fields, but posting
+    # without them fails outright - see buffer_publisher.py's module
+    # docstring for how this was confirmed via GraphQL introspection.
+    ok = _response(200, {"data": {"createPost": {"post": {"id": "post-1"}}}})
+    with patch("requests.post", return_value=ok) as post:
+        buffer_publisher.publish_video(
+            "https://example.com/video.mp4", "Title", "Description", _config(),
+            privacy_status="unlisted", category_id="27", made_for_kids=True,
+        )
+    yt_metadata = post.call_args.kwargs["json"]["variables"]["input"]["metadata"]["youtube"]
+    assert yt_metadata == {
+        "title": "Title",
+        "privacy": "unlisted",
+        "categoryId": "27",
+        "license": "youtube",
+        "notifySubscribers": True,
+        "embeddable": True,
+        "madeForKids": True,
+    }
 
 
 def test_publish_video_uses_custom_scheduled_when_publish_at_given():

@@ -202,16 +202,31 @@ def run(
             # through its own connected-channel auth, entirely separate from
             # this project's token) is only a fallback for exactly this
             # failure mode - e.g. the OAuth token expired/was revoked - not
-            # a general retry-anything handler. See buffer_publisher.py's
-            # module docstring for why it's deliberately not the default:
-            # no title/tags/privacy-status/custom-thumbnail control. If
-            # Buffer isn't configured, or also fails, this re-raises and the
-            # run fails loudly, same as before - a day's video should never
-            # silently vanish.
+            # a general retry-anything handler. It does carry the same
+            # effective privacy/category/made-for-kids settings as the
+            # primary path (see buffer_publisher.py for how those map onto
+            # Buffer's YouTube-specific metadata fields), it just can't set
+            # a custom thumbnail or tags the way the direct API upload can.
+            #
+            # Confirmed against a live account: Buffer's YouTube integration
+            # only supports Shorts (vertical, <=3 min) - a longform video is
+            # rejected outright regardless of any field set here (see
+            # buffer_publisher.py's module docstring). Attempting it for a
+            # longform run would just add a doomed network round-trip before
+            # still failing, so only try it for "shorts".
+            if format_name != "shorts":
+                logger.error(
+                    "Direct YouTube upload failed (%s) - not attempting the Buffer fallback, since Buffer's "
+                    "YouTube integration only supports Shorts and this run is '%s'.", exc, format_name,
+                )
+                raise
+
             logger.warning("Direct YouTube upload failed (%s) - trying the Buffer fallback...", exc)
             video_url = media_host.upload_public(video_path, f"{run_id}.mp4", config)
             buffer_post_id = buffer_publisher.publish_video(
                 video_url, script.title, script.description, config, publish_at=effective_publish_at,
+                privacy_status=effective_privacy, category_id=config.upload.category_id,
+                made_for_kids=config.upload.made_for_kids,
             )
             manifest["buffer_post_id"] = buffer_post_id
             manifest["published_via"] = "buffer_fallback"

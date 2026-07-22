@@ -2,19 +2,31 @@
 
 Deliberately a FALLBACK, not a primary upload path - pipeline.py only calls
 this when youtube_uploader.upload_video() raises (e.g. the OAuth token is
-expired/revoked, see youtube_auth.py). Buffer's public GraphQL API has no
-documented YouTube-specific fields: no separate title, no tags, no privacy-
-status control, and no confirmed custom-thumbnail support for YouTube (only
-Instagram/TikTok/Pinterest document a thumbnailOffset). Title and
-description are therefore folded into one `text` field and the actual
-YouTube-side behavior of everything else is whatever Buffer's own YouTube
-integration defaults to - this trades control for "something still gets
-posted instead of nothing," which is the right trade only because the
-primary path already failed.
+expired/revoked, see youtube_auth.py).
+
+Buffer's public docs/examples don't show any YouTube-specific fields, but
+the real schema has them - confirmed by GraphQL introspection against a
+live account (`__type(name: "CreatePostInput")` -> `metadata` ->
+`PostInputMetaData` -> `youtube` -> `YoutubePostMetadataInput`, which has
+title/privacy/categoryId/license/notifySubscribers/embeddable/madeForKids).
+Posting without it fails outright ("YouTube posts require a title.",
+"YouTube posts require a category."), so this isn't optional - it's the
+only way a YouTube post via Buffer's API actually works.
 
 Buffer also does not accept direct file uploads (see media_host.py) - the
 video must already be hosted at a stable public URL before calling
 publish_video() here.
+
+CRITICAL LIMITATION, confirmed against a live account: Buffer's YouTube
+integration only supports Shorts (vertical, <=3 minutes) - this is a
+YouTube API restriction Buffer inherits, not something Buffer or this code
+chooses. A landscape/longform video is rejected outright ("Video must be
+vertical (portrait orientation) for YouTube Shorts.", "...no longer than 3
+minutes..."), regardless of any field set here. pipeline.py only attempts
+this fallback for format == "shorts" for exactly this reason - for
+longform, Buffer cannot publish the video under any circumstance, so
+attempting it would just add a doomed extra network round-trip before
+still failing.
 """
 from __future__ import annotations
 
@@ -43,20 +55,19 @@ mutation CreatePost($input: CreatePostInput!) {
 """
 
 
-def _post_text(title: str, description: str) -> str:
-    # No separate title field is documented for Buffer's YouTube posts (see
-    # module docstring) - lead with the title so it's at least the first
-    # thing visible, then the description below.
-    return f"{title}\n\n{description}".strip()
-
-
 def publish_video(
     video_url: str, title: str, description: str, config: PipelineConfig,
-    publish_at: Optional[str] = None,
+    publish_at: Optional[str] = None, privacy_status: str = "public",
+    category_id: str = "27", made_for_kids: bool = False,
 ) -> str:
     """Creates a Buffer post for the connected YouTube channel pointing at
     video_url (must already be a stable, publicly-fetchable URL - see
     media_host.py). Returns Buffer's post id.
+
+    privacy_status/category_id/made_for_kids mirror youtube_uploader.py's
+    same-named parameters so pipeline.py can pass through the same
+    effective values (e.g. a quality-gate-failure privacy downgrade)
+    regardless of which path actually ends up publishing.
 
     publish_at, if given, must be an ISO 8601 UTC timestamp - Buffer schedules
     the post for that time rather than adding it to the default queue."""
@@ -67,10 +78,21 @@ def publish_video(
         raise RuntimeError("BUFFER_YOUTUBE_CHANNEL_ID is not set - cannot use the Buffer fallback publish path.")
 
     post_input = {
-        "text": _post_text(title, description),
+        "text": description,
         "channelId": secrets.buffer_youtube_channel_id,
         "schedulingType": "automatic",
         "assets": [{"video": {"url": video_url}}],
+        "metadata": {
+            "youtube": {
+                "title": title[:100],
+                "privacy": privacy_status,
+                "categoryId": category_id,
+                "license": "youtube",
+                "notifySubscribers": True,
+                "embeddable": True,
+                "madeForKids": made_for_kids,
+            },
+        },
     }
     if publish_at:
         post_input["mode"] = "customScheduled"
