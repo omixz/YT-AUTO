@@ -185,19 +185,15 @@ def run(
 
         logger.info("Uploading to YouTube...")
         try:
+            # Only the upload call itself should trigger the Buffer fallback
+            # below - once upload_video() returns, the video is already live
+            # on YouTube, so a failure in bookkeeping (e.g. record_published's
+            # ledger file write) must not be mistaken for an upload failure
+            # and must not cause a second, duplicate publish via Buffer.
             video_id = youtube_uploader.upload_video(
                 video_path, script.title, script.description, script.tags, config,
                 thumbnail_path=thumb_path, publish_at=effective_publish_at,
                 privacy_status_override=effective_privacy,
-            )
-            manifest["youtube_video_id"] = video_id
-            manifest["youtube_url"] = f"https://youtu.be/{video_id}"
-            manifest["privacy_status"] = effective_privacy
-            manifest["publish_at"] = effective_publish_at
-            manifest["published_via"] = "youtube_api"
-
-            growth_ledger.record_published(
-                niche_key, format_name, video_id, title=script.title, topic=topic,
             )
         except Exception as exc:
             # The direct YouTube OAuth path is primary; Buffer (posting
@@ -238,6 +234,16 @@ def run(
                 "Published via the Buffer fallback (post %s) - no YouTube video ID is known yet "
                 "(Buffer publishes asynchronously), so this run is NOT recorded in the growth ledger.",
                 buffer_post_id,
+            )
+        else:
+            manifest["youtube_video_id"] = video_id
+            manifest["youtube_url"] = f"https://youtu.be/{video_id}"
+            manifest["privacy_status"] = effective_privacy
+            manifest["publish_at"] = effective_publish_at
+            manifest["published_via"] = "youtube_api"
+
+            growth_ledger.record_published(
+                niche_key, format_name, video_id, title=script.title, topic=topic,
             )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

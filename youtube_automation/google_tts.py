@@ -51,6 +51,15 @@ def _build_ssml(text: str, words: List[str]) -> str:
     return "<speak>" + " ".join(marked) + "</speak>"
 
 
+def _language_code(voice_name: str) -> str:
+    """Google voice names are "<lang>-<REGION>-<...>", e.g.
+    "en-US-Neural2-D" -> "en-US". A trailing rsplit("-", 1) grabs the wrong
+    two segments here (e.g. "en-US-Neural2"), which isn't a valid BCP-47
+    language code, so this takes the first two segments explicitly."""
+    parts = voice_name.split("-")
+    return "-".join(parts[:2]) if len(parts) >= 2 else "en-US"
+
+
 def _parse_rate(rate: str) -> float:
     """edge-tts style "+10%"/"-15%"/"+0%" -> Google's speakingRate multiplier
     (0.25-4.0, 1.0 = normal)."""
@@ -81,7 +90,7 @@ def synthesize_one(text: str, voice: VoiceConfig, api_key: str, out_path: Path) 
     words = text.split()
     body = {
         "input": {"ssml": _build_ssml(text, words)},
-        "voice": {"languageCode": voice.name.rsplit("-", 1)[0] if "-" in voice.name else "en-US", "name": voice.name},
+        "voice": {"languageCode": _language_code(voice.name), "name": voice.name},
         "audioConfig": {
             "audioEncoding": "MP3",
             "speakingRate": _parse_rate(voice.rate),
