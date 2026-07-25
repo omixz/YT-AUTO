@@ -77,3 +77,22 @@ def test_parse_rate_and_pitch_defaults():
     assert google_tts._parse_rate("+20%") == pytest.approx(1.2)
     assert google_tts._parse_rate("-50%") == pytest.approx(0.5)
     assert google_tts._parse_pitch("+0Hz") == 0.0
+
+
+def test_language_code_extracts_lang_and_region_not_trailing_segments():
+    # Regression guard: a trailing rsplit("-", 1) on "en-US-Neural2-D" grabs
+    # "en-US-Neural2" (wrong two segments) instead of "en-US" - not a valid
+    # BCP-47 language code, which the real API would reject.
+    assert google_tts._language_code("en-US-Neural2-D") == "en-US"
+    assert google_tts._language_code("en-GB-Wavenet-B") == "en-GB"
+    assert google_tts._language_code("en-US") == "en-US"
+
+
+def test_synthesize_one_sends_correct_language_code(tmp_path):
+    audio_bytes = b"ID3fakeaudio"
+    ok = _fake_response(audio_bytes, [])
+    with patch("requests.post", return_value=ok) as post, \
+         patch.object(google_tts, "_probe_duration", return_value=1.0):
+        google_tts.synthesize_one("hi", _voice(), "test-key", tmp_path / "out.mp3")
+    body = post.call_args.kwargs["json"]
+    assert body["voice"]["languageCode"] == "en-US"
