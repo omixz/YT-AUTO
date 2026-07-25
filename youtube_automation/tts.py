@@ -13,7 +13,7 @@ import json
 import logging
 import subprocess
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -30,6 +30,12 @@ logger = logging.getLogger(__name__)
 # retries rather than failing a whole scheduled run over it, same rationale
 # as the Gemini retry logic in script_writer.py.
 _MAX_TTS_RETRIES = 3
+
+# Used when voice.provider == "google" but GOOGLE_TTS_API_KEY isn't set yet -
+# config.yaml's voice.name is then a Google-only voice id (e.g. "en-US-Neural2-D"),
+# which edge-tts rejects outright, so the fallback needs its own known-good
+# edge-tts voice rather than reusing voice.name verbatim.
+_EDGE_TTS_FALLBACK_VOICE = "en-US-AvaMultilingualNeural"
 
 
 @dataclass
@@ -99,6 +105,7 @@ def _resolve_synthesizer(voice: VoiceConfig, google_api_key: Optional[str]):
         logger.warning(
             "voice.provider is 'google' but GOOGLE_TTS_API_KEY is not set - falling back to edge-tts for this run."
         )
+        voice = replace(voice, name=_EDGE_TTS_FALLBACK_VOICE)
     return lambda text, out_path: _synthesize_one_with_retry(text, voice, out_path)
 
 
