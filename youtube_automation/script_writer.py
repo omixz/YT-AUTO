@@ -15,7 +15,14 @@ import requests
 
 from .config import PipelineConfig
 
-MODEL = "gemini-flash-latest"
+# Pinned to a specific stable model, not the "-latest" alias: that alias
+# silently rolled forward to a new major generation (Gemini 3.5 Flash) and
+# broke every request with a generic "400 INVALID_ARGUMENT" - almost
+# certainly because thinkingConfig.thinkingBudget=0 below (tuned for the
+# old model) isn't valid for the new one's API surface. A real scheduled
+# run failed outright on this. Pinning avoids getting silently broken again
+# by a future auto-upgrade; bump deliberately when actually verified to work.
+MODEL = "gemini-2.5-flash"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
 SCRIPT_SCHEMA = {
