@@ -75,6 +75,20 @@ jobs:
           # PEXELS_API_KEY since that's what the Python code reads via os.getenv.
           GEMINI_API_KEY: ${{ secrets.GEMINI_API }}
           PEXELS_API_KEY: ${{ secrets.PEXELSAPI }}
+          # Optional - tts.py falls back to edge-tts automatically if unset.
+          GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+          # Buffer fallback publish path (buffer_publisher.py/media_host.py)
+          # - only exercised when the direct YouTube OAuth upload fails.
+          # Safe to leave unset: pipeline.py's fallback then fails with a
+          # clear "not configured" error instead of silently no-op'ing.
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_YOUTUBE_CHANNEL_ID: ${{ secrets.BUFFER_YOUTUBE_CHANNEL_ID }}
+          MEDIA_HOST_BUCKET: ${{ secrets.MEDIA_HOST_BUCKET }}
+          MEDIA_HOST_ACCESS_KEY: ${{ secrets.MEDIA_HOST_ACCESS_KEY }}
+          MEDIA_HOST_SECRET_KEY: ${{ secrets.MEDIA_HOST_SECRET_KEY }}
+          MEDIA_HOST_ENDPOINT_URL: ${{ secrets.MEDIA_HOST_ENDPOINT_URL }}
+          MEDIA_HOST_REGION: ${{ secrets.MEDIA_HOST_REGION }}
+          MEDIA_HOST_PUBLIC_BASE_URL: ${{ secrets.MEDIA_HOST_PUBLIC_BASE_URL }}
         run: |
           ARGS=()
           if [ -n "${{ github.event.inputs.topic }}" ]; then

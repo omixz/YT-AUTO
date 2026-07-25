@@ -124,6 +124,26 @@ class Secrets:
     youtube_client_secret_file: str = "client_secret.json"
     youtube_token_file: str = "token.json"
 
+    # google_tts.py (voice.provider == "google" in channel.yaml) - Neural2
+    # voices, 1M characters/month free. tts.py falls back to edge-tts
+    # automatically if this is unset, so leaving it blank never breaks a run.
+    google_tts_api_key: Optional[str] = None
+
+    # buffer_publisher.py's fallback path (only used when the direct YouTube
+    # OAuth upload fails, e.g. an expired/revoked token) - posts through
+    # Buffer's connected YouTube channel instead. See media_host.py for the
+    # S3-compatible bucket Buffer's API requires (it needs a public URL, not
+    # a file upload) and buffer_publisher.py's module docstring for why this
+    # is a deliberately best-effort fallback, not a primary upload path.
+    buffer_api_key: Optional[str] = None
+    buffer_youtube_channel_id: Optional[str] = None
+    media_host_bucket: Optional[str] = None
+    media_host_access_key: Optional[str] = None
+    media_host_secret_key: Optional[str] = None
+    media_host_endpoint_url: Optional[str] = None  # blank/None for real AWS S3
+    media_host_region: str = "auto"
+    media_host_public_base_url: Optional[str] = None  # e.g. https://media.example.com
+
     @classmethod
     def from_env(cls) -> "Secrets":
         return cls(
@@ -131,6 +151,15 @@ class Secrets:
             pexels_api_key=os.getenv("PEXELS_API_KEY"),
             youtube_client_secret_file=os.getenv("YOUTUBE_CLIENT_SECRET_FILE", "client_secret.json"),
             youtube_token_file=os.getenv("YOUTUBE_TOKEN_FILE", "token.json"),
+            google_tts_api_key=os.getenv("GOOGLE_TTS_API_KEY"),
+            buffer_api_key=os.getenv("BUFFER_API_KEY"),
+            buffer_youtube_channel_id=os.getenv("BUFFER_YOUTUBE_CHANNEL_ID"),
+            media_host_bucket=os.getenv("MEDIA_HOST_BUCKET"),
+            media_host_access_key=os.getenv("MEDIA_HOST_ACCESS_KEY"),
+            media_host_secret_key=os.getenv("MEDIA_HOST_SECRET_KEY"),
+            media_host_endpoint_url=os.getenv("MEDIA_HOST_ENDPOINT_URL"),
+            media_host_region=os.getenv("MEDIA_HOST_REGION", "auto"),
+            media_host_public_base_url=os.getenv("MEDIA_HOST_PUBLIC_BASE_URL"),
         )
 
 

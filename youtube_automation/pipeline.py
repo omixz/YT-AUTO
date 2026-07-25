@@ -14,8 +14,9 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    assembler, branding, growth_ledger, music, niche_selector, procedural_illustration,
-    quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts, visuals, youtube_uploader,
+    assembler, branding, buffer_publisher, growth_ledger, media_host, music, niche_selector,
+    procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
+    visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
 from .script_writer import generate_script
@@ -92,7 +93,9 @@ def run(
         logger.warning("Script quality gate failed: %s", "; ".join(text_reasons))
 
     logger.info("Synthesizing narration...")
-    content_scene_audio, content_narration_path = tts.synthesize_script(script, config.voice, work_dir)
+    content_scene_audio, content_narration_path = tts.synthesize_script(
+        script, config.voice, work_dir, google_api_key=config.secrets.google_tts_api_key,
+    )
 
     logger.info("Building %s visuals...", "illustrated" if format_name == "longform" else "stock")
     content_visuals = _build_content_visuals(script, content_scene_audio, config, work_dir)
@@ -181,19 +184,61 @@ def run(
             logger.info("publish_now set - releasing immediately instead of scheduling an optimal slot.")
 
         logger.info("Uploading to YouTube...")
-        video_id = youtube_uploader.upload_video(
-            video_path, script.title, script.description, script.tags, config,
-            thumbnail_path=thumb_path, publish_at=effective_publish_at,
-            privacy_status_override=effective_privacy,
-        )
-        manifest["youtube_video_id"] = video_id
-        manifest["youtube_url"] = f"https://youtu.be/{video_id}"
-        manifest["privacy_status"] = effective_privacy
-        manifest["publish_at"] = effective_publish_at
+        try:
+            video_id = youtube_uploader.upload_video(
+                video_path, script.title, script.description, script.tags, config,
+                thumbnail_path=thumb_path, publish_at=effective_publish_at,
+                privacy_status_override=effective_privacy,
+            )
+            manifest["youtube_video_id"] = video_id
+            manifest["youtube_url"] = f"https://youtu.be/{video_id}"
+            manifest["privacy_status"] = effective_privacy
+            manifest["publish_at"] = effective_publish_at
+            manifest["published_via"] = "youtube_api"
 
-        growth_ledger.record_published(
-            niche_key, format_name, video_id, title=script.title, topic=topic,
-        )
+            growth_ledger.record_published(
+                niche_key, format_name, video_id, title=script.title, topic=topic,
+            )
+        except Exception as exc:
+            # The direct YouTube OAuth path is primary; Buffer (posting
+            # through its own connected-channel auth, entirely separate from
+            # this project's token) is only a fallback for exactly this
+            # failure mode - e.g. the OAuth token expired/was revoked - not
+            # a general retry-anything handler. It does carry the same
+            # effective privacy/category/made-for-kids settings as the
+            # primary path (see buffer_publisher.py for how those map onto
+            # Buffer's YouTube-specific metadata fields), it just can't set
+            # a custom thumbnail or tags the way the direct API upload can.
+            #
+            # Confirmed against a live account: Buffer's YouTube integration
+            # only supports Shorts (vertical, <=3 min) - a longform video is
+            # rejected outright regardless of any field set here (see
+            # buffer_publisher.py's module docstring). Attempting it for a
+            # longform run would just add a doomed network round-trip before
+            # still failing, so only try it for "shorts".
+            if format_name != "shorts":
+                logger.error(
+                    "Direct YouTube upload failed (%s) - not attempting the Buffer fallback, since Buffer's "
+                    "YouTube integration only supports Shorts and this run is '%s'.", exc, format_name,
+                )
+                raise
+
+            logger.warning("Direct YouTube upload failed (%s) - trying the Buffer fallback...", exc)
+            video_url = media_host.upload_public(video_path, f"{run_id}.mp4", config)
+            buffer_post_id = buffer_publisher.publish_video(
+                video_url, script.title, script.description, config, publish_at=effective_publish_at,
+                privacy_status=effective_privacy, category_id=config.upload.category_id,
+                made_for_kids=config.upload.made_for_kids,
+            )
+            manifest["buffer_post_id"] = buffer_post_id
+            manifest["published_via"] = "buffer_fallback"
+            manifest["privacy_status"] = effective_privacy
+            manifest["publish_at"] = effective_publish_at
+            logger.warning(
+                "Published via the Buffer fallback (post %s) - no YouTube video ID is known yet "
+                "(Buffer publishes asynchronously), so this run is NOT recorded in the growth ledger.",
+                buffer_post_id,
+            )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

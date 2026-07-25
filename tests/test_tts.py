@@ -44,3 +44,35 @@ def test_synthesize_one_with_retry_raises_after_exhausting_retries(tmp_path):
             tts._synthesize_one_with_retry("hello", _voice(), tmp_path / "out.mp3")
 
     assert run.call_count == tts._MAX_TTS_RETRIES + 1
+
+
+def test_resolve_synthesizer_uses_google_when_provider_and_key_set(tmp_path):
+    voice = VoiceConfig(provider="google", name="en-US-Neural2-D")
+    with patch("youtube_automation.tts.google_tts.synthesize_one",
+               return_value=[("hi", 0.0, 0.5)]) as synth:
+        synthesize_one = tts._resolve_synthesizer(voice, "test-key")
+        cues = synthesize_one("hi", tmp_path / "out.mp3")
+    synth.assert_called_once_with("hi", voice, "test-key", tmp_path / "out.mp3")
+    assert cues == [WordCue(text="hi", start=0.0, end=0.5)]
+
+
+def test_resolve_synthesizer_falls_back_to_edge_tts_when_key_missing(tmp_path):
+    # Regression guard: switching config.voice.provider to "google" before
+    # GOOGLE_TTS_API_KEY is configured must not break the run.
+    voice = VoiceConfig(provider="google", name="en-US-Neural2-D")
+    with patch("youtube_automation.tts._synthesize_one_with_retry",
+               return_value=[WordCue(text="hi", start=0.0, end=0.5)]) as edge_synth, \
+         patch("youtube_automation.tts.google_tts.synthesize_one") as google_synth:
+        synthesize_one = tts._resolve_synthesizer(voice, None)
+        synthesize_one("hi", tmp_path / "out.mp3")
+    edge_synth.assert_called_once()
+    google_synth.assert_not_called()
+
+
+def test_resolve_synthesizer_uses_edge_tts_by_default():
+    voice = VoiceConfig()  # provider defaults to "edge-tts"
+    with patch("youtube_automation.tts._synthesize_one_with_retry",
+               return_value=[]) as edge_synth:
+        synthesize_one = tts._resolve_synthesizer(voice, "unused-key")
+        synthesize_one("hi", "out.mp3")
+    edge_synth.assert_called_once()
