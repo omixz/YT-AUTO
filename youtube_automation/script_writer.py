@@ -15,14 +15,13 @@ import requests
 
 from .config import PipelineConfig
 
-# Pinned to a specific stable model, not the "-latest" alias: that alias
-# silently rolled forward to a new major generation (Gemini 3.5 Flash) and
-# broke every request with a generic "400 INVALID_ARGUMENT" - almost
-# certainly because thinkingConfig.thinkingBudget=0 below (tuned for the
-# old model) isn't valid for the new one's API surface. A real scheduled
-# run failed outright on this. Pinning avoids getting silently broken again
-# by a future auto-upgrade; bump deliberately when actually verified to work.
-MODEL = "gemini-2.5-flash"
+# Pinned to gemini-3.5-flash - a specific, stable, GA model id, NOT a
+# rolling "-latest" alias (which silently hot-swaps to whatever release is
+# current) and NOT gemini-2.5-flash (which turned out to already be
+# deprecated: "no longer available to new users", a live 404 on a real
+# scheduled run). Pinning to an explicit stable id means this can't get
+# silently broken again by a future release swap; bump deliberately.
+MODEL = "gemini-3.5-flash"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
 SCRIPT_SCHEMA = {
@@ -145,10 +144,15 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
         "tool_config": {
             "function_calling_config": {"mode": "ANY", "allowed_function_names": [function_name]},
         },
-        # thinkingBudget=0: this task needs direct structured generation, not
-        # extended reasoning, and leaving thinking on ate a large fraction of
-        # max_output_tokens on "thoughts" rather than the actual script.
-        "generationConfig": {"maxOutputTokens": max_output_tokens, "thinkingConfig": {"thinkingBudget": 0}},
+        # thinkingLevel="minimal": this task needs direct structured
+        # generation, not extended reasoning, and leaving thinking on ate a
+        # large fraction of max_output_tokens on "thoughts" rather than the
+        # actual script. Gemini 3.x replaced the old integer thinkingBudget
+        # (Gemini 2.x) with this string enum (minimal/low/medium/high) -
+        # sending thinkingBudget to a Gemini 3 model is rejected outright
+        # with a generic "400 INVALID_ARGUMENT", which is what broke every
+        # scheduled run when gemini-flash-latest rolled onto Gemini 3.5.
+        "generationConfig": {"maxOutputTokens": max_output_tokens, "thinkingConfig": {"thinkingLevel": "minimal"}},
     }
 
     last_error = None
