@@ -224,7 +224,7 @@ def test_fight_scene_renders_two_figures_not_one(tmp_path):
 
     scene = Scene(narration="The two soldiers fought in the ruins.", visual_keywords=["sword fight", "ruins"])
     rng = pi.random.Random(0)
-    _base, paint, _motion = pi._compose_scene(rng, scene, _config(), subject=None)
+    _base, paint, _motion, _comp = pi._compose_scene(rng, scene, _config(), subject=None)
     size = tuple(_config().video.resolution_longform)
     img = Image.new("RGB", size, (255, 255, 255))
     paint(ImageDraw.Draw(img), phase=math.pi / 2)
@@ -238,7 +238,7 @@ def test_fight_scene_renders_two_figures_not_one(tmp_path):
 def test_crowd_scene_adds_background_figures(tmp_path):
     scene = Scene(narration="The court murmured as the king entered the hall.", visual_keywords=["court", "king"])
     rng = pi.random.Random(0)
-    _base, paint, _motion = pi._compose_scene(rng, scene, _config(), subject=None)
+    _base, paint, _motion, _comp = pi._compose_scene(rng, scene, _config(), subject=None)
     img = Image.new("RGB", tuple(_config().video.resolution_longform), (255, 255, 255))
     from PIL import ImageDraw
     paint(ImageDraw.Draw(img), phase=0.0)
