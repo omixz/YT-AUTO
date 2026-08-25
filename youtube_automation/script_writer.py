@@ -255,22 +255,36 @@ promise - a title/thumbnail that oversells what the video actually opens with is
 biggest reason a video's retention (and therefore YouTube's willingness to keep recommending it)
 collapses in the first seconds.
 
-Retention doesn't only collapse in the first seconds - there's a second, just as real drop-off
-around the 20-30 second mark, once the initial hook's payoff has been delivered and a viewer
-subconsciously asks "is there more, or was that it?". Guard against this explicitly: the scene
-right after the hook must introduce a new escalation, twist, or complication - not restate or
-explain the hook in different words - so a viewer who's still there at 30 seconds gets rewarded
-with fresh curiosity, not a lull.
+RETENTION ENGINEERING - DO NOT SKIP THESE:
+1. HOOK (scene 1): Open with a PATTERN INTERRUPT - a statement that violates expectations.
+   Examples: "The Roman Empire didn't fall. It was murdered." / "Everything you know about
+   [topic] is wrong." / "In 1913, a janitor solved a problem that killed 400,000 people."
+   Then immediately open a CURIOUSITY LOOP: "And the reason why will change how you see
+   [topic] forever." The hook's job is not to explain - it's to create a GAP the viewer MUST
+   close by watching.
+
+2. THE 20-30s CLIFF (scene 2): This is the SECOND RETENTION DROP-OFF. The hook paid off
+   the title's promise; now the viewer asks "okay, but is there MORE?" Scene 2 MUST introduce
+   a FRESH ESCALATION - a twist, reversal, or complication that was NOT in the hook. Use
+   phrases like "But that's only half the story..." / "What happened next was worse..." /
+   "And that's when they realized..." - never just elaborate on the hook.
+
+3. OPEN LOOPS EVERY 45-60s: Each build scene should OPEN a new curiosity loop before closing
+   the previous one. "We'll come back to that. But first..." / "The reason why is even stranger..."
+   This chains retention - the viewer stays to close the NEXT loop, which opens ANOTHER.
+
+4. THE INSIGHT (final scene): Don't just summarize. Deliver a PERSPECTIVE SHIFT - a new lens
+   that reframes everything the viewer just watched. "This wasn't really about [topic]. It was
+   about [deeper truth]." That's what earns the share, the subscribe, the algorithm boost.
 
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
 this shape:
-- One "hook" scene (first): a surprising claim or question that earns the runtime that follows.
-- {suggested_scenes - 2}+ "build" scenes: connected facts that develop one throughline, not a
-  random list - use connective tissue ("but here's the twist...", "which raises the
+- One "hook" scene (first): pattern interrupt + curiosity gap that earns the runtime.
+- {suggested_scenes - 2}+ "build" scenes: connected facts, each opening a new loop before
+  closing the last. Use connective tissue ("but here's the twist...", "which raises the
   question...", "and that's the part most people get wrong...").
-- One "insight" scene (last): a real "why this matters" synthesis that ties the throughline
-  together - genuine analysis, not just one more fact.
+- One "insight" scene (last): perspective shift that reframes the whole story.
 
 Each scene's narration should be 1-2 sentences a voice actor can read in a few seconds - do not
 write paragraph-length narration for a single scene, split it into more scenes instead. Give
@@ -326,6 +340,16 @@ best fits this niche, each topic should be one of:
   and place (a specific role, a specific empire, a specific moment)
 - A specific myth or legend with real dramatic stakes, told as a gripping story
 - A real person facing a real crisis, disaster, betrayal, or narrow escape
+- A SYSTEMIC LIE or MYTH-BUST: "Why [widely believed thing] is completely wrong"
+- A FORGOTTEN TURNING POINT: a moment that changed everything but nobody talks about
+
+TOPIC SELECTION CRITERIA (each topic MUST score high on):
+1. CURIOSITY GAP: Can the title alone create "I NEED to know" urgency?
+2. VISUAL THUMBNAIL POTENTIAL: One concrete, striking image that reads at 160x90px
+3. EMOTIONAL STAKES: Life/death, freedom/slavery, truth/lie, survival/extinction
+4. NARRATIVE MOMENTUM: A clear beginning→middle→end with escalation
+5. UNIQUENESS: Not a Wikipedia summary - a SPECIFIC untold angle
+
 Each topic needs a clear, specific, named anchor (a person, role, place, or event) - not a vague
 category like "Ancient Rome" or "Greek Mythology" on their own. Each topic should also imply one
 concrete, visually striking single moment (a specific action, object, or expression) that could
