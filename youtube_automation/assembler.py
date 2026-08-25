@@ -2,10 +2,12 @@
 
 For each scene: video clips (stock footage, or animation.py's prerendered
 longform clips) are scaled/cropped to fill the frame and looped if shorter
-than the narration; still images get a slow Ken Burns zoom. Segments are
-concatenated, captions are burned in, and the narration (plus optional
-ducked background music and/or a scene-matched ambience track from
-sound_effects.py) is muxed on top.
+than the narration; still images get a role-aware Ken Burns zoom (faster for
+hooks, standard for build scenes, slower/gentler for insights). Segments are
+crossfaded together (smooth dissolve transitions instead of jarring hard
+cuts), captions are burned in, and the narration (plus optional ducked
+background music with a dynamic volume envelope and/or a scene-matched
+ambience track from sound_effects.py) is muxed on top.
 """
 from __future__ import annotations
 
@@ -18,8 +20,20 @@ from .fonts import ASSETS_DIR
 from .tts import SceneAudio
 from .visuals import VisualAsset
 
-MIN_ZOOM_STEP = 0.0015
-MAX_ZOOM = 1.3
+# Scene-role-aware Ken Burns: hook scenes get faster, punchier zoom to match
+# their urgency; build scenes use the standard pace; insight scenes slow down
+# for a contemplative feel.  These numbers drive zoompan's zoom-step-per-frame
+# and maximum zoom factor so consecutive scenes have visually distinct energy
+# levels instead of all drifting at the same monotonous crawl.
+_ROLE_ZOOM = {
+    "hook":    {"step": 0.003,  "max": 1.4},
+    "build":   {"step": 0.0015, "max": 1.3},
+    "insight": {"step": 0.001,  "max": 1.2},
+}
+_DEFAULT_ZOOM = _ROLE_ZOOM["build"]
+
+# Default crossfade (dissolve) duration in seconds between scene segments.
+CROSSFADE_DEFAULT = 0.4
 
 
 def run_ffmpeg(cmd: List[str]) -> None:
@@ -28,7 +42,10 @@ def run_ffmpeg(cmd: List[str]) -> None:
         raise RuntimeError(f"ffmpeg command failed:\n{' '.join(cmd)}\n\n{result.stderr[-4000:]}")
 
 
-def build_video_segment(asset: VisualAsset, duration: float, config: PipelineConfig, out_path: Path) -> None:
+def build_video_segment(
+    asset: VisualAsset, duration: float, config: PipelineConfig, out_path: Path,
+    scene_role: str = "build",
+) -> None:
     w, h = config.video.resolution
     fps = config.video.fps
 
@@ -38,15 +55,14 @@ def build_video_segment(asset: VisualAsset, duration: float, config: PipelineCon
             "-stream_loop", "-1", "-i", str(asset.path),
             "-t", f"{duration:.3f}",
             "-vf", f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},fps={fps},format=yuv420p",
-            # ultrafast: this segment gets re-encoded again downstream (colorkey
-            # composite for longform, caption burn-in for every format), so
-            # spending time on encode efficiency here is pure waste - it matters
-            # a lot once a longform video means dozens of these per run.
             "-an", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
         ]
-    else:  # image: Ken Burns zoom
+    else:  # image: scene-role-aware Ken Burns zoom
+        role_params = _ROLE_ZOOM.get(scene_role, _DEFAULT_ZOOM)
+        zoom_step = role_params["step"]
+        max_zoom = role_params["max"]
         frames = max(1, round(duration * fps))
-        zoom_expr = f"min(zoom+{MIN_ZOOM_STEP},{MAX_ZOOM})"
+        zoom_expr = f"min(zoom+{zoom_step},{max_zoom})"
         vf = (
             f"scale={w*2}:{h*2}:force_original_aspect_ratio=increase,"
             f"crop={w*2}:{h*2},"
@@ -64,6 +80,7 @@ def build_video_segment(asset: VisualAsset, duration: float, config: PipelineCon
 
 
 def _concat_segments(segment_paths: List[Path], out_path: Path, work_dir: Path) -> None:
+    """Hard-cut concat (fallback when crossfade is impossible)."""
     list_file = work_dir / "video_concat.txt"
     list_file.write_text(
         "\n".join(f"file '{p.name}'" for p in segment_paths), encoding="utf-8"
@@ -72,6 +89,76 @@ def _concat_segments(segment_paths: List[Path], out_path: Path, work_dir: Path) 
         "ffmpeg", "-y", "-f", "concat", "-safe", "0",
         "-i", str(list_file), "-c", "copy", str(out_path),
     ])
+
+
+def _crossfade_segments(
+    segment_paths: List[Path],
+    durations: List[float],
+    crossfade: float,
+    out_path: Path,
+    work_dir: Path,
+) -> None:
+    """Chain segments with ffmpeg xfade (smooth dissolve) transitions instead
+    of hard cuts.  Each adjacent pair of scenes blends over `crossfade`
+    seconds, making scene changes feel like deliberate, polished edits
+    instead of jarring jumps - the single biggest visual-quality gap between
+    a faceless slideshow and a genuinely produced mini-documentary.
+
+    Segments must already be padded (each rendered at natural_duration +
+    crossfade, except the last) so xfade has enough overlap content.
+
+    Falls back to hard-cut concat on failure (very short segments, or ffmpeg
+    builds without xfade support)."""
+    n = len(segment_paths)
+    if n <= 1:
+        if n == 1:
+            import shutil
+            shutil.copy2(str(segment_paths[0]), str(out_path))
+        return
+
+    # Clamp crossfade so neither adjacent segment is shorter than 2.5x the
+    # transition - otherwise xfade produces visually meaningless mush.
+    effective = crossfade
+    for i in range(n - 1):
+        pair_min = min(durations[i], durations[i + 1])
+        effective = min(effective, pair_min * 0.35)
+    effective = max(0.0, effective)
+
+    if effective <= 0.05:
+        _concat_segments(segment_paths, out_path, work_dir)
+        return
+
+    # Build the xfade filter chain.  offset_k = sum(d_1..d_k) where d_k is
+    # the *natural* (unpadded) duration of segment k.
+    inputs: List[str] = []
+    for p in segment_paths:
+        inputs += ["-i", str(p)]
+
+    filter_parts: List[str] = []
+    cumulative = 0.0
+    prev_label = "0:v"
+    for i in range(n - 1):
+        cumulative += durations[i]
+        next_idx = i + 1
+        out_label = "vout" if i == n - 2 else f"v{i}"
+        filter_parts.append(
+            f"[{prev_label}][{next_idx}:v]xfade=transition=fade"
+            f":duration={effective:.3f}:offset={cumulative:.3f}[{out_label}]"
+        )
+        prev_label = out_label
+
+    filter_complex = ";".join(filter_parts)
+    cmd = [
+        "ffmpeg", "-y", *inputs,
+        "-filter_complex", filter_complex,
+        "-map", "[vout]",
+        "-c:v", "libx264", "-preset", "fast", "-pix_fmt", "yuv420p",
+        str(out_path),
+    ]
+    try:
+        run_ffmpeg(cmd)
+    except RuntimeError:
+        _concat_segments(segment_paths, out_path, work_dir)
 
 
 def _escape_for_filter(path: Path) -> str:
@@ -89,18 +176,29 @@ def build_video(
     out_path: Path,
     background_music: Optional[Path] = None,
     ambience_path: Optional[Path] = None,
+    scene_roles: Optional[List[str]] = None,
+    crossfade_duration: float = CROSSFADE_DEFAULT,
 ) -> Path:
     if len(visuals) != len(scene_audio):
         raise ValueError("visuals and scene_audio must be the same length (one per scene)")
 
+    if scene_roles is None:
+        scene_roles = ["build"] * len(visuals)
+
     segment_paths = []
+    natural_durations: List[float] = []
     for i, (asset, audio) in enumerate(zip(visuals, scene_audio)):
+        role = scene_roles[i] if i < len(scene_roles) else "build"
+        # Pad each segment (except the last) by crossfade_duration so xfade
+        # has enough overlap content without shortening the final output.
+        extra = crossfade_duration if i < len(visuals) - 1 else 0.0
         seg_path = work_dir / f"segment_{i:02d}.mp4"
-        build_video_segment(asset, audio.duration, config, seg_path)
+        build_video_segment(asset, audio.duration + extra, config, seg_path, scene_role=role)
         segment_paths.append(seg_path)
+        natural_durations.append(audio.duration)
 
     video_concat = work_dir / "video_full.mp4"
-    _concat_segments(segment_paths, video_concat, work_dir)
+    _crossfade_segments(segment_paths, natural_durations, crossfade_duration, video_concat, work_dir)
 
     burned = work_dir / "video_captioned.mp4"
     if subtitles_path.exists() and subtitles_path.stat().st_size > 0:

@@ -125,17 +125,17 @@ def run(
     )
 
     logger.info("Assembling final video...")
-    # Use a configured music file if one is set, otherwise synthesize an
-    # ambient bed sized to the whole video (see music.py) - every video gets
-    # background music without needing an external, copyrighted track.
     if config.video.background_music:
         music_path = Path(config.video.background_music)
     else:
         total_duration = sum(a.duration for a in all_scene_audio)
-        music_path = music.build_music_bed(total_duration, work_dir)
+        scene_durations = [a.duration for a in content_scene_audio]
+        music_path = music.build_music_bed(total_duration, work_dir, scene_durations=scene_durations)
+    scene_roles = [s.role for s in script.scenes] + ["build"]
     video_path = assembler.build_video(
         all_visuals, all_scene_audio, narration_path, ass_path, config, work_dir,
         work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
+        scene_roles=scene_roles,
     )
 
     logger.info("Checking rendered media (video/audio/captions)...")
