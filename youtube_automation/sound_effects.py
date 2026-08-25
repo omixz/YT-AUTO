@@ -270,6 +270,99 @@ def _write_wav(samples: np.ndarray, path: Path) -> None:
         f.writeframes(pcm.tobytes())
 
 
+def _synth_transition_whoosh(duration: float = 0.6) -> np.ndarray:
+    """A quick rising whoosh for scene transitions - sells the cut."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    t = np.linspace(0, duration, n)
+    # Rising pitch + amplitude
+    freq = np.linspace(80, 2000, n)
+    phase = np.cumsum(2 * np.pi * freq / SAMPLE_RATE)
+    sig = np.sin(phase) * np.hanning(n) * t / duration
+    # Add breathy noise
+    noise = _lowpass(_white_noise(duration), 50) * 0.3
+    return np.clip(sig + noise, -1, 1) * 0.4
+
+
+def _synth_impact_thud(duration: float = 0.4) -> np.ndarray:
+    """Low-frequency thud for dramatic beats - like a door slamming."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    t = np.linspace(0, duration, n)
+    # Fundamental thud
+    sig = np.sin(2 * np.pi * 60 * t) * np.exp(-t * 15) * 0.6
+    # Add harmonic body
+    sig += np.sin(2 * np.pi * 120 * t) * np.exp(-t * 10) * 0.3
+    # Noise burst
+    noise = _lowpass(_white_noise(duration), 20) * np.exp(-t * 20) * 0.2
+    return np.clip(sig + noise, -1, 1)
+
+
+def _synth_magic_shimmer(duration: float = 0.5) -> np.ndarray:
+    """High-frequency shimmer for insight/reveal transitions."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    t = np.linspace(0, duration, n)
+    # Multiple bell-like tones
+    sig = np.zeros(n)
+    for freq in [800, 1200, 1600, 2400]:
+        sig += np.sin(2 * np.pi * freq * t) * np.exp(-t * 8) * 0.25
+    return np.clip(sig * np.hanning(n), -1, 1)
+
+
+# Transition SFX mapping by scene role transition
+_TRANSITION_SFX = {
+    ("hook", "build"): "whoosh",      # hook -> build: quick whoosh
+    ("build", "build"): "whoosh",     # build -> build: whoosh
+    ("build", "insight"): "shimmer",  # build -> insight: magic shimmer
+    ("hook", "insight"): "thud",      # hook -> insight (short video): thud
+}
+
+
+def _get_transition_sfx(prev_role: str, next_role: str) -> Optional[str]:
+    return _TRANSITION_SFX.get((prev_role, next_role), "whoosh")
+
+
+def build_transition_sfx(
+    scene_roles: List[str],
+    scene_durations: List[float],
+    work_dir: Path,
+) -> Optional[Path]:
+    """Builds a transition SFX track with whooshes/thuds/shimmers at scene boundaries.
+    
+    Returns a WAV file with transition effects placed at each scene boundary,
+    scaled to the transition type (hook->build, build->insight, etc.)."""
+    if len(scene_roles) < 2:
+        return None
+    
+    total_duration = sum(scene_durations)
+    track = np.zeros(max(1, int(total_duration * SAMPLE_RATE)))
+    
+    offset = 0.0
+    for i in range(len(scene_roles) - 1):
+        prev_role = scene_roles[i]
+        next_role = scene_roles[i + 1]
+        sfx_name = _get_transition_sfx(prev_role, next_role)
+        
+        if sfx_name == "whoosh":
+            sfx = _synth_transition_whoosh(0.6)
+        elif sfx_name == "thud":
+            sfx = _synth_impact_thud(0.4)
+        elif sfx_name == "shimmer":
+            sfx = _synth_magic_shimmer(0.5)
+        else:
+            sfx = _synth_transition_whoosh(0.6)
+        
+        # Place SFX so it ends exactly at the scene boundary
+        start_sample = int((offset + scene_durations[i] - len(sfx) / SAMPLE_RATE) * SAMPLE_RATE)
+        end_sample = min(len(track), start_sample + len(sfx))
+        if start_sample >= 0 and end_sample > start_sample:
+            track[start_sample:end_sample] += sfx[: end_sample - start_sample]
+        
+        offset += scene_durations[i]
+    
+    out_path = work_dir / "transitions.wav"
+    _write_wav(track, out_path)
+    return out_path
+
+
 def build_ambience_track(
     scenes: List[Scene],
     content_scene_audio: List[SceneAudio],

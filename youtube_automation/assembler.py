@@ -176,6 +176,7 @@ def build_video(
     out_path: Path,
     background_music: Optional[Path] = None,
     ambience_path: Optional[Path] = None,
+    transitions_path: Optional[Path] = None,
     scene_roles: Optional[List[str]] = None,
     crossfade_duration: float = CROSSFADE_DEFAULT,
 ) -> Path:
@@ -224,21 +225,43 @@ def build_video(
     # Layer narration with any of the optional background audio beds - music
     # and/or the scene-matched ambience track (see sound_effects.py) - via a
     # variable-arity amix, rather than hardcoding for exactly one extra layer.
+    # Sidechain compression: duck music/ambience when narration is present.
+    # This uses ffmpeg's sidechaincompress filter - the narration (input 1)
+    # acts as the control signal to compress the music/ambience beds.
     inputs = ["-i", str(burned), "-i", str(narration_path)]
     filter_parts = []
-    audio_labels = ["[1:a]"]
+    audio_labels = ["[1:a]"]  # narration stays at full volume, no processing
     next_input_idx = 2
 
     if background_music and background_music.exists():
         inputs += ["-stream_loop", "-1", "-i", str(background_music)]
-        filter_parts.append(f"[{next_input_idx}:a]volume={config.video.music_volume_db}dB[music]")
+        # Sidechain compress music with narration as control
+        # threshold: -24dB - start compressing when narration exceeds this
+        # ratio: 4:1 - moderate compression
+        # attack: 10ms - fast attack for speech transients
+        # release: 200ms - smooth release
+        filter_parts.append(
+            f"[{next_input_idx}:a][1:a]sidechaincompress="
+            f"threshold=-24dB:ratio=4:attack=10:release=200:makeup=1[music]"
+        )
         audio_labels.append("[music]")
         next_input_idx += 1
 
     if ambience_path and ambience_path.exists():
         inputs += ["-i", str(ambience_path)]
-        filter_parts.append(f"[{next_input_idx}:a]volume={config.video.sfx_volume_db}dB[amb]")
+        # Sidechain compress ambience more aggressively (it's quieter texture)
+        filter_parts.append(
+            f"[{next_input_idx}:a][1:a]sidechaincompress="
+            f"threshold=-30dB:ratio=6:attack=5:release=300:makeup=1[amb]"
+        )
         audio_labels.append("[amb]")
+        next_input_idx += 1
+
+    if transitions_path and transitions_path.exists():
+        inputs += ["-i", str(transitions_path)]
+        # Transitions are brief effects - no sidechain needed, just mix at low level
+        filter_parts.append(f"[{next_input_idx}:a]volume=-12dB[trans]")
+        audio_labels.append("[trans]")
         next_input_idx += 1
 
     if len(audio_labels) > 1:

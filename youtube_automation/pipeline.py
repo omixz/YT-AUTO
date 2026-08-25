@@ -124,18 +124,24 @@ def run(
         script.scenes, content_scene_audio, 0.0, outro_audio.duration, work_dir,
     )
 
+    logger.info("Building transition sound effects...")
+    scene_durations = [a.duration for a in content_scene_audio]
+    scene_roles_for_audio = [s.role for s in script.scenes]
+    transitions_path = sound_effects.build_transition_sfx(
+        scene_roles_for_audio, scene_durations, work_dir,
+    )
+
     logger.info("Assembling final video...")
     if config.video.background_music:
         music_path = Path(config.video.background_music)
     else:
         total_duration = sum(a.duration for a in all_scene_audio)
-        scene_durations = [a.duration for a in content_scene_audio]
         music_path = music.build_music_bed(total_duration, work_dir, scene_durations=scene_durations)
     scene_roles = [s.role for s in script.scenes] + ["build"]
     video_path = assembler.build_video(
         all_visuals, all_scene_audio, narration_path, ass_path, config, work_dir,
         work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
-        scene_roles=scene_roles,
+        transitions_path=transitions_path, scene_roles=scene_roles,
     )
 
     logger.info("Checking rendered media (video/audio/captions)...")
