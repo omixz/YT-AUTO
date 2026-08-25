@@ -40,6 +40,9 @@ def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] =
     Each niche gets its own queue/history file (config.topics.queue_file /
     history_file are `{niche}`-templated paths) so topics never cross-pollinate
     between niches sharing the one channel.
+
+    Uses intelligent selection: trend detection, seasonal awareness, competitor
+    gap analysis, and topic freshness to pick the best candidate from the queue.
     """
     if override:
         return override
@@ -53,7 +56,15 @@ def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] =
     if not queue:
         queue = brainstorm_topics(config, existing=history, count=5)
 
-    topic = queue.pop(0)
+    # Intelligent selection: if we have multiple candidates, pick the best one
+    # based on seasonal trends, competitor gaps, and topic freshness.
+    if len(queue) > 1:
+        from .niche_selector import choose_topic_with_intelligence
+        topic = choose_topic_with_intelligence(config, niche_key, queue, history)
+        queue.remove(topic)
+    else:
+        topic = queue.pop(0)
+    
     _save_queue(queue_path, queue)
 
     history.append(topic)
