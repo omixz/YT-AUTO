@@ -270,3 +270,62 @@ def test_headwear_drawers_never_leave_a_gap_above_the_head():
         pixels = img.load()
         touches_head = any(pixels[x, row] != (255, 255, 255) for x in range(600))
         assert touches_head, f"{name} headwear floats above the head with a visible gap"
+
+
+def test_dramatic_beat_detection():
+    hook = Scene(narration="A quiet morning.", visual_keywords=[], role="hook")
+    shocked = Scene(narration="The bridge collapsed without warning.", visual_keywords=[], role="build")
+    plain = Scene(narration="Trade along the coast grew steadily.", visual_keywords=[], role="build")
+    fight = Scene(narration="The two soldiers fought in the mud.", visual_keywords=[], role="build")
+    assert pi._is_dramatic_beat(hook) is True
+    assert pi._is_dramatic_beat(shocked) is True
+    assert pi._is_dramatic_beat(fight) is True
+    assert pi._is_dramatic_beat(plain) is False
+
+
+def test_hook_scene_flashes_in_from_white_but_plain_scene_does_not(tmp_path):
+    import numpy as np
+
+    hook = Scene(narration="A city vanished overnight.", visual_keywords=["city"], role="hook")
+    plain = Scene(narration="Trade along the coast grew steadily.", visual_keywords=["coast"], role="build")
+
+    hook_clip = pi.generate_scene_clip(hook, 0, _config(), tmp_path, duration=2.0)
+    plain_clip = pi.generate_scene_clip(plain, 1, _config(), tmp_path, duration=2.0)
+
+    def first_frame_brightness(clip_path):
+        frame_path = tmp_path / f"{clip_path.stem}_frame0.png"
+        import subprocess
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", str(clip_path), "-vf", "select=eq(n\\,0)", "-vframes", "1", str(frame_path)],
+            capture_output=True, check=True,
+        )
+        with Image.open(frame_path) as img:
+            return np.array(img.convert("L")).mean()
+
+    hook_brightness = first_frame_brightness(hook_clip)
+    plain_brightness = first_frame_brightness(plain_clip)
+    assert hook_brightness > plain_brightness, "hook scene's first frame should be flashed toward white"
+    assert hook_brightness > 240, "hook scene's very first frame should be almost entirely white"
+
+
+def test_dramatic_beat_pans_faster_than_a_plain_scene(tmp_path):
+    import subprocess
+    import numpy as np
+
+    hook = Scene(narration="A city vanished overnight.", visual_keywords=["city"], role="hook")
+    plain = Scene(narration="Trade along the coast grew steadily.", visual_keywords=["coast"], role="build")
+
+    def motion_energy(scene, index):
+        clip = pi.generate_scene_clip(scene, index, _config(), tmp_path, duration=2.0)
+        f0 = tmp_path / f"{clip.stem}_m0.png"
+        f1 = tmp_path / f"{clip.stem}_m1.png"
+        subprocess.run(["ffmpeg", "-y", "-i", str(clip), "-vf", "select=eq(n\\,5)", "-vframes", "1", str(f0)],
+                        capture_output=True, check=True)
+        subprocess.run(["ffmpeg", "-y", "-i", str(clip), "-vf", "select=eq(n\\,25)", "-vframes", "1", str(f1)],
+                        capture_output=True, check=True)
+        with Image.open(f0) as a, Image.open(f1) as b:
+            arr_a = np.array(a.convert("L"), dtype=float)
+            arr_b = np.array(b.convert("L"), dtype=float)
+        return np.abs(arr_a - arr_b).mean()
+
+    assert motion_energy(hook, 0) > motion_energy(plain, 1)

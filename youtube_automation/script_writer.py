@@ -47,7 +47,12 @@ SCRIPT_SCHEMA = {
                             "the script gets a chance. Vary the opening device by topic - a blunt "
                             "shocking statement, a direct 'Did you know...' curiosity trigger, or a "
                             "rhetorical question that opens a loop - whichever creates the sharpest "
-                            "curiosity gap for this specific topic. "
+                            "curiosity gap for this specific topic. This scene's visual_keywords double "
+                            "as the video's thumbnail (its rendered frame is used as-is), so they must "
+                            "name ONE single, concrete, visually striking moment or image from the "
+                            "title's promise (a specific object, action, or expression - something that "
+                            "reads instantly at thumbnail size in a crowded feed), never an abstract or "
+                            "establishing-shot description. "
                             "build: 3+ middle scenes that develop connected facts into a mini-story "
                             "(use transitions like 'but here's the twist' / 'and that's not even "
                             "the strangest part' - don't just list isolated trivia). The SECOND scene "
@@ -322,8 +327,11 @@ best fits this niche, each topic should be one of:
 - A specific myth or legend with real dramatic stakes, told as a gripping story
 - A real person facing a real crisis, disaster, betrayal, or narrow escape
 Each topic needs a clear, specific, named anchor (a person, role, place, or event) - not a vague
-category like "Ancient Rome" or "Greek Mythology" on their own. Avoid anything copyrighted or that
-would require paid licensing to depict. Call {EMIT_TOPICS} with the result."""
+category like "Ancient Rome" or "Greek Mythology" on their own. Each topic should also imply one
+concrete, visually striking single moment (a specific action, object, or expression) that could
+carry a thumbnail on its own - not just an interesting fact with no clear image attached. Avoid
+anything copyrighted or that would require paid licensing to depict. Call {EMIT_TOPICS} with the
+result."""
 
     data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=500)
     return list(data["topics"])

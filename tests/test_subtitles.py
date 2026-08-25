@@ -45,3 +45,48 @@ def test_empty_scene_produces_no_dialogue_lines(tmp_path):
     scene = SceneAudio(scene_index=0, audio_path=__file__, duration=2.0, cues=[])
     path = build_ass([scene], tmp_path / "captions.ass", resolution=(1920, 1080))
     assert "Dialogue:" not in path.read_text()
+
+
+def test_on_screen_text_renders_as_emphasis_dialogue(tmp_path):
+    scene = _scene(["the", "octopus", "has", "three", "hearts"], 3.0)
+    path = build_ass(
+        [scene], tmp_path / "captions.ass", resolution=(1920, 1080),
+        on_screen_texts=["3 hearts"],
+    )
+    text = path.read_text()
+    assert "Style: Emphasis" in text
+    assert "Dialogue: 1," in text
+    assert "3 HEARTS" in text
+
+
+def test_blank_on_screen_text_produces_no_emphasis_line(tmp_path):
+    scene = _scene(["hello", "world"], 2.0)
+    path = build_ass(
+        [scene], tmp_path / "captions.ass", resolution=(1920, 1080), on_screen_texts=[""],
+    )
+    assert "Dialogue: 1," not in path.read_text()
+
+
+def test_on_screen_text_skipped_on_too_short_a_scene(tmp_path):
+    scene = _scene(["hi"], 0.3)
+    path = build_ass(
+        [scene], tmp_path / "captions.ass", resolution=(1920, 1080), on_screen_texts=["TOO FAST"],
+    )
+    assert "Dialogue: 1," not in path.read_text()
+
+
+def test_on_screen_texts_length_mismatch_raises(tmp_path):
+    scene = _scene(["hello"], 1.0)
+    try:
+        build_ass([scene], tmp_path / "captions.ass", resolution=(1920, 1080), on_screen_texts=[])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("expected a ValueError for mismatched on_screen_texts length")
+
+
+def test_omitting_on_screen_texts_keeps_old_behaviour(tmp_path):
+    scene = _scene(["hello", "world"], 2.0)
+    path = build_ass([scene], tmp_path / "captions.ass", resolution=(1920, 1080))
+    assert "Style: Emphasis" in path.read_text()
+    assert "Dialogue: 1," not in path.read_text()

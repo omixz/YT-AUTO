@@ -62,7 +62,12 @@ def _extract_frame(asset: VisualAsset, out_path: Path) -> Path:
         cmd = ["ffmpeg", "-y", "-i", str(asset.path), "-frames:v", "1", str(out_path)]
     else:
         # Real stock video: skip past a possible black/fade-in intro frame.
+        # If the clip is shorter than 0.5s, fall back to frame 0 rather than
+        # letting ffmpeg fail with an empty output.
         cmd = ["ffmpeg", "-y", "-i", str(asset.path), "-ss", "00:00:00.5", "-frames:v", "1", str(out_path)]
+        result = subprocess.run(cmd, capture_output=True)
+        if result.returncode != 0:
+            cmd = ["ffmpeg", "-y", "-i", str(asset.path), "-frames:v", "1", str(out_path)]
 
     subprocess.run(cmd, check=True, capture_output=True)
     return out_path

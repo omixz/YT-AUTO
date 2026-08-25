@@ -1067,6 +1067,17 @@ def _build_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Pa
     return frame_dir / "f_%03d.png"
 
 
+def _is_dramatic_beat(scene: Scene) -> bool:
+    """True for the video's hook (always scene 0, and the single moment that
+    decides whether someone keeps watching at all) and for build scenes
+    whose mood/content is a shock/twist/fight beat - see script_writer's
+    prompt on the 20-30s retention cliff this is meant to punctuate. Used by
+    generate_scene_clip to add a quick flash-in on exactly these scenes:
+    every other scene stays plain so the flash still reads as a deliberate
+    accent instead of a tic repeated every few seconds."""
+    return scene.role == "hook" or _match(scene, _KEYWORD_TO_MOOD) == "shocked" or _is_fight_scene(scene)
+
+
 def generate_scene_clip(
     scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
     duration: float, subject_fallback: Optional[str] = None,
@@ -1110,8 +1121,14 @@ def generate_scene_clip(
     # window across it over the scene's duration, instead of feeding the
     # native-resolution still straight through. Direction/axis/zoom amount
     # are seeded per-scene (rng, and index parity for direction) so
-    # consecutive scenes don't all crawl the same way.
-    zoom = rng.uniform(1.10, 1.22)
+    # consecutive scenes don't all crawl the same way. Dramatic beats get a
+    # noticeably punchier pan range than an ordinary scene - more oversized
+    # source to move across in the same duration means faster apparent
+    # motion, which reads as urgency/energy right where the script wants it
+    # (the hook, or a shock/twist/fight beat) rather than the same gentle
+    # drift everywhere flattening every moment to the same energy.
+    dramatic = _is_dramatic_beat(scene)
+    zoom = rng.uniform(1.22, 1.38) if dramatic else rng.uniform(1.10, 1.22)
     ow, oh = round(w * zoom), round(h * zoom)
     max_dx, max_dy = ow - w, oh - h
     horizontal = rng.random() < 0.7  # horizontal pans read better than vertical most of the time
@@ -1126,6 +1143,22 @@ def generate_scene_clip(
 
     subj_x = f"{ax:.1f}*sin(2*PI*t/{px})" if ax and px else "0"
     subj_y = f"{ay:.1f}*sin(2*PI*t/{py})" if ay and py else "0"
+
+    # A quick flash-in from white on the hook (every video's make-or-break
+    # first moment) and on shock/twist/fight beats elsewhere - a real,
+    # deliberate punctuation mark instead of hoping the character's face
+    # alone (mood="shocked" swaps to X-eyes) reads as dramatic at video
+    # scale. Capped to a fraction of the scene's own length so it can never
+    # eat a very short scene's whole runtime.
+    if dramatic:
+        flash_d = min(0.18, max(0.06, duration * 0.12))
+        final_filter = (
+            f"[bg][1:v]overlay=x={subj_x}:y={subj_y}:eval=frame[ov];"
+            f"[ov]fade=t=in:st=0:d={flash_d:.3f}:color=white[v]"
+        )
+    else:
+        final_filter = f"[bg][1:v]overlay=x={subj_x}:y={subj_y}:eval=frame[v]"
+
     out_path = work_dir / f"scene_{index:02d}_anim.mp4"
     cmd = [
         "ffmpeg", "-y",
@@ -1134,7 +1167,7 @@ def generate_scene_clip(
         "-filter_complex",
         f"[0:v]scale={ow}:{oh},fps={config.video.fps},"
         f"crop=w={w}:h={h}:x='{bg_x}':y='{bg_y}'[bg];"
-        f"[bg][1:v]overlay=x={subj_x}:y={subj_y}:eval=frame[v]",
+        f"{final_filter}",
         "-map", "[v]", "-t", f"{duration:.3f}",
         "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(out_path),
     ]

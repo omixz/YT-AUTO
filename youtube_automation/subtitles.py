@@ -9,7 +9,7 @@ a static line of text in and out.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from .tts import SceneAudio
 
@@ -22,6 +22,19 @@ FONT_NAME = "Outfit"
 BASE_COLOUR = "&H00FFFFFF"     # white (not yet spoken)
 HIGHLIGHT_COLOUR = "&H0046D4FE"  # warm gold-yellow (ASS is &HAABBGGRR -> this is #FED446)
 OUTLINE_COLOUR = "&H00000000"  # black outline
+
+# --- on-screen emphasis "pop" cards ----------------------------------------
+EMPHASIS_TEXT_COLOUR = "&H00161616"   # near-black, for contrast against the gold chip
+EMPHASIS_BOX_COLOUR = HIGHLIGHT_COLOUR
+EMPHASIS_MAX_SECONDS = 2.2
+EMPHASIS_MIN_SCENE_SECONDS = 0.6
+
+
+def _emphasis_style_line(font_size: int, margin_v: int) -> str:
+    return (
+        f"Style: Emphasis,{FONT_NAME},{font_size},{EMPHASIS_TEXT_COLOUR},{EMPHASIS_TEXT_COLOUR},"
+        f"{EMPHASIS_BOX_COLOUR},{EMPHASIS_BOX_COLOUR},1,0,0,0,100,100,0,0,3,18,0,8,60,60,{margin_v},1"
+    )
 
 
 def _ass_timestamp(seconds: float) -> str:
@@ -37,13 +50,31 @@ def _escape(text: str) -> str:
     return text.replace("\\", "").replace("{", "").replace("}", "")
 
 
-def build_ass(scenes: List[SceneAudio], out_path: Path, resolution: Tuple[int, int]) -> Path:
+def build_ass(
+    scenes: List[SceneAudio],
+    out_path: Path,
+    resolution: Tuple[int, int],
+    on_screen_texts: Optional[List[str]] = None,
+) -> Path:
+    """`on_screen_texts`, if given, must be the same length as `scenes` (one
+    entry per scene, empty string for "none") - each non-empty entry pops in
+    as a bold emphasis chip near the top of frame for the start of that
+    scene. Optional and length-checked rather than required so existing
+    callers/tests that only care about karaoke captions keep working
+    untouched."""
+    if on_screen_texts is not None and len(on_screen_texts) != len(scenes):
+        raise ValueError(
+            f"on_screen_texts length ({len(on_screen_texts)}) must match scenes length ({len(scenes)})"
+        )
+
     w, h = resolution
     # Scales with resolution so shorts (portrait, narrower) and longform
     # (landscape) both read comfortably; noticeably bigger than the old
     # fixed FontSize=16.
     font_size = round(h * 0.052)
     margin_v = round(h * 0.09)
+    emphasis_font_size = round(h * 0.062)
+    emphasis_margin_v = round(h * 0.06)
 
     header = f"""[Script Info]
 ScriptType: v4.00+
@@ -54,6 +85,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,{FONT_NAME},{font_size},{HIGHLIGHT_COLOUR},{BASE_COLOUR},{OUTLINE_COLOUR},&H00000000,1,0,0,0,100,100,0,0,1,3,0,2,60,60,{margin_v},1
+{_emphasis_style_line(emphasis_font_size, emphasis_margin_v)}
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -61,7 +93,25 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     lines = [header]
     offset = 0.0
-    for scene in scenes:
+    for scene_idx, scene in enumerate(scenes):
+        if on_screen_texts is not None:
+            text = (on_screen_texts[scene_idx] or "").strip()
+            if text and scene.duration >= EMPHASIS_MIN_SCENE_SECONDS:
+                show_for = min(EMPHASIS_MAX_SECONDS, scene.duration * 0.7)
+                start = offset
+                end = offset + show_for
+                fade_ms = max(80, min(180, int(show_for * 400)))
+                pop_ms = max(80, min(160, int(show_for * 300)))
+                override = (
+                    f"{{\\an8\\fad({fade_ms},{fade_ms})"
+                    f"\\fscx55\\fscy55\\t(0,{pop_ms},\\fscx108\\fscy108)"
+                    f"\\t({pop_ms},{pop_ms + 80},\\fscx100\\fscy100)}}"
+                )
+                emphasis_text = _escape(text).upper()
+                lines.append(
+                    f"Dialogue: 1,{_ass_timestamp(start)},{_ass_timestamp(end)},Emphasis,,0,0,0,,{override}{emphasis_text}"
+                )
+
         cues = scene.cues
         for i in range(0, len(cues), WORDS_PER_CAPTION):
             group = cues[i : i + WORDS_PER_CAPTION]

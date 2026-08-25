@@ -113,7 +113,11 @@ def run(
     )
 
     logger.info("Building captions...")
-    ass_path = subtitles.build_ass(all_scene_audio, work_dir / "captions.ass", config.video.resolution)
+    on_screen_texts = [s.on_screen_text for s in script.scenes] + [""]
+    ass_path = subtitles.build_ass(
+        all_scene_audio, work_dir / "captions.ass", config.video.resolution,
+        on_screen_texts=on_screen_texts,
+    )
 
     logger.info("Building ambient sound effects...")
     ambience_path = sound_effects.build_ambience_track(
@@ -142,9 +146,12 @@ def run(
         logger.warning("Quality gate failed: %s", "; ".join(quality_reasons))
 
     logger.info("Generating thumbnail...")
-    thumb_path = thumbnail.generate(
-        script.title, content_visuals[0], work_dir, work_dir / "thumbnail.jpg"
-    )
+    if content_visuals:
+        thumb_path = thumbnail.generate(
+            script.title, content_visuals[0], work_dir, work_dir / "thumbnail.jpg"
+        )
+    else:
+        thumb_path = work_dir / "thumbnail.jpg"
 
     manifest = {
         "run_id": run_id,

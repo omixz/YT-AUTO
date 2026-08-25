@@ -35,7 +35,7 @@ def _save_queue(path: Path, topics: List[str]) -> None:
 
 
 def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] = None) -> str:
-    """Pop the next topic off niche_key's queue, brainstorming more via Claude if empty.
+    """Pop the next topic off niche_key's queue, brainstorming more via Gemini if empty.
 
     Each niche gets its own queue/history file (config.topics.queue_file /
     history_file are `{niche}`-templated paths) so topics never cross-pollinate
