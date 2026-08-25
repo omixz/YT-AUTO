@@ -329,3 +329,115 @@ def test_dramatic_beat_pans_faster_than_a_plain_scene(tmp_path):
         return np.abs(arr_a - arr_b).mean()
 
     assert motion_energy(hook, 0) > motion_energy(plain, 1)
+
+
+def test_character_not_flying(tmp_path):
+    """Character x-position should stay within reasonable bounds (not fly across screen)."""
+    from PIL import ImageChops, ImageDraw
+    config = _config()
+    w, h = config.video.resolution
+    
+    scene = Scene(narration="A farmer walked through the fields.", visual_keywords=["field"], role="build")
+    rng = pi.random.Random(0)
+    base, paint, motion, comp = pi._compose_scene(rng, scene, config, subject=None)
+    
+    # Check motion parameters: ax should be 0 for non-aquatic
+    ax, ay, px, py = motion
+    assert ax == 0.0, f"Non-aquatic character has horizontal motion ax={ax} — will fly across screen"
+    assert ay > 0, "Character should have vertical bob"
+    
+    # Render and verify character stays in frame
+    img = Image.new("RGB", (w, h), (255, 255, 255))
+    paint(ImageDraw.Draw(img))
+    diff = ImageChops.difference(img, Image.new("RGB", (w, h), (255, 255, 255)))
+    bbox = diff.getbbox()
+    assert bbox is not None
+    left, top, right, bottom = bbox
+    # Character should be roughly centered horizontally (not at edge)
+    assert left > w * 0.15, "Character too far left"
+    assert right < w * 0.85, "Character too far right"
+
+
+def test_historical_character_selection():
+    """Archetype resolution matches expected keywords."""
+    # Greek
+    assert pi._resolve_character_archetype(Scene(narration="Odysseus sailed home.", visual_keywords=["odysseus"], role="hook")) == "odysseus"
+    assert pi._resolve_character_archetype(Scene(narration="The Trojan War began.", visual_keywords=["trojan"], role="build")) == "odysseus"
+    # Knight
+    assert pi._resolve_character_archetype(Scene(narration="A knight drew his sword.", visual_keywords=["knight"], role="hook")) == "knight"
+    # Roman
+    assert pi._resolve_character_archetype(Scene(narration="The centurion ordered the legion.", visual_keywords=["centurion"], role="build")) == "centurion"
+    # Viking
+    assert pi._resolve_character_archetype(Scene(narration="The viking raided the coast.", visual_keywords=["viking"], role="build")) == "viking"
+    # Default
+    assert pi._resolve_character_archetype(Scene(narration="A merchant traded spices.", visual_keywords=["trade"], role="build")) == "scholar"
+
+
+def test_battle_scene_supporting_cast(tmp_path):
+    """Battle scenes should render 10+ background figures."""
+    from PIL import ImageChops, ImageDraw
+    config = _config()
+    w, h = config.video.resolution
+    
+    scene = Scene(narration="Ten thousand soldiers clashed on the battlefield.", 
+                  visual_keywords=["battle", "army", "ten thousand"], role="build")
+    rng = pi.random.Random(0)
+    base, paint, motion, comp = pi._compose_scene(rng, scene, config, subject=None)
+    
+    # Should have battle composition
+    assert pi._is_battle_scene_public(Scene(narration="", visual_keywords=["battle"], role="build"))
+    
+    # Render and count distinct figures (rough check via color diversity)
+    img = Image.new("RGB", (w, h), (255, 255, 255))
+    paint(ImageDraw.Draw(img))
+    # Count non-white pixels in lower half (where soldiers stand)
+    pixels = img.load()
+    colors = set()
+    for y in range(h // 2, h):
+        for x in range(0, w, 20):
+            c = pixels[x, y]
+            if c != (255, 255, 255):
+                # Quantize to reduce noise
+                colors.add((c[0]//20, c[1]//20, c[2]//20))
+    # Should have many distinct colors from multiple soldiers
+    assert len(colors) > 8, f"Only {len(colors)} color clusters — expected many soldiers"
+
+
+def test_war_ambience_generated(tmp_path):
+    """War ambience track should be created for battle scenes."""
+    from youtube_automation import sound_effects
+    from youtube_automation.tts import SceneAudio
+    
+    scenes = [Scene(narration="The army marched to war.", visual_keywords=["war", "army"], role="build")]
+    audio = [SceneAudio(scene_index=0, audio_path=__file__, duration=10.0, cues=[])]
+    
+    path = sound_effects.build_ambience_track(scenes, audio, 0.0, 0.0, tmp_path)
+    assert path is not None
+    assert path.exists()
+    assert path.stat().st_size > 1000  # non-trivial audio
+
+
+def test_scene_duration_5_15s():
+    """Script writer should target 5-15s per scene."""
+    from youtube_automation.config import PipelineConfig, VideoConfig
+    cfg = PipelineConfig.load()
+    assert cfg.video.min_scene_duration == 5
+    assert cfg.video.max_scene_duration == 15
+    assert cfg.video.target_scene_duration == 8
+
+
+def test_tts_role_passed():
+    """Scene role should be passed to TTS synthesizer."""
+    import inspect
+    from youtube_automation import tts
+    sig = inspect.signature(tts._synthesize_one)
+    assert "role" in sig.parameters
+    assert sig.parameters["role"].default == "build"
+
+
+def test_ssml_pitch_format():
+    """Pitch values should use semitones (st) not Hz."""
+    from youtube_automation.tts import _ROLE_PROSODY
+    for role, prosody in _ROLE_PROSODY.items():
+        pitch = prosody["pitch"]
+        assert pitch.endswith("st") or pitch == "+0st", f"Role {role} pitch '{pitch}' not in semitones"

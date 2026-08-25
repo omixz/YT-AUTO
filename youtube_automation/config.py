@@ -49,13 +49,16 @@ class VideoConfig:
     fps: int = 30
     background_music: Optional[str] = None
     music_volume_db: float = -22.0
-    sfx_volume_db: float = -20.0
+    sfx_volume_db: float = -23.0
     resolution_shorts: tuple = (1080, 1920)
     resolution_longform: tuple = (1920, 1080)
     formats: Dict[str, FormatConfig] = field(default_factory=dict)
     # Mutated per run by niche_selector's choice - see ChannelConfig.niche.
     format: str = "shorts"
     target_seconds: int = 60
+    min_scene_duration: int = 5
+    max_scene_duration: int = 15
+    target_scene_duration: int = 8
 
     @property
     def resolution(self) -> tuple:

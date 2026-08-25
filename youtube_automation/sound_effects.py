@@ -204,6 +204,102 @@ def _synth_air(duration: float) -> np.ndarray:
     return noise * drift * 0.18
 
 
+def _synth_war_ambience(duration: float) -> np.ndarray:
+    """Distant battle sounds: horns, drums, shouted commands, horse whinnies, 
+    metal clanking, distant explosions. Low volume texture."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    out = np.zeros(n)
+    rng = np.random.default_rng(8)
+    t = np.linspace(0, duration, n)
+    
+    # Low-frequency rumble base
+    rumble = _lowpass(_white_noise(duration, seed=8), 500) * 0.1
+    
+    # Distant horns (low brass)
+    horn_count = max(1, int(duration / 15))
+    for _ in range(horn_count):
+        start = rng.integers(0, max(1, n - int(2 * SAMPLE_RATE)))
+        length = min(int(rng.uniform(1.5, 3.0) * SAMPLE_RATE), n - start)
+        horn_t = np.linspace(0, length / SAMPLE_RATE, length)
+        freq = rng.uniform(80, 150)
+        horn = np.sin(2 * np.pi * freq * horn_t) * np.exp(-horn_t * 0.8)
+        horn += 0.3 * np.sin(2 * np.pi * freq * 2 * horn_t) * np.exp(-horn_t * 1.2)
+        horn *= np.hanning(length) * 0.15
+        out[start:start+length] += horn
+    
+    # War drums (deep, rhythmic)
+    drum_beat = 0.0
+    while drum_beat < duration:
+        pos = int(drum_beat * SAMPLE_RATE)
+        drum_len = min(int(0.3 * SAMPLE_RATE), n - pos - 1)
+        if drum_len > 10:
+            drum = _lowpass(rng.uniform(-1, 1, drum_len), 100) * np.exp(-np.linspace(0, 10, drum_len)) * 0.2
+            out[pos:pos+drum_len] += drum
+        drum_beat += rng.uniform(1.5, 3.0)
+    
+    # Distant shouted commands (muffled voice-band noise)
+    cmd_count = max(1, int(duration / 10))
+    for _ in range(cmd_count):
+        start = rng.integers(0, max(1, n - int(1.5 * SAMPLE_RATE)))
+        length = min(int(rng.uniform(0.8, 1.5) * SAMPLE_RATE), n - start)
+        voice = _lowpass(_white_noise(length / SAMPLE_RATE, seed=rng.integers(0, 10000)), 
+                         rng.integers(30, 80))
+        mod = 0.5 + 0.5 * np.sin(2 * np.pi * rng.uniform(0.5, 2.0) * np.linspace(0, length/SAMPLE_RATE, length))
+        out[start:start+length] += voice * mod * 0.08
+    
+    # Horse whinnies (sparse)
+    whinny_count = max(1, int(duration / 20))
+    for _ in range(whinny_count):
+        start = rng.integers(0, max(1, n - int(1.0 * SAMPLE_RATE)))
+        length = min(int(rng.uniform(0.5, 1.0) * SAMPLE_RATE), n - start)
+        whinny_t = np.linspace(0, length / SAMPLE_RATE, length)
+        freq_sweep = np.linspace(rng.uniform(400, 800), rng.uniform(1200, 2000), length)
+        whinny = np.sin(2 * np.pi * np.cumsum(freq_sweep) / SAMPLE_RATE) * np.hanning(length) * np.exp(-whinny_t * 2)
+        out[start:start+length] += whinny * 0.12
+    
+    # Metal clanking (sword on shield, armor)
+    clang_count = max(1, int(duration / 8))
+    for _ in range(clang_count):
+        start = rng.integers(0, max(1, n - int(0.5 * SAMPLE_RATE)))
+        length = min(int(rng.uniform(0.2, 0.6) * SAMPLE_RATE), n - start)
+        clang = _lowpass(rng.uniform(-1, 1, length), 50) * np.exp(-np.linspace(0, 15, length)) ** 2
+        out[start:start+length] += clang * 0.06
+    
+    return np.clip(out + rumble, -1, 1) * 0.35
+
+
+def _synth_scared_men(duration: float) -> np.ndarray:
+    """Quiet breathing, whispered prayers, nervous muttering — not screaming.
+    Low, intimate, human. Volume very low."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    out = np.zeros(n)
+    rng = np.random.default_rng(9)
+    t = np.linspace(0, duration, n)
+    
+    # Layer of quiet breaths
+    for i in range(6):
+        breath = _lowpass(_white_noise(duration, seed=1000 + i), 
+                          int(rng.integers(10, 25)))
+        mod = 0.4 + 0.6 * np.sin(2 * np.pi * rng.uniform(0.1, 0.3) * t + rng.uniform(0, 6.28))
+        out += breath * mod * 0.04
+    
+    # Whispered prayers/muttering (bandpass in speech range)
+    for i in range(4):
+        voice = _lowpass(_white_noise(duration, seed=2000 + i), 
+                         int(rng.integers(15, 35)))
+        mod = 0.3 + 0.7 * np.sin(2 * np.pi * rng.uniform(0.8, 1.8) * t + rng.uniform(0, 6.28))
+        out += voice * mod * 0.025
+    
+    # Occasional sharp intake of breath
+    for _ in range(max(1, int(duration / 12))):
+        start = rng.integers(0, max(1, n - int(0.5 * SAMPLE_RATE)))
+        length = min(int(rng.uniform(0.3, 0.8) * SAMPLE_RATE), n - start)
+        gasp = _lowpass(rng.uniform(-1, 1, length), 30) * np.exp(-np.linspace(0, 8, length)) ** 1.5
+        out[start:start+length] += gasp * 0.05
+    
+    return np.clip(out, -1, 1) * 0.25
+
+
 _SFX_SYNTH: Dict[str, Callable[[float], np.ndarray]] = {
     "rain": _synth_rain,
     "thunder": _synth_thunder,
@@ -217,6 +313,8 @@ _SFX_SYNTH: Dict[str, Callable[[float], np.ndarray]] = {
     "clash": _synth_clash,
     "crowd": _synth_crowd,
     "air": _synth_air,
+    "war_ambience": _synth_war_ambience,
+    "scared_men": _synth_scared_men,
 }
 
 _KEYWORD_TO_SFX: List[Tuple[Tuple[str, ...], str]] = [
@@ -236,6 +334,15 @@ _KEYWORD_TO_SFX: List[Tuple[Tuple[str, ...], str]] = [
       "onlookers", "murmur", "chatter", "assembly hall"), "crowd"),
     (("forest", "jungle", "wilderness", "nature", "woods"), "birds"),
     (("wind", "gale", "blizzard"), "wind"),
+    # War ambience for large-scale battles
+    (("army", "battalion", "regiment", "division", "legion", "horde",
+      "thousand", "ten thousand", "hundred thousand", "host", "force",
+      "siege", "invasion", "assault", "skirmish", "engagement", "front line"),
+     "war_ambience"),
+    # Scared men for personal danger/desperate scenes
+    (("trapped", "surrounded", "ambush", "outnumbered", "last stand", 
+      "fear", "terror", "desperate", "hopeless", "doomed", "panic"),
+     "scared_men"),
 ]
 
 

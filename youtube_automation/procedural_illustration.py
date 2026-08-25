@@ -266,6 +266,94 @@ _KEYWORD_TO_MOOD = [
     (("shock", "twist", "sudden", "surprise", "warning", "danger"), "shocked"),
 ]
 
+# --- Historical / Mythological Character Archetypes --------------------------
+# Each archetype defines: (outfit_rgb, headwear, weapon, default_pose, description)
+# Used to render the actual historical/mythological figure (Odysseus, knight, etc.)
+# instead of a generic narrator.
+_CHARACTER_ARCHETYPES = {
+    # Greek / Mythological
+    "odysseus":     ((85, 60, 40), "helmet", "spear", "raised", "Greek hero, worn armor"),
+    "iliad":        ((85, 60, 40), "helmet", "spear", "raised", "Greek hero, worn armor"),
+    "trojan":       ((85, 60, 40), "helmet", "spear", "raised", "Greek hero, worn armor"),
+    "achilles":     ((180, 160, 120), "helmet", "spear", "raised", "Golden armor, pride"),
+    "hercules":     ((100, 60, 40), None, "club", "crossed", "Lion skin, brute strength"),
+    "perseus":      ((90, 70, 50), "cap", "sword", "raised", "Winged sandals, harpe"),
+    "theseus":      ((85, 60, 40), None, "sword", "raised", "Athenian hero"),
+    "jason":        ((80, 100, 120), "cap", "spear", "sides", "Argonaut leader"),
+    # Medieval / Knight
+    "knight":       ((180, 180, 190), "helmet", "sword", "crossed", "Plate armor, shield"),
+    "crusader":     ((200, 180, 160), "helmet", "sword", "crossed", "White surcoat, cross"),
+    "templar":      ((200, 180, 160), "helmet", "sword", "crossed", "White mantle, red cross"),
+    "samurai":      ((60, 40, 30), "helmet", "katana", "raised", "Ō-yoroi, katana"),
+    "ronin":        ((80, 60, 40), "hat", "katana", "sides", "Worn armor, wandering"),
+    # Roman
+    "roman":        ((100, 80, 60), "helmet", "gladius", "crossed", "Lorica segmentata"),
+    "centurion":    ((120, 90, 60), "helmet", "vine_staff", "raised", "Transverse crest"),
+    "caesar":       ((160, 140, 100), "crown", "sword", "raised", "Laurel wreath, toga"),
+    "gladiator":    ((150, 100, 50), "helmet", "trident", "fighting", "Minimal armor, net"),
+    # Viking / Norse
+    "viking":       ((100, 80, 60), "helmet", "axe", "raised", "Chainmail, round shield"),
+    "norse":        ((100, 80, 60), "helmet", "axe", "raised", "Chainmail, round shield"),
+    "odin":         ((80, 60, 40), "hat", "spear", "sides", "One eye, ravens"),
+    "thor":         ((160, 140, 100), None, "hammer", "raised", "Mjolnir, belt of strength"),
+    # Egyptian
+    "egyptian":     ((200, 180, 120), "crown", "khopesh", "crossed", "Linen kilt, gold"),
+    "pharaoh":      ((255, 215, 0), "crown", "crook_flail", "crossed", "Double crown, regalia"),
+    "anubis":       ((40, 40, 40), "crown", "staff", "sides", "Jackal head, black"),
+    # Aztec / Maya
+    "aztec":        ((180, 120, 40), "crown", "macuahuitl", "fighting", "Feathered headdress"),
+    "maya":         ((160, 140, 80), "crown", "obsidian_sword", "fighting", "Jade, quetzal feathers"),
+    # Other
+    "pirate":       ((60, 40, 30), "hat", "cutlass", "raised", "Coat, eye patch"),
+    "explorer":     ((120, 100, 80), "hat", "compass", "raised", "Map, weathered"),
+    "scholar":      ((80, 70, 60), "cap", "scroll", "sides", "Robes, quill"),
+    "priest":       ((220, 220, 220), None, "staff", "sides", "White robes"),
+    "assassin":     ((30, 30, 30), "cap", "dagger", "fighting", "Hood, dark leather"),
+    "general":      ((80, 60, 40), "helmet", "sword", "raised", "Commander's cloak"),
+}
+
+# Keyword mapping: scene narration/visual_keywords → archetype
+_ARCHETYPE_KEYWORDS = [
+    (("odysseus", "ulysses", "iliad", "trojan", "trojan war", "homer"), "odysseus"),
+    (("achilles", "myrmidon"), "achilles"),
+    (("hercules", "herakles"), "hercules"),
+    (("perseus", "medusa", "gorgon"), "perseus"),
+    (("theseus", "minotaur", "labyrinth"), "theseus"),
+    (("jason", "argonaut", "golden fleece"), "jason"),
+    (("knight", "knights", "chivalry", "round table", "arthur", "merlin", "excalibur", "camelot"), "knight"),
+    (("crusader", "crusade", "holy land", "jerusalem"), "crusader"),
+    (("templar", "templars", "temple"), "templar"),
+    (("samurai", "shogun", "bushido", "daimyo", "katana", "ronin"), "samurai"),
+    (("ronin", "masterless"), "ronin"),
+    (("centurion", "optio"), "centurion"),
+    (("roman", "legion", "legionary", "caesar", "pompey", "cicero", "spqr"), "roman"),
+    (("caesar", "julius", "augustus"), "caesar"),
+    (("roman", "legion", "legionary", "spqr"), "roman"),
+    (("gladiator", "colosseum", "arena"), "gladiator"),
+    (("viking", "vikings", "norseman", "valhalla", "raids"), "viking"),
+    (("odin", "thor", "loki", "freya", "valhalla", "asgard", "midgard"), "odin"),
+    (("thor", "mjolnir", "hammer"), "thor"),
+    (("egyptian", "pharaoh", "pyramid", "hieroglyph", "nile", "anubis", "ra", "osiris"), "egyptian"),
+    (("pharaoh", "tutankhamun", "ramses", "cleopatra"), "pharaoh"),
+    (("anubis", "jackal"), "anubis"),
+    (("aztec", "tenochtitlan", "quetzalcoatl", "human sacrifice"), "aztec"),
+    (("maya", "mayan", "chichen itza"), "maya"),
+    (("pirate", "buccaneer", "privateer", "blackbeard", "caribbean"), "pirate"),
+    (("explorer", "columbus", "magellan", "voyage", "new world"), "explorer"),
+    (("assassin", "hashashin", "hidden blade"), "assassin"),
+    (("general", "commander", "marshal", "strategy"), "general"),
+]
+
+
+def _resolve_character_archetype(scene: Scene) -> str:
+    """Map scene narration/keywords to a character archetype."""
+    haystack = _scene_haystack(scene)
+    for keywords, archetype in _ARCHETYPE_KEYWORDS:
+        if any(_contains_keyword(haystack, kw) for kw in keywords):
+            return archetype
+    return "scholar"  # default: generic narrator
+
+
 # Two-person melee - distinct from large-scale "battle" (which stays a single
 # character in a war-torn setting): a personal fight/duel/brawl gets two
 # characters actually swinging at each other, see _compose_fight_scene.
@@ -294,6 +382,115 @@ def _is_fight_scene(scene: Scene) -> bool:
 def _is_crowd_scene(scene: Scene) -> bool:
     haystack = _scene_haystack(scene)
     return any(_contains_keyword(haystack, kw) for kw in _CROWD_KEYWORDS)
+
+
+def _frame_base_scale(w: int, h: int) -> float:
+    """The single scale factor every element drawer (character, house,
+    tree, ...) multiplies its own geometry by. Deliberately keyed off the
+    SHORTER side, not just h - see _compose_scene's call site for the bug
+    this fixes (h alone made shorts/portrait render ~78% oversized, since
+    width - the actual constraint in a narrower frame - was never part of
+    the calculation)."""
+    return min(w, h) / 1080
+
+
+def _match(scene: Scene, table) -> Optional[str]:
+    haystack = _scene_haystack(scene)
+    for keywords, value in table:
+        if any(_contains_keyword(haystack, kw) for kw in keywords):
+            return value
+    return None
+
+
+# --- Battle Scene Helpers ----------------------------------------------------
+# Expanded fight keywords
+_FIGHT_KEYWORDS = ("fight", "fought", "duel", "brawl", "melee", "wrestl", "punch", "sparr",
+                    "sword fight", "swordfight", "clashed swords", "clash", "grapple",
+                    "battle", "war", "combat", "siege", "assault", "skirmish", "engagement")
+
+# Large-scale battle keywords (armies vs personal fights)
+_BATTLE_KEYWORDS = ("army", "battalion", "regiment", "division", "legion", "horde",
+                    "thousand", "ten thousand", "hundred thousand", "host", "force",
+                    "battle", "war", "combat", "siege", "assault", "skirmish", "engagement")
+
+
+def _is_battle_scene(scene: Scene) -> bool:
+    """True for large-scale battles (armies) vs personal fights."""
+    haystack = _scene_haystack(scene)
+    return any(_contains_keyword(haystack, kw) for kw in _BATTLE_KEYWORDS)
+
+
+def _is_battle_scene_public(scene: Scene) -> bool:
+    """Public wrapper for _is_battle_scene for testing."""
+    return _is_battle_scene(scene)
+
+
+def _draw_soldier(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float,
+                  scale: float, outfit: tuple, phase: float, facing: int = 1,
+                  pose: str = "standing", weapon: str = "spear") -> None:
+    """Simplified soldier figure for background — less detail than main character."""
+    head_r = 25 * scale
+    hip_y = ground_y - 55 * scale
+    shoulder_y = hip_y - 65 * scale
+    head_cy = shoulder_y - head_r * 1.15
+    
+    leg_swing = math.sin(phase) * 6 * scale
+    arm_swing = math.sin(phase + math.pi) * 4 * scale
+    
+    # Legs
+    draw.line([(cx - 14 * scale, hip_y), (cx - 16 * scale + leg_swing, ground_y)], 
+              fill=INK, width=max(3, round(8 * scale)))
+    draw.line([(cx + 14 * scale, hip_y), (cx + 16 * scale - leg_swing, ground_y)], 
+              fill=INK, width=max(3, round(8 * scale)))
+    
+    # Torso
+    torso = [(cx - 22 * scale, shoulder_y), (cx + 22 * scale, shoulder_y),
+             (cx + 17 * scale, hip_y), (cx - 17 * scale, hip_y)]
+    _sketchy_polyline(draw, rng, torso, fill=outfit, close=True, width=max(2, round(4 * scale)))
+    
+    # Arms based on pose
+    if pose == "aiming":
+        draw.line([(cx - 22 * scale, shoulder_y), (cx - 45 * scale, shoulder_y - 25 * scale)], 
+                  fill=INK, width=max(2, round(6 * scale)))
+        draw.line([(cx + 22 * scale, shoulder_y), (cx + 10 * scale, shoulder_y + 15 * scale)], 
+                  fill=INK, width=max(2, round(6 * scale)))
+        _draw_weapon(draw, rng, cx, shoulder_y, scale, "crossbow", facing)
+    elif pose == "charging":
+        draw.line([(cx - 22 * scale, shoulder_y), (cx - 45 * scale + arm_swing, hip_y)], 
+                  fill=INK, width=max(2, round(6 * scale)))
+        draw.line([(cx + 22 * scale, shoulder_y), (cx + 30 * scale - arm_swing, shoulder_y)], 
+                  fill=INK, width=max(2, round(6 * scale)))
+        _draw_weapon(draw, rng, cx, shoulder_y, scale, weapon, facing)
+    else:  # standing/guarding
+        draw.line([(cx - 22 * scale, shoulder_y), (cx - 30 * scale, hip_y - 10 * scale)], 
+                  fill=INK, width=max(2, round(6 * scale)))
+        draw.line([(cx + 22 * scale, shoulder_y), (cx + 30 * scale, hip_y - 10 * scale)], 
+                  fill=INK, width=max(2, round(6 * scale)))
+        _draw_weapon(draw, rng, cx, shoulder_y, scale, weapon, facing)
+    
+    # Head with scared expression
+    skin = (235, 205, 175)
+    draw.ellipse([cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r], 
+                 fill=skin, outline=INK, width=max(2, round(3 * scale)))
+    
+    # Wide eyes (fear)
+    eye_r = head_r * 0.18
+    for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+        draw.ellipse([ex - eye_r, head_cy - eye_r, ex + eye_r, head_cy + eye_r],
+                     fill=(255, 255, 255), outline=INK, width=2)
+        draw.ellipse([ex - eye_r * 0.6, head_cy - eye_r * 0.6, 
+                      ex + eye_r * 0.6, head_cy + eye_r * 0.6], fill=INK)
+    
+    # Raised eyebrows (fear)
+    brow_w = max(2, round(head_r * 0.05))
+    for ex in (cx - head_r * 0.35, cx + head_r * 0.35):
+        draw.arc([ex - head_r * 0.2, head_cy - head_r * 0.5, 
+                  ex + head_r * 0.2, head_cy - head_r * 0.1],
+                 start=200, end=340, fill=INK, width=brow_w)
+    
+    # Helmet (most soldiers)
+    if rng.random() < 0.8:
+        _helmet(draw, cx, head_cy, head_r)
 
 
 def _match(scene: Scene, table) -> Optional[str]:
@@ -364,7 +561,7 @@ def _flat_cap(draw, cx, head_cy, r):
 _HEADWEAR_DRAWERS = {"crown": _crown, "hat": _tophat, "helmet": _helmet, "cap": _flat_cap}
 
 
-def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides", phase: float = 0.0, facing: int = 1) -> None:
+def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, ground_y: float, scale: float, outfit: tuple, headwear: Optional[str], mood: str, pose: str = "sides", phase: float = 0.0, facing: int = 1, weapon: Optional[str] = None) -> None:
     head_r = 95 * scale
     hip_y = ground_y - 210 * scale
     shoulder_y = hip_y - 225 * scale
@@ -441,6 +638,10 @@ def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, gro
 
     if headwear and headwear in _HEADWEAR_DRAWERS:
         _HEADWEAR_DRAWERS[headwear](draw, cx, head_cy, head_r)
+    
+    # Draw weapon in hand if specified and pose supports it
+    if weapon and pose in ("raised", "fighting", "crossed"):
+        _draw_weapon(draw, rng, cx, head_cy - 100 * scale, scale, weapon, facing)
 
 
 # --- ground texture (grass/snow/concrete/sand/rock, by setting) -----------
@@ -520,7 +721,141 @@ def _draw_impact_burst(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: f
     draw.polygon(pts, fill=color, outline=INK, width=max(3, round(4 * scale)))
 
 
-# --- background crowd: several small, simplified figures behind the focal
+def _draw_weapon(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, cy: float,
+                 scale: float, weapon: str, facing: int = 1) -> None:
+    """Draw weapon in character's hand based on archetype."""
+    lw = max(2, round(4 * scale))
+    hand_x = cx + facing * 85 * scale
+    hand_y = cy + 40 * scale  # approximate hand position
+    
+    if weapon == "spear":
+        pts = [(hand_x, hand_y), (hand_x + facing * 200 * scale, hand_y - 60 * scale)]
+        draw.line(pts, fill=(150, 130, 90), width=lw, joint="curve")
+        tip = pts[1]
+        draw.polygon([
+            (tip[0] - facing * 10 * scale, tip[1] - 8 * scale),
+            (tip[0] + facing * 6 * scale, tip[1]),
+            (tip[0] - facing * 10 * scale, tip[1] + 8 * scale),
+        ], fill=(180, 180, 180), outline=INK, width=max(1, lw))
+    
+    elif weapon == "sword":
+        pts = [(hand_x, hand_y), (hand_x + facing * 140 * scale, hand_y - 20 * scale)]
+        draw.line(pts, fill=(180, 180, 180), width=lw + 2, joint="curve")
+        draw.line([
+            (hand_x + facing * 20 * scale, hand_y + 10 * scale),
+            (hand_x + facing * 20 * scale, hand_y - 10 * scale),
+        ], fill=(100, 80, 50), width=max(2, lw))
+        draw.ellipse([hand_x - 8 * scale, hand_y - 8 * scale,
+                      hand_x + 8 * scale, hand_y + 8 * scale], fill=(100, 80, 50))
+    
+    elif weapon == "katana":
+        pts = [(hand_x, hand_y), (hand_x + facing * 160 * scale, hand_y - 10 * scale)]
+        draw.line(pts, fill=(200, 200, 200), width=lw, joint="curve")
+        draw.rectangle([
+            hand_x + facing * 18 * scale - 15 * scale, hand_y - 8 * scale,
+            hand_x + facing * 18 * scale + 15 * scale, hand_y + 8 * scale
+        ], fill=(100, 80, 50), outline=INK, width=2)
+    
+    elif weapon == "axe":
+        pts = [(hand_x, hand_y), (hand_x + facing * 100 * scale, hand_y - 30 * scale)]
+        draw.line(pts, fill=(80, 60, 40), width=lw + 4, joint="curve")
+        draw.polygon([
+            (hand_x + facing * 90 * scale, hand_y - 50 * scale),
+            (hand_x + facing * 110 * scale, hand_y - 20 * scale),
+            (hand_x + facing * 110 * scale, hand_y + 10 * scale),
+            (hand_x + facing * 90 * scale, hand_y - 20 * scale),
+        ], fill=(140, 140, 140), outline=INK, width=max(2, lw))
+    
+    elif weapon == "club":
+        pts = [(hand_x, hand_y), (hand_x + facing * 80 * scale, hand_y + 20 * scale)]
+        draw.line(pts, fill=(100, 70, 50), width=lw + 8, joint="curve")
+        draw.ellipse([hand_x + facing * 70 * scale - 15, hand_y + 5,
+                      hand_x + facing * 70 * scale + 15, hand_y + 35], fill=(80, 50, 30))
+    
+    elif weapon == "trident":
+        center = (hand_x + facing * 120 * scale, hand_y - 10 * scale)
+        for i in range(3):
+            offset = (i - 1) * 15 * scale
+            pts = [(hand_x, hand_y), (center[0] + offset, center[1] - 30 * scale)]
+            draw.line(pts, fill=(180, 180, 180), width=lw)
+    
+    elif weapon == "khopesh":
+        pts = [(hand_x, hand_y)]
+        for t in range(0, 101, 10):
+            curve = math.sin(t * math.pi / 100) * 80 * scale
+            x = hand_x + facing * t * 1.2 * scale
+            y = hand_y - curve
+            pts.append((x, y))
+        draw.line(pts, fill=(200, 170, 60), width=lw + 2, joint="curve")
+    
+    elif weapon == "macuahuitl":
+        pts = [(hand_x, hand_y), (hand_x + facing * 100 * scale, hand_y + 10 * scale)]
+        draw.line(pts, fill=(40, 40, 40), width=lw + 12, joint="curve")
+        for i in range(6):
+            x = hand_x + facing * (20 + i * 12) * scale
+            draw.rectangle([x - 3, hand_y - 20 * scale - 5,
+                           x + 3, hand_y - 20 * scale + 5], fill=(20, 20, 20))
+    
+    elif weapon in ("staff", "vine_staff", "spear"):
+        pass
+    
+    elif weapon == "dagger":
+        pts = [(hand_x, hand_y), (hand_x + facing * 50 * scale, hand_y - 5 * scale)]
+        draw.line(pts, fill=(180, 180, 180), width=lw + 1, joint="curve")
+    
+    elif weapon in ("crook_flail", "staff"):
+        pts = [(hand_x, hand_y), (hand_x + facing * 100 * scale, hand_y - 80 * scale)]
+        draw.line(pts, fill=(220, 190, 120), width=lw + 2, joint="curve")
+        draw.ellipse([hand_x + facing * 100 * scale - 15 * scale, hand_y - 100 * scale,
+                      hand_x + facing * 100 * scale + 15 * scale, hand_y - 70 * scale],
+                     outline=(220, 190, 120), width=lw)
+
+    elif weapon == "crossbow":
+        draw.rectangle([
+            hand_x - 15 * scale, hand_y - 8 * scale,
+            hand_x + 40 * scale, hand_y + 8 * scale
+        ], fill=(80, 60, 40), outline=INK, width=2)
+        draw.ellipse([hand_x + 25 * scale, hand_y - 25 * scale,
+                      hand_x + 55 * scale, hand_y + 25 * scale],
+                     outline=(80, 60, 40), width=3)
+
+    elif weapon == "bow":
+        pts = [(hand_x + facing * 5 * scale, hand_y - 60 * scale),
+               (hand_x + facing * 5 * scale, hand_y + 60 * scale)]
+        draw.line(pts, fill=(100, 80, 50), width=lw + 4, joint="curve")
+        draw.line([(hand_x + facing * 5 * scale, hand_y - 60 * scale),
+                   (hand_x + facing * 5 * scale, hand_y + 60 * scale)],
+                  fill=(100, 100, 100), width=1)
+
+    elif weapon == "hammer":
+        pts = [(hand_x, hand_y), (hand_x + facing * 90 * scale, hand_y - 10 * scale)]
+        draw.line(pts, fill=(80, 60, 40), width=lw + 6, joint="curve")
+        draw.rectangle([
+            hand_x + facing * 80 * scale, hand_y - 30 * scale,
+            hand_x + facing * 110 * scale, hand_y + 10 * scale
+        ], fill=(140, 140, 140), outline=INK, width=max(2, lw))
+
+    elif weapon == "mace":
+        pts = [(hand_x, hand_y), (hand_x + facing * 80 * scale, hand_y - 5 * scale)]
+        draw.line(pts, fill=(80, 60, 40), width=lw + 4, joint="curve")
+        draw.ellipse([
+            hand_x + facing * 75 * scale - 18 * scale, hand_y - 23 * scale,
+            hand_x + facing * 75 * scale + 18 * scale, hand_y + 13 * scale
+        ], fill=(140, 140, 140), outline=INK, width=max(2, lw))
+        for spike in range(4):
+            ang = spike * math.pi / 2
+            sx = hand_x + facing * 75 * scale + 22 * scale * math.cos(ang)
+            sy = hand_y - 5 * scale + 22 * scale * math.sin(ang)
+            draw.line([(hand_x + facing * 75 * scale, hand_y - 5 * scale), (sx, sy)],
+                      fill=(140, 140, 140), width=max(1, round(2 * scale)))
+
+    elif weapon in ("obsidian_sword", "macana"):
+        pts = [(hand_x, hand_y), (hand_x + facing * 100 * scale, hand_y + 10 * scale)]
+        draw.line(pts, fill=(20, 20, 20), width=lw + 12, joint="curve")
+        for i in range(6):
+            x = hand_x + facing * (20 + i * 12) * scale
+            draw.rectangle([x - 3, hand_y - 20 * scale - 5,
+                           x + 3, hand_y - 20 * scale + 5], fill=(20, 20, 20))
 # character - for court/market/gathering scenes so "a crowd murmured" or
 # "the court fell silent" doesn't render as one giant alone on an empty
 # stage. Deliberately much simpler than draw_character (no outfit/headwear
@@ -861,6 +1196,190 @@ def _draw_indoor_scene(draw, rng, w, h, base_scale) -> int:
     return floor_y
 
 
+# --- Dynamic Background Drawing Functions ------------------------------------
+# These add variety to backgrounds based on scene type/content
+
+_SKY_TINTS = [
+    (255, 244, 224),  # warm dawn
+    (226, 240, 250),  # cool morning blue
+    (255, 235, 235),  # soft blush dusk
+    (235, 245, 235),  # pale overcast mint
+    (245, 240, 255),  # pale lavender
+]
+
+
+def _draw_sky_gradient(draw: ImageDraw.ImageDraw, rng: random.Random, w: int, sky_h: int, tint=None) -> None:
+    """Soft vertical gradient from a gentle tint at the very top down to
+    white just above the ground - subtle by design (this should read as
+    atmosphere, not a sunset), picked per-scene so consecutive scenes don't
+    all get the exact same cast."""
+    if sky_h <= 0:
+        return
+    top_tint = tint or rng.choice(_SKY_TINTS)
+    bands = max(1, min(28, sky_h // 24))
+    band_h = sky_h / bands
+    for i in range(bands):
+        t = i / max(1, bands - 1)
+        color = tuple(round(top_tint[c] + (255 - top_tint[c]) * t) for c in range(3))
+        y0 = round(i * band_h)
+        y1 = sky_h if i == bands - 1 else round((i + 1) * band_h)
+        draw.rectangle([0, y0, w, y1], fill=color)
+
+
+def _draw_horizon_hills(draw: ImageDraw.ImageDraw, rng: random.Random, w: int, ground_y: int, ground_color: tuple) -> None:
+    """A soft, low rolling silhouette sitting just above the ground line - a
+    cheap mid-depth layer so the sky-to-ground transition isn't one hard
+    edge with nothing between it and the clouds. Muted/lightened toward the
+    sky's white so it reads as distant, and left without a heavy ink
+    outline (unlike every foreground element) so it stays recessive rather
+    than competing with the actual scene content."""
+    hill_h = ground_y * rng.uniform(0.05, 0.10)
+    if hill_h < 4:
+        return
+    color = _lighten(ground_color, 0.45)
+    n = 5
+    pts = [(0, ground_y)]
+    for i in range(n + 1):
+        x = w * i / n
+        y = ground_y - hill_h * rng.uniform(0.35, 1.0)
+        pts.append((x, y))
+    pts.append((w, ground_y))
+    draw.polygon(pts, fill=color, outline=_lighten(ground_color, 0.2))
+
+
+def _draw_smoke_plume(draw, rng, cx, cy, scale):
+    color = rng.choice([(100, 100, 105), (120, 115, 115), (80, 80, 85)])
+    pts = [(cx, cy)]
+    for i in range(1, 6):
+        sway = math.sin(i * 1.2) * 40 * scale
+        pts.append((cx + sway, cy - i * 35 * scale))
+    draw.line(pts, fill=color, width=int(30 * scale), joint="curve")
+
+
+def _draw_crater(draw, rng, cx, ground_y, scale):
+    w = rng.uniform(20, 60) * scale
+    h = rng.uniform(5, 15) * scale
+    pts = [(cx - w/2, ground_y), (cx - w*0.3, ground_y - h),
+           (cx + w*0.1, ground_y - h*1.2), (cx + w*0.2, ground_y - h*0.5),
+           (cx + w/2, ground_y)]
+    _outlined_blob(draw, pts, (120, 120, 130), int(3 * scale))
+
+
+def _draw_distant_fire(draw, rng, cx, ground_y, scale):
+    h = rng.uniform(40, 80) * scale
+    color = rng.choice([(255, 100, 30), (255, 140, 20), (255, 60, 20)])
+    for _ in range(3):
+        ang = rng.uniform(-0.5, 0.5)
+        length = rng.uniform(30, 60) * scale
+        tip = (cx + math.sin(ang) * length, ground_y - math.cos(ang) * length)
+        draw.line([(cx, ground_y), tip], fill=color, width=int(8 * scale), joint="curve")
+
+
+def _draw_campfire(draw, rng, cx, ground_y, scale):
+    draw.rectangle([cx - 40 * scale, ground_y - 10 * scale, cx + 40 * scale, ground_y],
+                   fill=(60, 40, 30), outline=INK, width=3)
+    for i in range(8):
+        ang = i * math.pi / 4
+        length = rng.uniform(30, 60) * scale
+        tip = (cx + math.sin(ang) * length * 0.3, ground_y - math.cos(ang) * length)
+        draw.line([(cx, ground_y), tip], 
+                  fill=rng.choice([(255, 80, 20), (255, 140, 30), (255, 200, 40)]),
+                  width=int(6 * scale), joint="curve")
+    for r in [60, 80, 100]:
+        draw.ellipse([cx - r * scale, ground_y - r * scale, 
+                      cx + r * scale, ground_y + r * scale],
+                     outline=(255, 100, 20), width=2)
+
+
+def _draw_tent(draw, rng, cx, ground_y, scale):
+    w_ = 120 * scale
+    h_ = 100 * scale
+    pts = [(cx - w_/2, ground_y), (cx, ground_y - h_), (cx + w_/2, ground_y)]
+    draw.polygon(pts, fill=(180, 160, 130), outline=INK, width=max(3, round(4 * scale)))
+    # door flap
+    draw.line([(cx, ground_y), (cx, ground_y - h_ * 0.6)], fill=(150, 130, 100), width=3)
+
+
+def _draw_bedroll(draw, rng, cx, ground_y, scale):
+    w_ = 40 * scale
+    h_ = 15 * scale
+    draw.rectangle([cx - w_/2, ground_y - h_, cx + w_/2, ground_y], fill=(100, 80, 60), outline=INK, width=2)
+
+
+def _draw_campfire_scene(draw, rng, w, h, ground_y, ground_color, base_scale):
+    _draw_campfire(draw, rng, w * 0.5, ground_y, base_scale * 1.5)
+    for i in range(rng.randint(2, 4)):
+        x = w * rng.uniform(0.15, 0.85)
+        _draw_tent(draw, rng, x, ground_y, base_scale * rng.uniform(0.8, 1.2))
+    for _ in range(rng.randint(3, 6)):
+        x = w * rng.uniform(0.1, 0.9)
+        _draw_bedroll(draw, rng, x, ground_y, base_scale)
+
+
+def _draw_campfire(draw, rng, cx, ground_y, scale):
+    draw.rectangle([cx - 40 * scale, ground_y - 10 * scale, cx + 40 * scale, ground_y],
+                   fill=(60, 40, 30), outline=INK, width=3)
+    for i in range(8):
+        ang = i * math.pi / 4
+        length = rng.uniform(30, 60) * scale
+        tip = (cx + math.sin(ang) * length * 0.3, ground_y - math.cos(ang) * length)
+        draw.line([(cx, ground_y), tip], 
+                  fill=rng.choice([(255, 80, 20), (255, 140, 30), (255, 200, 40)]),
+                  width=int(6 * scale), joint="curve")
+    for r in [60, 80, 100]:
+        draw.ellipse([cx - r * scale, ground_y - r * scale, 
+                      cx + r * scale, ground_y + r * scale],
+                     outline=(255, 100, 20), width=2)
+
+
+def _draw_city_walls(draw, rng, w, h, ground_y, ground_color, base_scale):
+    wall_h = h * rng.uniform(0.25, 0.35)
+    wall_y = ground_y - wall_h
+    draw.rectangle([0, wall_y, w, ground_y], fill=(140, 135, 130))
+    merlon_w = w / 15
+    for i in range(15):
+        mx = i * merlon_w
+        if i % 2 == 0:
+            draw.rectangle([mx, wall_y - 25 * base_scale, mx + merlon_w * 0.6, wall_y],
+                           fill=(130, 125, 120), outline=INK, width=2)
+    gate_x = w * 0.5
+    draw.rectangle([gate_x - 60 * base_scale, wall_y, gate_x + 60 * base_scale, ground_y],
+                   fill=(80, 60, 40), outline=INK, width=4)
+    for side in (-1, 1):
+        tx = w * (0.5 + side * 0.35)
+        draw.rectangle([tx - 50 * base_scale, wall_y - 80 * base_scale,
+                       tx + 50 * base_scale, ground_y], fill=(120, 115, 110), outline=INK, width=3)
+
+
+def _draw_temple_interior(draw, rng, w, h, ground_y, ground_color, base_scale):
+    for i in range(6):
+        cx = w * (i + 1) / 7
+        draw.rectangle([cx - 25 * base_scale, ground_y - 300 * base_scale,
+                       cx + 25 * base_scale, ground_y], fill=(220, 210, 195), outline=INK, width=4)
+    draw.rectangle([w * 0.5 - 80 * base_scale, ground_y - 60 * base_scale,
+                   w * 0.5 + 80 * base_scale, ground_y], fill=(180, 160, 120), outline=INK, width=4)
+    draw.ellipse([w * 0.5 - 40 * base_scale, ground_y - 180 * base_scale,
+                  w * 0.5 + 40 * base_scale, ground_y - 100 * base_scale],
+                 fill=(200, 190, 170), outline=INK, width=3)
+
+
+def _draw_battlefield(draw, rng, w, h, ground_y, ground_color, base_scale):
+    for _ in range(rng.randint(3, 6)):
+        cx = w * rng.uniform(0.1, 0.9)
+        cy = ground_y * rng.uniform(0.15, 0.5)
+        _draw_smoke_plume(draw, rng, cx, cy, base_scale)
+    for _ in range(rng.randint(5, 12)):
+        cx = w * rng.uniform(0.05, 0.95)
+        _draw_crater(draw, rng, cx, ground_y, base_scale)
+    for _ in range(rng.randint(2, 4)):
+        cx = w * rng.uniform(0.15, 0.85)
+        _draw_distant_fire(draw, rng, cx, ground_y, base_scale)
+
+
+def _draw_temple(draw, rng, w, h, ground_y, ground_color, base_scale):
+    pass  # placeholder
+
+
 def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[str]):
     """Draws the background (everything except the focal subject) onto a fresh
     image and returns (background, paint_subject, motion, composition_info).
@@ -871,13 +1390,13 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
     - motion is (amp_x, amp_y, period_x, period_y): how the subject drifts,
       used by the animator. Aquatic subjects float in two axes; land subjects
       bob gently in place.
-    - composition_info: dict with 'layout', 'camera_angle', 'subject_position'
-      for downstream animation decisions (Ken Burns, sprite placement).
+    - composition_info: dict with 'layout', 'camera_angle', 'subject_position',
+      'character_archetype', 'weapon' for downstream animation decisions.
     """
     w, h = config.video.resolution
     base = Image.new("RGB", (w, h), SKY)
     draw = ImageDraw.Draw(base)
-    base_scale = h / 1080
+    base_scale = _frame_base_scale(w, h)
 
     # --- COMPOSITION VARIETY ---
     # Choose layout based on scene role + mood + randomness.
@@ -900,7 +1419,14 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
     else:
         layout = rng.choice(["rule_of_thirds", "rule_of_thirds", "centered_natural", "wide_environmental"])
 
-    composition_info = {"layout": layout, "camera_angle": "eye_level"}
+    # Resolve historical/mythological character archetype from scene content
+    character_archetype = _resolve_character_archetype(scene)
+    archetype_outfit, archetype_headwear, archetype_weapon, archetype_pose, _ = _CHARACTER_ARCHETYPES.get(
+        character_archetype, _CHARACTER_ARCHETYPES["scholar"]
+    )
+
+    composition_info = {"layout": layout, "camera_angle": "eye_level",
+                        "character_archetype": character_archetype, "weapon": archetype_weapon}
 
     if subject in _AQUATIC_SUBJECTS:
         surface_y = _draw_water_scene(draw, rng, w, h)
@@ -933,33 +1459,75 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
         ground_y = _draw_indoor_scene(draw, rng, w, h, base_scale)
     else:
         ground_y = round(h * 0.82)
+        ground_color = GROUND_COLORS.get(setting, GROUND_COLORS["default"])
 
-        # A couple of flat clouds in the sky band above the ground -
-        # otherwise that whole upper region is empty white, which reads as
-        # unfinished.
-        for _ in range(rng.randint(1, 2)):
-            cx = w * rng.uniform(0.08, 0.92)
-            cy = h * rng.uniform(0.10, 0.34)
-            _draw_cloud(draw, rng, cx, cy, base_scale * rng.uniform(0.8, 1.2))
+        # --- Dynamic Background Selection ---
+        # Determine scene type for background based on keywords
+        haystack = _scene_haystack(scene)
+        scene_type = "default"
 
+        if any(_contains_keyword(haystack, kw) for kw in ("battle", "war", "siege", "army", "battlefield", "front line", "trench")):
+            scene_type = "battlefield"
+        elif any(_contains_keyword(haystack, kw) for kw in ("camp", "night", "fire", "rest", "campfire", "tent", "bivouac")):
+            scene_type = "campfire"
+        elif any(_contains_keyword(haystack, kw) for kw in ("city", "walls", "gate", "siege", "castle", "fortress", "wall")):
+            scene_type = "city_walls"
+        elif any(_contains_keyword(haystack, kw) for kw in ("temple", "altar", "prayer", "worship", "priest", "shrine", "sanctuary")):
+            scene_type = "temple"
+        elif any(_contains_keyword(haystack, kw) for kw in ("ocean", "sea", "ship", "boat", "underwater", "aquatic", "deep")):
+            scene_type = "water"
+        elif any(_contains_keyword(haystack, kw) for kw in ("camp", "night", "fire", "rest", "campfire", "tent")):
+            scene_type = "campfire"
+        elif any(_contains_keyword(haystack, kw) for kw in ("city", "walls", "gate", "siege", "castle", "fortress")):
+            scene_type = "city_walls"
+
+        # Sky gradient based on scene type / mood
+        if scene_type == "battlefield":
+            _draw_sky_gradient(draw, rng, w, ground_y, tint=(200, 80, 60))  # blood-red dawn
+        elif scene_type == "campfire":
+            _draw_sky_gradient(draw, rng, w, ground_y, tint=(40, 30, 50))   # deep night
+        elif scene_type == "temple":
+            _draw_sky_gradient(draw, rng, w, ground_y, tint=(255, 240, 200)) # golden
+        else:
+            _draw_sky_gradient(draw, rng, w, ground_y)
+        
+        # Clouds scaled to sky height
+        n_clouds = max(2, min(8, round(ground_y / (200 * base_scale))))
+        for _ in range(n_clouds):
+            cx = w * rng.uniform(0.05, 0.95)
+            cy = ground_y * rng.uniform(0.05, 0.75)
+            _draw_cloud(draw, rng, cx, cy, base_scale * rng.uniform(0.7, 1.5))
+        
+        # Scene-specific background elements
+        if scene_type == "battlefield":
+            _draw_battlefield(draw, rng, w, h, ground_y, ground_color, base_scale)
+        elif scene_type == "campfire":
+            _draw_campfire_scene(draw, rng, w, h, ground_y, ground_color, base_scale)
+        elif scene_type == "city_walls":
+            _draw_city_walls(draw, rng, w, h, ground_y, ground_color, base_scale)
+        elif scene_type == "temple":
+            _draw_temple_interior(draw, rng, w, h, ground_y, ground_color, base_scale)
+        else:
+            # Standard elements
+            drawers = _ELEMENT_DRAWERS.get(setting, _ELEMENT_DRAWERS["default"])
+            left_positions = [w * 0.10, w * 0.20]
+            right_positions = [w * 0.80, w * 0.90]
+            li = ri = 0
+            for i, drawer in enumerate(drawers):
+                if i % 2 == 0 and li < len(left_positions):
+                    x = left_positions[li]; li += 1
+                elif ri < len(right_positions):
+                    x = right_positions[ri]; ri += 1
+                else:
+                    x = w * rng.uniform(0.1, 0.9)
+                drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
+        
+        _draw_horizon_hills(draw, rng, w, ground_y, ground_color)
         draw.rectangle([0, ground_y, w, h], fill=GROUND_COLORS.get(setting, GROUND_COLORS["default"]))
         draw.line([(0, ground_y), (w, ground_y)], fill=INK, width=3)
         texture = _GROUND_TEXTURES.get(setting)
         if texture:
             texture(draw, rng, ground_y, w, h)
-
-        drawers = _ELEMENT_DRAWERS.get(setting, _ELEMENT_DRAWERS["default"])
-        left_positions = [w * 0.10, w * 0.24]
-        right_positions = [w * 0.76, w * 0.90]
-        li = ri = 0
-        for i, drawer in enumerate(drawers):
-            if i % 2 == 0 and li < len(left_positions):
-                x = left_positions[li]; li += 1
-            elif ri < len(right_positions):
-                x = right_positions[ri]; ri += 1
-            else:
-                x = w * rng.uniform(0.1, 0.9)
-            drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
 
     if subject in _SUBJECT_DRAWERS:
         sd = _SUBJECT_DRAWERS[subject]
@@ -986,49 +1554,65 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
 
             composition_info["subject_position"] = (cx, cy)
             sd(d, rng, cx, cy, element_scale, phase)
-    elif _is_fight_scene(scene):
-        # Two characters trading punches instead of one lone figure - "more
-        # than one stick figure" for scuffle/duel/brawl scenes, with an
-        # impact spark flashed at each punch's peak extension.
+    elif _is_fight_scene(scene) or _is_battle_scene(scene):
+        is_battle = _is_battle_scene(scene)
         headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
         outfit_a = _match(scene, _KEYWORD_TO_OUTFIT) or (85, 95, 65)
         outfit_b = (150, 60, 60) if outfit_a != (150, 60, 60) else (60, 90, 140)
-        fight_scale = element_scale * 0.85
-        cx_a, cx_b = w * 0.40, w * 0.60
+        
+        if is_battle:
+            fight_scale = element_scale * 0.9
+            cx_a, cx_b = w * 0.35, w * 0.65
+        else:
+            fight_scale = element_scale * 0.85
+            cx_a, cx_b = w * 0.40, w * 0.60
 
         def paint(d, phase=0.0):
-            draw_character(d, rng, cx_a, ground_y, fight_scale, outfit_a, headwear, "neutral", "fighting", phase, facing=1)
-            draw_character(d, rng, cx_b, ground_y, fight_scale, outfit_b, headwear, "neutral", "fighting", phase + math.pi, facing=-1)
+            draw_character(d, rng, cx_a, ground_y, fight_scale, outfit_a, headwear, "neutral", "fighting", phase, facing=1, weapon=archetype_weapon)
+            draw_character(d, rng, cx_b, ground_y, fight_scale, outfit_b, headwear, "neutral", "fighting", phase + math.pi, facing=-1, weapon="sword")
             punch_a = max(0.0, math.sin(phase))
             punch_b = max(0.0, math.sin(phase + math.pi))
             if max(punch_a, punch_b) > 0.9:
                 _draw_impact_burst(d, (cx_a + cx_b) / 2, ground_y - 235 * fight_scale, fight_scale)
+            
+            # Supporting cast for battles
+            if _is_battle_scene(scene):
+                support_count = rng.randint(10, 20)
+                support_positions = []
+                for i in range(support_count):
+                    if i % 2 == 0:
+                        x = w * rng.uniform(0.08, 0.30)
+                        facing = 1
+                    else:
+                        x = w * rng.uniform(0.70, 0.92)
+                        facing = -1
+                    s = element_scale * rng.uniform(0.4, 0.7)
+                    support_positions.append((x, s, facing))
+                
+                soldier_outfits = [(85, 95, 65), (60, 80, 100), (100, 60, 60), (70, 70, 70)]
+                for i, (x, s, facing) in enumerate(support_positions):
+                    outfit = rng.choice(soldier_outfits)
+                    pose = rng.choice(["aiming", "charging", "standing"])
+                    weapon = "crossbow" if pose == "aiming" else rng.choice(["spear", "sword", "axe"])
+                    _draw_soldier(d, rng, x, ground_y, s, outfit, phase + i * 0.5, 
+                                  facing=facing, pose=pose, weapon=weapon)
+        
         composition_info["camera_angle"] = "eye_level"
         composition_info["subject_position"] = ((cx_a + cx_b) / 2, ground_y)
     else:
-        outfit = _match(scene, _KEYWORD_TO_OUTFIT) or (150, 130, 110)
-        headwear = _match(scene, _KEYWORD_TO_HEADWEAR)
+        # Use archetype for outfit/headwear/weapon, fallback to keyword matching
+        outfit = _match(scene, _KEYWORD_TO_OUTFIT) or archetype_outfit
+        headwear = _match(scene, _KEYWORD_TO_HEADWEAR) or archetype_headwear
         mood = _match(scene, _KEYWORD_TO_MOOD) or "neutral"
-        pose = rng.choice(["sides", "raised", "crossed"]) if scene.role != "hook" else "raised"
+        pose = archetype_pose if scene.role == "hook" else rng.choice(["sides", "raised", "crossed"])
         crowd = _is_crowd_scene(scene)
         crowd_specs = []
         if crowd:
-            # A handful of small background figures at varied x/scale/depth
-            # behind the focal character - "the court murmured" shouldn't
-            # render as one giant alone on an empty stage.
             positions = [w * 0.14, w * 0.24, w * 0.76, w * 0.86, w * 0.32, w * 0.68]
             for idx in range(rng.randint(3, 5)):
                 x = positions[idx % len(positions)] + rng.uniform(-w * 0.03, w * 0.03)
                 crowd_specs.append((x, rng.choice(_CROWD_COLORS), idx, element_scale * rng.uniform(0.45, 0.6)))
 
-        # draw_character's proportions were tuned once against no real
-        # reference and ended up human-shaped but building-sized - at
-        # element_scale a person came out TALLER than the house next to them
-        # (~640 units vs a house's ~460). HUMAN_SCALE brings the figure down
-        # to roughly person-sized against its own environment; the extra
-        # per-scene jitter is a cheap stand-in for camera distance (a
-        # "medium" shot some scenes, a smaller "wide" shot on others) so
-        # consecutive scenes aren't identically framed.
         character_scale = element_scale * HUMAN_SCALE * rng.uniform(0.85, 1.3)
 
         def paint(d, phase=0.0):
@@ -1054,7 +1638,7 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
 
             cy = ground_y - 180 * element_scale
             composition_info["subject_position"] = (cx, cy)
-            draw_character(d, rng, cx, cy, character_scale, outfit, headwear, mood, pose, phase)
+            draw_character(d, rng, cx, cy, character_scale, outfit, headwear, mood, pose, phase, weapon=archetype_weapon)
 
     motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
     return base, paint, motion, composition_info
@@ -1169,15 +1753,16 @@ def generate_scene_clip(
     bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
     base.save(bg_path, quality=90)
 
-    if subject in _AQUATIC_SUBJECTS or subject is None:
-        # Aquatic creatures and the plain land character both have a
-        # phase-varying paint() (tentacle-sway/blink respectively), so both
-        # render as a looping animated frame sequence rather than one frozen
-        # pose. Other subject drawers (none currently non-aquatic) fall
-        # through to the static sprite below.
-        frame_pattern = _build_sprite_frames(rng, paint, w, h, work_dir, index, bubbles=subject in _AQUATIC_SUBJECTS)
+    if subject in _AQUATIC_SUBJECTS:
+        # Aquatic creatures have phase-varying paint() (tentacle-sway/fin-wiggle
+        # plus rising bubbles), so they render as a looping animated frame
+        # sequence rather than one frozen pose.
+        frame_pattern = _build_sprite_frames(rng, paint, w, h, work_dir, index, bubbles=True)
         sprite_input = ["-framerate", str(_LOOP_FPS), "-stream_loop", "-1", "-i", str(frame_pattern)]
     else:
+        # Land characters (including subject=None for generic narrator) use a
+        # single static sprite with gentle vertical bob only — no horizontal
+        # sliding across the screen.
         sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         paint(ImageDraw.Draw(sprite))
         sprite_path = work_dir / f"scene_{index:02d}_sprite.png"

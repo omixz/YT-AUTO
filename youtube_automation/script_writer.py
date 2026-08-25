@@ -286,8 +286,9 @@ this shape:
   question...", "and that's the part most people get wrong...").
 - One "insight" scene (last): perspective shift that reframes the whole story.
 
-Each scene's narration should be 1-2 sentences a voice actor can read in a few seconds - do not
-write paragraph-length narration for a single scene, split it into more scenes instead. Give
+Each scene's narration should target {config.video.target_scene_duration} seconds of speech 
+({config.video.min_scene_duration}-{config.video.max_scene_duration} seconds acceptable) — 
+do not write paragraph-length narration for a single scene, split it into more scenes instead. Give
 {visual_keyword_guidance}.
 Do not use markdown in the narration. Only state facts you're confident are accurate; do not
 fabricate statistics or quotes. Call emit_script with the final result."""
