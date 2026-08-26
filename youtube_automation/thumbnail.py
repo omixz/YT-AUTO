@@ -11,11 +11,13 @@ YouTube's thumbnail rotation or manual swaps.
 from __future__ import annotations
 
 import colorsys
+import math
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 from .fonts import load_bold
@@ -129,13 +131,25 @@ def _apply_color_grading(img: Image.Image, tint_rgb: Tuple[int, int, int], stren
 
 
 def _vignette(img: Image.Image, intensity: float = 0.35) -> Image.Image:
-    """Darken corners to pull eye to center."""
+    """Darken the far corners to pull the eye toward center - the center
+    itself should end up essentially untouched (mask alpha ~0 there) and
+    only the corners approach `intensity`.
+
+    This used to build the mask by drawing ~360 concentric 1px-wide ellipse
+    OUTLINES with alpha DECREASING inward from a 255 (fully opaque) base -
+    which both starts every pixel at max darkness and only ever dips to
+    ~255*(1-intensity) at the exact center, instead of tapering to 0 there.
+    Measured directly: center-pixel alpha came out to 192/255 (~75% opacity
+    black) instead of ~0 - every thumbnail rendered almost entirely black
+    regardless of intensity, not just the corners. Rewritten as an actual
+    radial gradient from the center outward."""
     w, h = img.size
-    mask = Image.new("L", (w, h), 255)
-    draw = ImageDraw.Draw(mask)
-    for i in range(min(w, h) // 2):
-        alpha = int(255 * (1 - intensity * (i / (min(w, h) // 2)) ** 2))
-        draw.ellipse([i, i, w - i, h - i], outline=alpha)
+    cx, cy = w / 2, h / 2
+    max_dist = math.hypot(cx, cy)
+    yy, xx = np.mgrid[0:h, 0:w]
+    dist = np.hypot(xx - cx, yy - cy) / max_dist  # 0 at center, 1 at the corners
+    alpha = (np.clip(dist, 0, 1) ** 2) * intensity * 255
+    mask = Image.fromarray(alpha.astype(np.uint8), mode="L")
     mask = mask.filter(ImageFilter.GaussianBlur(radius=40))
     dark = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     dark.putalpha(mask)
