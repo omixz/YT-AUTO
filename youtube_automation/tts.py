@@ -45,25 +45,34 @@ _MAX_TTS_RETRIES = 3
 # edge-tts voice rather than reusing voice.name verbatim.
 _EDGE_TTS_FALLBACK_VOICE = "en-US-AvaMultilingualNeural"
 
-# Emphasis markup patterns: **word** or <emphasis>word</emphasis>
-_EMPHASIS_PATTERNS = [
-    (r"\*\*(.+?)\*\*", r'<emphasis level="strong">\1</emphasis>'),
-    (r"<emphasis>(.+?)</emphasis>", r'<emphasis level="strong">\1</emphasis>'),
+# Emphasis/breathing-pause markup gets stripped down to plain text (see
+# _apply_expressiveness) rather than converted to SSML - edge_tts.Communicate
+# has no supported way to receive embedded per-word SSML tags; see that
+# function's docstring for how this was confirmed.
+_EMPHASIS_STRIP_PATTERNS = [
+    (r"\*\*(.+?)\*\*", r"\1"),                     # **word** -> word
+    (r"<emphasis[^>]*>(.+?)</emphasis>", r"\1"),   # strip any stray <emphasis> tags down to their text
 ]
 
-# Breathing pauses: | at commas/periods -> <break time="..."/>
-_BREATH_PATTERNS = [
-    (r",\s*\|", ', <break time="300ms"/>'),
-    (r"\.\s*\|", '. <break time="600ms"/>'),
-    (r"\|\s*", '<break time="400ms"/>'),  # standalone pipe
+_BREATH_STRIP_PATTERNS = [
+    (r",\s*\|", ","),    # ,| -> , (natural pause already there)
+    (r"\.\s*\|", "."),   # .| -> .
+    (r"\|\s*", "... "),  # standalone pipe -> an ellipsis, which edge-tts's own sentence pacing actually honors
 ]
 
-# Scene-role prosody profiles
-# pitch uses semitones (st) — edge-tts expects semitones, not Hz
+# Scene-role prosody deltas, layered on top of the voice's own base
+# rate/pitch (see _prosody_kwargs) via edge_tts.Communicate's real
+# constructor kwargs - NOT embedded SSML (edge_tts doesn't support that; see
+# _apply_expressiveness). Units are strict and validated by edge_tts itself
+# (edge_tts.data_classes.TTSConfig): rate/volume as integer percent
+# ("+N%"), pitch as integer Hz ("+NHz") - NOT semitones/dB, which the
+# previous version of this table used and which would have raised
+# ValueError from edge_tts's own validation had they ever actually reached
+# the Communicate constructor (they hadn't - see _apply_expressiveness).
 _ROLE_PROSODY = {
-    "hook":     {"rate": "+15%", "pitch": "+5st", "volume": "+3dB"},    # urgent, engaging
-    "build":    {"rate": "+5%",  "pitch": "+2st", "volume": "+0dB"},   # steady
-    "insight":  {"rate": "-10%", "pitch": "-3st", "volume": "-2dB"},   # contemplative, authoritative
+    "hook":     {"rate": "+15%", "pitch": "+20Hz", "volume": "+10%"},   # urgent, engaging
+    "build":    {"rate": "+5%",  "pitch": "+8Hz",  "volume": "+0%"},    # steady
+    "insight":  {"rate": "-10%", "pitch": "-12Hz", "volume": "-10%"},   # contemplative, authoritative
 }
 
 
@@ -103,64 +112,95 @@ def _approx_cues_from_text(text: str, audio_path: Path) -> List[WordCue]:
     return cues
 
 
-def _apply_expressiveness(text: str, role: str) -> str:
-    """Convert plain text with markup to SSML with prosody and emphasis."""
+def _apply_expressiveness(text: str) -> str:
+    """Strips emphasis (`**bold**`) and breathing-pause (`|`) markup down to
+    plain, TTS-safe text.
+
+    This used to wrap the (still-markup-laden) text in hand-built SSML
+    (<speak><prosody>...<emphasis>...<break/>...</prosody></speak>) and hand
+    that whole string to edge_tts.Communicate() as its `text` argument. But
+    Communicate() escapes and wraps *whatever text it's given* into its own
+    SSML internally (see edge_tts.communicate.Communicate.__init__ ->
+    mkssml(escape(text))) - it has no code path that parses SSML tags out of
+    the string you pass it. Confirmed directly: escape() turns our own
+    "<speak version=...>" into the literal characters "&lt;speak
+    version=...", so the voice ended up speaking that raw markup out loud as
+    words, prepended/appended to every scene's real narration - a silent
+    bug, since Communicate() doesn't error on this, it just "succeeds" with
+    wrong audio. edge-tts has no supported way to send inline per-word SSML
+    (emphasis/breaks) through Communicate - only whole-utterance rate/pitch/
+    volume are real, via constructor kwargs (see _prosody_kwargs). So this
+    now only strips the markup down to something safe to actually speak,
+    rather than trying to preserve emphasis/pauses this library can't
+    express."""
+    for pattern, repl in _EMPHASIS_STRIP_PATTERNS:
+        text = re.sub(pattern, repl, text)
+    for pattern, repl in _BREATH_STRIP_PATTERNS:
+        text = re.sub(pattern, repl, text)
+    return text
+
+
+def _combine_percent(base: str, delta: str) -> str:
+    total = int(base.rstrip("%")) + int(delta.rstrip("%"))
+    return f"{total:+d}%"
+
+
+def _combine_hz(base: str, delta: str) -> str:
+    total = int(base.rstrip("Hz")) + int(delta.rstrip("Hz"))
+    return f"{total:+d}Hz"
+
+
+def _prosody_kwargs(role: str, base_rate: str = "+0%", base_pitch: str = "+0Hz") -> dict:
+    """Real rate/pitch/volume kwargs for edge_tts.Communicate's constructor -
+    the only place these settings actually take effect (see
+    _apply_expressiveness for why embedding them in the text does not).
+    Layers the scene role's prosody delta on top of the voice's own base
+    rate/pitch (config.yaml's voice.rate/voice.pitch, "+0%"/"+0Hz" by
+    default) rather than discarding it, so a channel-level voice-speed
+    tweak still applies underneath the per-role variation. edge_tts itself
+    strictly validates these formats (integer percent for rate/volume,
+    integer Hz for pitch - see edge_tts.data_classes.TTSConfig), which is
+    also why the results are formatted via _combine_percent/_combine_hz
+    rather than simple string concatenation."""
     prosody = _ROLE_PROSODY.get(role, _ROLE_PROSODY["build"])
-    
-    # Apply emphasis markup
-    for pattern, repl in _EMPHASIS_PATTERNS:
-        text = re.sub(pattern, repl, text)
-    
-    # Apply breathing pauses
-    for pattern, repl in _BREATH_PATTERNS:
-        text = re.sub(pattern, repl, text)
-    
-    # Wrap in prosody tag
-    ssml = (
-        f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">'
-        f'<prosody rate="{prosody["rate"]}" pitch="{prosody["pitch"]}" volume="{prosody["volume"]}">'
-        f'{text}'
-        f'</prosody></speak>'
-    )
-    return ssml
+    return {
+        "rate": _combine_percent(base_rate, prosody["rate"]),
+        "pitch": _combine_hz(base_pitch, prosody["pitch"]),
+        "volume": prosody["volume"],
+    }
 
 
 async def _synthesize_one(text: str, voice: VoiceConfig, out_path: Path, role: str = "build") -> List[WordCue]:
-    # Apply expressiveness markup
-    ssml_text = _apply_expressiveness(text, role)
-    
-    # Try SSML first, fallback to plain text if it fails
-    for attempt_ssml in (True, False):
-        try:
-            communicate = edge_tts.Communicate(
-                ssml_text if attempt_ssml else text, voice.name, rate=voice.rate, pitch=voice.pitch, boundary="WordBoundary"
-            )
-            cues: List[WordCue] = []
-            with open(out_path, "wb") as f:
-                async for chunk in communicate.stream():
-                    if chunk["type"] == "audio":
-                        f.write(chunk["data"])
-                    elif chunk["type"] == "WordBoundary":
-                        start = chunk["offset"] / 10_000_000  # 100-ns units -> seconds
-                        cues.append(
-                            WordCue(
-                                text=chunk["text"],
-                                start=start,
-                                end=start + chunk["duration"] / 10_000_000,
-                            )
+    clean_text = _apply_expressiveness(text)
+    prosody = _prosody_kwargs(role, base_rate=voice.rate, base_pitch=voice.pitch)
+
+    try:
+        communicate = edge_tts.Communicate(
+            clean_text, voice.name,
+            rate=prosody["rate"], pitch=prosody["pitch"], volume=prosody["volume"],
+            boundary="WordBoundary",
+        )
+        cues: List[WordCue] = []
+        with open(out_path, "wb") as f:
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    f.write(chunk["data"])
+                elif chunk["type"] == "WordBoundary":
+                    start = chunk["offset"] / 10_000_000  # 100-ns units -> seconds
+                    cues.append(
+                        WordCue(
+                            text=chunk["text"],
+                            start=start,
+                            end=start + chunk["duration"] / 10_000_000,
                         )
-            if cues:
-                return cues
-            # If no cues but audio generated, create approximate cues from text
-            logger.warning(f"TTS generated audio but no word boundaries for scene role={role}; creating approximate cues")
-            return _approx_cues_from_text(text, out_path)
-        except edge_tts.exceptions.NoAudioReceived as exc:
-            if attempt_ssml:
-                logger.warning(f"SSML synthesis failed, retrying with plain text: {exc}")
-                continue
-            raise RuntimeError(f"edge-tts returned no audio after SSML and plain text attempts: {exc}") from exc
-    
-    raise RuntimeError("unreachable")
+                    )
+        if cues:
+            return cues
+        # If no cues but audio generated, create approximate cues from text
+        logger.warning(f"TTS generated audio but no word boundaries for scene role={role}; creating approximate cues")
+        return _approx_cues_from_text(text, out_path)
+    except edge_tts.exceptions.NoAudioReceived as exc:
+        raise RuntimeError(f"edge-tts returned no audio: {exc}") from exc
 
 
 def _synthesize_one_with_retry(text: str, voice: VoiceConfig, out_path: Path, role: str = "build") -> List[WordCue]:

@@ -436,8 +436,19 @@ def test_tts_role_passed():
 
 
 def test_ssml_pitch_format():
-    """Pitch values should use semitones (st) not Hz."""
+    """Pitch values must be integer Hz, matching what edge_tts itself
+    validates (edge_tts.data_classes.TTSConfig.__post_init__ checks pitch
+    against r"^[+-]\\d+Hz$" exactly - no decimals, no other units).
+
+    This test used to assert the opposite ("should use semitones"), which
+    was never actually correct against edge_tts's real API - it was
+    checking that the bug (semitone-formatted pitch values that would have
+    raised ValueError had they ever reached edge_tts.Communicate's
+    constructor) was present. They never did reach it in practice, because
+    _apply_expressiveness only ever embedded these values inside SSML text
+    that edge_tts.Communicate escapes and treats as literal words - see
+    tts.py's _apply_expressiveness docstring."""
     from youtube_automation.tts import _ROLE_PROSODY
     for role, prosody in _ROLE_PROSODY.items():
         pitch = prosody["pitch"]
-        assert pitch.endswith("st") or pitch == "+0st", f"Role {role} pitch '{pitch}' not in semitones"
+        assert pitch.endswith("Hz"), f"Role {role} pitch '{pitch}' should be integer Hz, matching edge_tts's own validation"
