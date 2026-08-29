@@ -37,7 +37,11 @@ def test_generate_renders_highlight_color_somewhere(tmp_path):
     asset = _fake_image_asset(tmp_path)
     out = thumbnail.generate("The Secret That Doomed an Empire", asset, tmp_path, tmp_path / "thumb.jpg")
     with Image.open(out) as img:
-        pixels = img.getdata()
+        # Use get_flattened_data() for Pillow >= 10.0.0, fallback to getdata() for older versions
+        try:
+            pixels = img.get_flattened_data()
+        except AttributeError:
+            pixels = img.getdata()
         assert any(
             abs(r - thumbnail.HIGHLIGHT_COLOR[0]) < 10
             and abs(g - thumbnail.HIGHLIGHT_COLOR[1]) < 10

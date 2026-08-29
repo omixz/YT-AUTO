@@ -59,11 +59,12 @@ _BREATH_PATTERNS = [
 ]
 
 # Scene-role prosody profiles
-# pitch uses semitones (st) -- edge-tts expects semitones, not Hz
+# pitch uses Hz -- edge-tts expects Hz (integer Hz, not semitones)
+# rate/volume use integer percent, pitch uses integer Hz
 _ROLE_PROSODY = {
-    "hook":     {"rate": "+15%", "pitch": "+5st", "volume": "+3dB"},    # urgent, engaging
-    "build":    {"rate": "+5%",  "pitch": "+2st", "volume": "+0dB"},   # steady
-    "insight":  {"rate": "-10%", "pitch": "-3st", "volume": "-2dB"},   # contemplative, authoritative
+    "hook":     {"rate": "+15%", "pitch": "+20Hz", "volume": "+10%"},   # urgent, engaging
+    "build":    {"rate": "+5%",  "pitch": "+8Hz",  "volume": "+0%"},   # steady
+    "insight":  {"rate": "-10%", "pitch": "-12Hz", "volume": "-10%"},   # contemplative, authoritative
 }
 
 

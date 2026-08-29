@@ -8,4 +8,4 @@ print('end_idx:', end_idx)
 if end_idx >= 0:
     docstring = content[doc_idx:end_idx+3]
     print('Docstring:', repr(docstring))
-    print('Ends with b"""', docstring.endswith(b'"""'))
+    print('Ends with b"""': docstring.endswith(b'"""'))
