@@ -257,15 +257,3 @@ def silent_audio(duration: float, out_path: Path) -> Path:
         check=True, capture_output=True,
     )
     return out_path
-
-
-def silent_audio(duration: float, out_path: Path) -> Path:
-    subprocess.run(
-        [
-            "ffmpeg", "-y", "-f", "lavfi",
-            "-i", "anullsrc=channel_layout=mono:sample_rate=24000",
-            "-t", f"{duration:.3f}", str(out_path),
-        ],
-        check=True, capture_output=True,
-    )
-    return out_path

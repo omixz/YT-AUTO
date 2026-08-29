@@ -77,11 +77,30 @@ def apply_score(config: PipelineConfig, niche_key: str, format_name: str, score:
     stats = json.loads(stats_path.read_text(encoding="utf-8")) if stats_path.exists() else {}
 
     key = stats_key(niche_key, format_name)
-    entry = stats.get(key, {"samples": 0, "total_score": 0.0, "avg_score": 0.0})
+    entry = stats.get(key, {"samples": 0, "total_score": 0.0, "avg_score": 0.0, "history": []})
+    entry.setdefault("history", [])
     entry["samples"] += 1
     entry["total_score"] += score
     entry["avg_score"] = entry["total_score"] / entry["samples"]
-    stats[key] = entry
 
+    # niche_selector._trend_score reads entry["windows"]["7d"/"30d"]["avg_score"]
+    # to compare recent vs. longer-run performance - this used to never get
+    # written anywhere, so that trend comparison always saw an empty dict and
+    # silently evaluated to 0 (neutral) every time, regardless of how a niche
+    # was actually trending. Keep a dated history (pruned to 30 days - windows
+    # never need more) and derive both windows from it here.
+    today = dt.date.today()
+    entry["history"].append({"date": today.isoformat(), "score": score})
+    cutoff_30 = today - dt.timedelta(days=30)
+    entry["history"] = [h for h in entry["history"] if dt.date.fromisoformat(h["date"]) >= cutoff_30]
+
+    def _window(days: int) -> dict:
+        cutoff = today - dt.timedelta(days=days)
+        scores = [h["score"] for h in entry["history"] if dt.date.fromisoformat(h["date"]) >= cutoff]
+        return {"avg_score": sum(scores) / len(scores)} if scores else {}
+
+    entry["windows"] = {"7d": _window(7), "30d": _window(30)}
+
+    stats[key] = entry
     stats_path.parent.mkdir(parents=True, exist_ok=True)
     stats_path.write_text(json.dumps(stats, indent=2), encoding="utf-8")
