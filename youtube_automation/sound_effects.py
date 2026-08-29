@@ -201,7 +201,98 @@ def _synth_air(duration: float) -> np.ndarray:
     noise = _lowpass(_white_noise(duration), 400)
     t = np.linspace(0, duration, len(noise))
     drift = 0.7 + 0.3 * np.sin(2 * np.pi * 0.05 * t)
-    return noise * drift * 0.18
+    # 0.34, not the original 0.18: every matched bed above sits in the
+    # ~0.35-0.6 internal-amplitude range before the *same* flat
+    # config.video.sfx_volume_db offset is applied in assembler.py. At 0.18
+    # this filler ended up ~15dB quieter than a real match on top of that
+    # shared offset - i.e. inaudible - which is why scenes that fell through
+    # to it (most human-drama scenes, historically) read as "no sound
+    # effects" even though the code was technically always adding something.
+    return noise * drift * 0.34
+
+
+def _synth_tension(duration: float) -> np.ndarray:
+    """Low sustained drone with a slow swell, plus an occasional short sting
+    - the suspense/reveal bed for assassination/political-plot and "twist"
+    moments, which otherwise had no atmosphere of their own and fell through
+    to the neutral air bed despite these niches leaning heavily on dramatic
+    reveals."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    t = np.linspace(0, duration, n)
+    drone = np.sin(2 * np.pi * 55 * t) * 0.25 + np.sin(2 * np.pi * 82.5 * t) * 0.12
+    swell = 0.6 + 0.4 * np.sin(2 * np.pi * 0.08 * t)
+    out = drone * swell
+    rng = np.random.default_rng(8)
+    if duration > 2.0 and rng.random() < 0.6:
+        sting_len = min(int(0.5 * SAMPLE_RATE), max(1, n - 1))
+        pos = int(rng.uniform(0.3, 0.8) * n)
+        tt = np.linspace(0, sting_len / SAMPLE_RATE, sting_len)
+        sting = np.sin(2 * np.pi * 220 * tt) * np.exp(-tt * 3) * 0.5
+        end = min(n, pos + sting_len)
+        out[pos:end] += sting[: end - pos]
+    return np.clip(out, -1, 1)
+
+
+def _synth_celebration(duration: float) -> np.ndarray:
+    """Cheering/applause bed for coronations, victories, and parades -
+    brighter and busier than the plain crowd murmur, since "the crowd
+    roared" reads flat with the same restrained walla used for a quiet
+    court scene."""
+    n = max(1, int(duration * SAMPLE_RATE))
+    out = np.zeros(n)
+    rng = np.random.default_rng(9)
+    t = np.linspace(0, duration, n)
+    for i in range(8):
+        voice = _lowpass(_white_noise(duration, seed=200 + i), int(rng.integers(6, 16)))
+        mod = 0.5 + 0.5 * np.sin(2 * np.pi * rng.uniform(0.8, 2.2) * t + rng.uniform(0, 6.28))
+        out += voice * mod
+    out = out / 8 * 0.45
+    n_claps = int(duration * 3)
+    for _ in range(n_claps):
+        clap_len = min(int(0.03 * SAMPLE_RATE), max(1, n - 1))
+        pos = int(rng.integers(0, max(1, n - clap_len)))
+        clap = rng.uniform(-1, 1, clap_len) * np.linspace(1, 0, clap_len)
+        out[pos:pos + clap_len] += clap * 0.3
+    return np.clip(out, -1, 1)
+
+
+def _synth_dungeon_echo(duration: float) -> np.ndarray:
+    """A damp, muffled cell ambience - low rumble plus an occasional
+    resonant water drip - for prison/captivity scenes."""
+    base = _lowpass(_white_noise(duration), 350) * 0.22
+    n = len(base)
+    rng = np.random.default_rng(10)
+    out = base.copy()
+    t = 0.0
+    while t < duration:
+        pos = int(t * SAMPLE_RATE)
+        drip_len = min(int(0.4 * SAMPLE_RATE), max(1, n - 1))
+        tt = np.linspace(0, drip_len / SAMPLE_RATE, drip_len)
+        drip = np.sin(2 * np.pi * 900 * tt) * np.exp(-tt * 9) * 0.35
+        end = min(n, pos + drip_len)
+        out[pos:end] += drip[: end - pos]
+        t += rng.uniform(1.5, 3.5)
+    return np.clip(out, -1, 1)
+
+
+def _synth_radio(duration: float) -> np.ndarray:
+    """Crackly radio/telegraph static with occasional short tone blips - for
+    WWI/WWII communications scenes."""
+    noise = _white_noise(duration)
+    hiss = noise - _lowpass(noise, 30)  # crude high-pass via subtracting a low-pass copy
+    out = np.clip(hiss * 0.3, -1, 1)
+    n = len(out)
+    rng = np.random.default_rng(11)
+    t = 0.0
+    while t < duration:
+        pos = int(t * SAMPLE_RATE)
+        blip_len = min(int(rng.uniform(0.05, 0.15) * SAMPLE_RATE), max(1, n - 1))
+        tt = np.linspace(0, blip_len / SAMPLE_RATE, blip_len)
+        blip = np.sin(2 * np.pi * rng.uniform(600, 1200) * tt) * 0.25
+        end = min(n, pos + blip_len)
+        out[pos:end] += blip[: end - pos]
+        t += rng.uniform(0.4, 1.2)
+    return np.clip(out, -1, 1)
 
 
 def _synth_war_ambience(duration: float) -> np.ndarray:
@@ -312,6 +403,10 @@ _SFX_SYNTH: Dict[str, Callable[[float], np.ndarray]] = {
     "battle": _synth_battle,
     "clash": _synth_clash,
     "crowd": _synth_crowd,
+    "tension": _synth_tension,
+    "celebration": _synth_celebration,
+    "dungeon_echo": _synth_dungeon_echo,
+    "radio": _synth_radio,
     "air": _synth_air,
     "war_ambience": _synth_war_ambience,
     "scared_men": _synth_scared_men,
@@ -330,8 +425,27 @@ _KEYWORD_TO_SFX: List[Tuple[Tuple[str, ...], str]] = [
     (("duel", "sword fight", "swordfight", "brawl", "melee", "fistfight", "fist fight",
       "wrestl", "sparring", "clashed swords", "grappl"), "clash"),
     (("battle", "war", "combat", "explosion", "artillery", "gunfire"), "battle"),
+    # Assassination/political-plot and dramatic "twist" reveals - previously
+    # unmatched entirely, despite being a large share of dark_history/
+    # modern_history/unsolved_mysteries content, whose tone (config.yaml:
+    # "dramatic, high-stakes, suspenseful") this bed is built for.
+    (("assassinat", "conspiracy", "conspired", "plotted", "coup", "betrayal", "betrayed",
+      "twist", "revealed the truth", "shocking truth", "secret plan"), "tension"),
+    # Coronation/celebration/victory - previously fell through to nothing
+    # despite being common in ancient_civilizations/world_wars payoff scenes.
+    (("coronation", "crowned", "celebrat", "victory", "triumph", "parade",
+      "cheered", "cheering", "applause", "hailed"), "celebration"),
+    # Prison/captivity - shares its keyword set with procedural_illustration's
+    # "dungeon" visual setting for the same reason: a captivity scene is
+    # neither the generic indoor office/lab sound nor silence.
+    (("dungeon", "prison", "imprisoned", "captive", "shackled", "incarcerated",
+      "jailed", "chained", "chains"), "dungeon_echo"),
+    # Telegraph/radio communications - common in world_wars/modern_history.
+    (("telegraph", "radio", "wireless", "transmission", "broadcast",
+      "morse code", "signal corps", "wire service"), "radio"),
     (("court", "courtiers", "marketplace", "town square", "gathered crowd", "spectators",
-      "onlookers", "murmur", "chatter", "assembly hall"), "crowd"),
+      "onlookers", "murmur", "chatter", "assembly hall",
+      "trial", "tribunal", "verdict", "testify", "witness stand"), "crowd"),
     (("forest", "jungle", "wilderness", "nature", "woods"), "birds"),
     (("wind", "gale", "blizzard"), "wind"),
     # War ambience for large-scale battles

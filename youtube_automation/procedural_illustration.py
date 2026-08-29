@@ -67,8 +67,14 @@ def _count_keyword(haystack: str, keyword: str) -> int:
 
 _KEYWORD_TO_SETTING = [
     (("snow", "siberia", "arctic", "ice", "frozen", "winter", "cold", "blizzard"), "snow"),
+    # Checked before the general "water" bucket below - dock/pier vocabulary
+    # used to fall into "harbor" being one of water's own keywords, which
+    # meant a scene about a departure or a missing ship rendered as bare
+    # open water with a wave line, indistinguishable from every other ocean
+    # scene. A pier + docked ship is a visually distinct silhouette.
+    (("harbor", "dock", "pier", "wharf", "quay", "moored", "anchored", "dockside", "seaport", "dockyard"), "harbor"),
     (("ocean", "sea", "beach", "coast", "island", "ship", "boat", "wave", "submarine",
-      "navy", "naval", "destroyer", "warship", "periscope", "fleet", "harbor",
+      "navy", "naval", "destroyer", "warship", "periscope", "fleet",
       "octopus", "squid", "cephalopod", "marine", "underwater", "aquatic",
       "deep-sea", "deep sea", "tentacle", "reef", "fish", "whale", "shark"), "water"),
     (("mountain", "valley", "cliff", "peak", "himalay", "andes", "alps"), "mountain"),
@@ -76,26 +82,56 @@ _KEYWORD_TO_SETTING = [
       "wreckage", "crash", "invasion", "siege"), "ruins"),
     (("forest", "jungle", "wood", "tree", "wilderness", "mistletoe", "branch", "oak", "grove"), "forest"),
     (("desert", "sand", "sahara", "dune"), "desert"),
-    (("room", "office", "lab", "laboratory", "indoor", "house", "factory", "bunker", "cell"), "indoor"),
+    # Checked before "palace"'s "court" keyword and before generic "indoor" -
+    # a trial is technically indoors but a witness stand/jury box reads as a
+    # completely different scene from an office or a throne room.
+    (("trial", "tribunal", "courtroom", "jury", "verdict", "testify", "testified",
+      "prosecut", "defendant", "stood accused", "on trial", "witness stand"), "courtroom"),
+    # Checked before generic "indoor" - "cell" used to route a prison scene
+    # into the same office/lab/factory bucket as everything else indoors.
+    (("dungeon", "prison", "imprisoned", "captive", "shackled", "incarcerated",
+      "cell", "cellar", "chained", "chains", "jail", "jailed"), "dungeon"),
+    (("room", "office", "lab", "laboratory", "indoor", "house", "factory", "bunker"), "indoor"),
     (("palace", "throne", "castle", "fortress", "court", "coronation", "monarchy"), "palace"),
     (("temple", "pyramid", "tomb", "pharaoh", "sphinx", "ziggurat", "acropolis",
       "parthenon", "ancient egypt", "mesopotamia", "ruins of"), "ancient"),
+    # Checked before generic "city" - assassination/political-plot scenes
+    # used to have no keyword bucket of their own and fell through to
+    # "default" (a plain house+tree exterior) despite being a large share of
+    # modern_history/dark_history content.
+    (("assassinat", "coup", "conspiracy", "conspired", "plotted", "senate", "parliament",
+      "minister", "president", "prime minister", "congress", "statesman", "chancellor",
+      "regime", "politician", "capitol", "government building"), "government"),
     (("city", "street", "capital", "town square", "market", "urban", "metropolis"), "city"),
     (("olympus", "zeus", "poseidon", "hades", "underworld", "the gods", "god of",
       "goddess of", "pantheon", "valhalla", "asgard", "mythology", "mythical"), "mythic"),
 ]
 
+# Settings so generic/common that a video otherwise repeats the same
+# rendered look scene after scene with no narrative reason - see
+# _resolve_setting. Weather/terrain settings (snow, desert, forest, water,
+# harbor, mountain, mythic, ancient) are deliberately excluded: those really
+# do repeat legitimately across a genuinely single-setting narrative (a whole
+# scene sequence set in a desert, a whole video about an ancient temple), so
+# forcing variety there would fight the actual story instead of fixing a bug.
+_OVERLOAD_SETTINGS = {"default", "indoor", "city", "palace", "government"}
+_OVERLOAD_ROTATION = ["city", "government", "palace", "indoor", "default"]
+
 GROUND_COLORS = {
     "snow": (238, 242, 245),
     "water": (150, 190, 210),
+    "harbor": (150, 158, 165),
     "mountain": (200, 200, 190),
     "ruins": (190, 180, 165),
     "forest": (160, 195, 140),
     "desert": (225, 200, 150),
     "indoor": (210, 190, 160),
+    "dungeon": (95, 92, 88),
+    "courtroom": (168, 138, 96),
     "palace": (222, 210, 188),
     "ancient": (218, 198, 160),
     "city": (188, 192, 198),
+    "government": (206, 204, 196),
     "mythic": (232, 222, 196),
     "default": (200, 210, 190),
 }
@@ -107,6 +143,19 @@ def _setting_for_scene(scene: Scene) -> str:
         if any(_contains_keyword(haystack, kw) for kw in keywords):
             return setting
     return "default"
+
+
+def _resolve_setting(scene: Scene, prev_setting: Optional[str], rng: random.Random) -> str:
+    """Same as _setting_for_scene, but breaks up back-to-back repeats of the
+    generic/overloaded settings (see _OVERLOAD_SETTINGS) that otherwise make
+    consecutive scenes - and consecutive videos - render near-identical
+    backgrounds. A real, specific match (e.g. "desert") is never overridden,
+    even if repeated many scenes in a row - only the generic buckets are."""
+    setting = _setting_for_scene(scene)
+    if setting in _OVERLOAD_SETTINGS and setting == prev_setting:
+        choices = [s for s in _OVERLOAD_ROTATION if s != setting]
+        return rng.choice(choices)
+    return setting
 
 
 def _jitter(rng: random.Random, p: Tuple[float, float], amt: float = 2.0) -> Tuple[float, float]:
@@ -220,20 +269,76 @@ def _draw_city_building(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float
             draw.rectangle([wx - wr, wy - wr, wx + wr, wy + wr], fill=(230, 225, 200))
 
 
+def _draw_dock(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y: float, scale: float) -> None:
+    """A wooden pier walkway extending toward the viewer, with a couple of
+    mooring posts - the thing that makes "harbor" read as a departure point,
+    not just another patch of open water."""
+    w, h = 420 * scale, 40 * scale
+    deck = [(cx - w / 2, base_y - h), (cx + w / 2, base_y - h), (cx + w * 0.7, base_y), (cx - w * 0.7, base_y)]
+    _sketchy_polyline(draw, rng, deck, fill=(120, 90, 60), close=True, width=int(5 * scale) or 3)
+    for i in range(5):
+        px = cx - w * 0.6 + (w * 1.2) * i / 4
+        plank = [(px, base_y - h), (px, base_y)]
+        _sketchy_polyline(draw, rng, plank, width=max(2, int(3 * scale)))
+    for side in (-1, 1):
+        post_x = cx + side * w * 0.42
+        post = [(post_x, base_y - h - 55 * scale), (post_x, base_y - h * 0.3)]
+        _sketchy_polyline(draw, rng, post, width=int(10 * scale) or 4)
+
+
+def _draw_ship(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y: float, scale: float) -> None:
+    """A simple docked-ship silhouette: curved hull, one mast, one sail -
+    distinct enough from the pier itself that a harbor scene reads as
+    "a ship at dock", not just an empty walkway."""
+    hull_w, hull_h = 300 * scale, 90 * scale
+    hull = [(cx - hull_w / 2, base_y - hull_h), (cx + hull_w / 2, base_y - hull_h),
+            (cx + hull_w * 0.38, base_y), (cx - hull_w * 0.38, base_y)]
+    _sketchy_polyline(draw, rng, hull, fill=(70, 70, 75), close=True, width=int(6 * scale) or 3)
+    mast = [(cx, base_y - hull_h), (cx, base_y - hull_h - 220 * scale)]
+    _sketchy_polyline(draw, rng, mast, width=int(6 * scale) or 3)
+    sail = [(cx, base_y - hull_h - 200 * scale), (cx, base_y - hull_h - 40 * scale),
+            (cx + 110 * scale, base_y - hull_h - 60 * scale)]
+    _sketchy_polyline(draw, rng, sail, fill=(235, 232, 222), close=True, width=int(4 * scale) or 3)
+
+
+def _draw_capitol(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, base_y: float, scale: float) -> None:
+    """A columned government building topped with a rounded dome - same
+    column construction as _draw_temple, but a dome (not a triangular
+    pediment) is what makes it read as "seat of power" rather than "ancient
+    ruin", so assassination/political-plot scenes get their own silhouette
+    instead of reusing the temple look."""
+    w, h = 400 * scale, 210 * scale
+    col_w = w / 6
+    for i in range(6):
+        cx_i = cx - w / 2 + col_w * i + col_w / 2
+        col = [(cx_i - col_w * 0.26, base_y), (cx_i - col_w * 0.26, base_y - h),
+               (cx_i + col_w * 0.26, base_y - h), (cx_i + col_w * 0.26, base_y)]
+        _sketchy_polyline(draw, rng, col, fill=(215, 210, 195), width=int(4 * scale) or 3)
+    deck = [(cx - w / 2, base_y - h), (cx + w / 2, base_y - h), (cx + w / 2, base_y - h * 1.06), (cx - w / 2, base_y - h * 1.06)]
+    _sketchy_polyline(draw, rng, deck, fill=(195, 188, 172), close=True, width=int(5 * scale) or 3)
+    dome_r = w * 0.22
+    draw.pieslice([cx - dome_r, base_y - h * 1.06 - dome_r * 1.6, cx + dome_r, base_y - h * 1.06 + dome_r * 0.4],
+                  180, 360, fill=(180, 172, 155), outline=INK, width=int(5 * scale) or 3)
+    draw.line([(cx, base_y - h * 1.06 - dome_r * 1.6), (cx, base_y - h * 1.06 - dome_r * 2.0)], fill=INK, width=int(4 * scale) or 3)
+
+
 _ELEMENT_DRAWERS = {
-    # "indoor" is handled separately by _draw_indoor_scene - a real interior
-    # (wall/floor/window/furniture), not this exterior-props dict, since a
-    # house prop standing on grass under an open sky (what this used to map
-    # to) reads as outside no matter what the setting is named.
+    # "indoor"/"dungeon"/"courtroom" are handled separately by
+    # _draw_indoor_scene - a real interior (wall/floor/window/furniture), not
+    # this exterior-props dict, since a house prop standing on grass under an
+    # open sky (what this used to map to) reads as outside no matter what
+    # the setting is named.
     "snow": [_draw_house, _draw_tree],
     "mountain": [_draw_mountain, _draw_tree],
     "ruins": [_draw_ruin],
     "forest": [_draw_tree, _draw_tree, _draw_house],
     "desert": [_draw_ruin],
     "water": [_draw_wave],
+    "harbor": [_draw_dock, _draw_ship],
     "palace": [_draw_castle],
     "ancient": [_draw_temple],
     "city": [_draw_city_building, _draw_city_building],
+    "government": [_draw_capitol],
     # mythic scenes already get floating sky clouds from the general
     # cloud-adding logic below (any non-indoor setting) - _draw_cloud takes
     # an independent (cx, cy) sky position, not the base_y ground-anchor
@@ -572,8 +677,13 @@ def draw_character(draw: ImageDraw.ImageDraw, rng: random.Random, cx: float, gro
     # legs, like a person shifting weight in place rather than a frozen
     # mannequin - the sprite-frame loop in generate_scene_clip renders this
     # across a handful of phases so the character actually moves.
-    leg_swing = math.sin(phase) * 14 * scale
-    arm_swing = math.sin(phase + math.pi) * 10 * scale
+    # Amplitudes roughly doubled from the original 14/10px - at the original
+    # size, combined with HUMAN_SCALE's 0.5 reduction, the idle sway was only
+    # a few pixels on screen and read as "barely moving" (a reported
+    # complaint against real output), not as a character actually shifting
+    # weight.
+    leg_swing = math.sin(phase) * 26 * scale
+    arm_swing = math.sin(phase + math.pi) * 20 * scale
 
     # legs
     _sketchy_polyline(draw, rng, [(cx - 52 * scale, hip_y), (cx - 60 * scale + leg_swing, ground_y)], width=int(20 * scale) or 4)
@@ -702,6 +812,8 @@ _GROUND_TEXTURES = {
     "desert": _texture_sand,
     "mountain": _texture_rock,
     "ruins": _texture_rock,
+    "harbor": _texture_concrete,   # doubles as plank lines
+    "government": _texture_concrete,
     "default": _texture_grass,
 }
 
@@ -1123,13 +1235,23 @@ def _draw_water_scene(draw, rng, w, h):
 # --- indoor scenes: a real interior, not a house prop standing outside -----
 
 _WALL_COLORS = [(224, 210, 184), (210, 200, 188), (198, 206, 200), (216, 198, 176)]
+_DUNGEON_WALL_COLORS = [(90, 86, 82), (82, 79, 76), (96, 92, 90)]
+_COURTROOM_WALL_COLORS = [(124, 92, 62), (112, 84, 58), (130, 100, 70)]
 
 
-def _draw_window(draw, rng, cx, cy, win_w, win_h, line_w):
+def _draw_window(draw, rng, cx, cy, win_w, win_h, line_w, barred=False):
     draw.rectangle([cx - win_w / 2, cy - win_h / 2, cx + win_w / 2, cy + win_h / 2],
                     fill=(197, 224, 233), outline=INK, width=line_w)
-    draw.line([(cx, cy - win_h / 2), (cx, cy + win_h / 2)], fill=INK, width=max(2, line_w - 1))
-    draw.line([(cx - win_w / 2, cy), (cx + win_w / 2, cy)], fill=INK, width=max(2, line_w - 1))
+    if barred:
+        # Vertical bars instead of a plain sash cross - the one detail that
+        # makes a small high window read as a cell, not just a dim office.
+        bar_w = max(2, line_w - 1)
+        for i in range(1, 4):
+            bx = cx - win_w / 2 + win_w * i / 4
+            draw.line([(bx, cy - win_h / 2), (bx, cy + win_h / 2)], fill=INK, width=bar_w)
+    else:
+        draw.line([(cx, cy - win_h / 2), (cx, cy + win_h / 2)], fill=INK, width=max(2, line_w - 1))
+        draw.line([(cx - win_w / 2, cy), (cx + win_w / 2, cy)], fill=INK, width=max(2, line_w - 1))
 
 
 def _draw_table(draw, rng, cx, floor_y, scale):
@@ -1167,19 +1289,40 @@ def _draw_bookshelf(draw, rng, cx, floor_y, scale):
             draw.rectangle([bx, y - bh - 4 * scale, bx + bw, y - 4 * scale], fill=color, outline=INK, width=2)
 
 
-_INDOOR_FURNITURE = [_draw_table, _draw_crate, _draw_bookshelf]
+def _draw_bench_platform(draw, rng, cx, floor_y, scale):
+    """A raised judge's bench/dais with a step up to it - courtroom
+    furniture, distinct from the table/crate/bookshelf props used for a
+    plain office/lab so a trial doesn't render as an ordinary indoor scene."""
+    w_, h_ = 260 * scale, 90 * scale
+    lw = max(3, round(4 * scale))
+    draw.rectangle([cx - w_ / 2, floor_y - h_, cx + w_ / 2, floor_y], fill=(90, 65, 45), outline=INK, width=lw)
+    step_w, step_h = w_ * 1.15, 22 * scale
+    draw.rectangle([cx - step_w / 2, floor_y - h_ - step_h, cx + step_w / 2, floor_y - h_],
+                    fill=(105, 78, 55), outline=INK, width=lw)
 
 
-def _draw_indoor_scene(draw, rng, w, h, base_scale) -> int:
+_INTERIOR_VARIANTS = {
+    "indoor": {"walls": _WALL_COLORS, "furniture": [_draw_table, _draw_crate, _draw_bookshelf], "barred": False},
+    "dungeon": {"walls": _DUNGEON_WALL_COLORS, "furniture": [_draw_crate], "barred": True},
+    "courtroom": {"walls": _COURTROOM_WALL_COLORS, "furniture": [_draw_bench_platform], "barred": False},
+}
+
+
+def _draw_indoor_scene(draw, rng, w, h, base_scale, variant: str = "indoor") -> int:
     """A real interior (wall, floor, window, a piece of furniture) instead of
     the old behaviour, where the "indoor" setting just drew a house sitting
     on grass under an open sky - a house prop is still an EXTERIOR shot no
     matter what the setting is called, which is exactly why every scene used
     to read as outside. Returns floor_y so the caller grounds the character
-    on the same line."""
+    on the same line.
+
+    `variant` picks wall palette/furniture/window style so "indoor" (office/
+    lab), "dungeon" (prison cell) and "courtroom" (trial) - all technically
+    interiors - don't render as the same beige room; see _INTERIOR_VARIANTS."""
+    spec = _INTERIOR_VARIANTS.get(variant, _INTERIOR_VARIANTS["indoor"])
     floor_y = round(h * 0.82)
-    draw.rectangle([0, 0, w, floor_y], fill=rng.choice(_WALL_COLORS))
-    draw.rectangle([0, floor_y, w, h], fill=GROUND_COLORS["indoor"])
+    draw.rectangle([0, 0, w, floor_y], fill=rng.choice(spec["walls"]))
+    draw.rectangle([0, floor_y, w, h], fill=GROUND_COLORS.get(variant, GROUND_COLORS["indoor"]))
     draw.line([(0, floor_y), (w, floor_y)], fill=INK, width=3)
     draw.rectangle([0, floor_y - round(10 * base_scale), w, floor_y], fill=(180, 165, 140))
     for i in range(1, 4):
@@ -1189,9 +1332,9 @@ def _draw_indoor_scene(draw, rng, w, h, base_scale) -> int:
     win_w, win_h = 210 * base_scale, 260 * base_scale
     win_cx = w * rng.uniform(0.12, 0.22)
     win_cy = floor_y * rng.uniform(0.30, 0.42)
-    _draw_window(draw, rng, win_cx, win_cy, win_w, win_h, max(3, round(6 * base_scale)))
+    _draw_window(draw, rng, win_cx, win_cy, win_w, win_h, max(3, round(6 * base_scale)), barred=spec["barred"])
 
-    furniture = rng.choice(_INDOOR_FURNITURE)
+    furniture = rng.choice(spec["furniture"])
     furniture(draw, rng, w * rng.uniform(0.74, 0.88), floor_y, base_scale * rng.uniform(0.9, 1.2))
     return floor_y
 
@@ -1380,7 +1523,7 @@ def _draw_temple(draw, rng, w, h, ground_y, ground_color, base_scale):
     pass  # placeholder
 
 
-def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[str]):
+def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[str], forced_setting: Optional[str] = None):
     """Draws the background (everything except the focal subject) onto a fresh
     image and returns (background, paint_subject, motion, composition_info).
 
@@ -1392,6 +1535,10 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
       bob gently in place.
     - composition_info: dict with 'layout', 'camera_angle', 'subject_position',
       'character_archetype', 'weapon' for downstream animation decisions.
+    - forced_setting overrides the scene's own keyword-matched setting - used
+      by generate_all/generate_all_clips to apply the whole-video anti-repeat
+      pass (see _resolve_setting) without recomputing it here and risking a
+      different random.Random draw than the one already made for the video.
     """
     w, h = config.video.resolution
     base = Image.new("RGB", (w, h), SKY)
@@ -1449,14 +1596,14 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
         motion = (26 * base_scale, 30 * base_scale, 7.0, 3.7)
         return base, paint, motion, composition_info
 
-    setting = _setting_for_scene(scene)
+    setting = forced_setting if forced_setting is not None else _setting_for_scene(scene)
     element_scale = base_scale
 
-    if setting == "indoor":
+    if setting in _INTERIOR_VARIANTS:
         # A real interior, not a house prop standing outside under an open
         # sky - see _draw_indoor_scene's docstring for why the old behaviour
         # meant "indoor" scenes still read as outdoor shots.
-        ground_y = _draw_indoor_scene(draw, rng, w, h, base_scale)
+        ground_y = _draw_indoor_scene(draw, rng, w, h, base_scale, variant=setting)
     else:
         ground_y = round(h * 0.82)
         ground_color = GROUND_COLORS.get(setting, GROUND_COLORS["default"])
@@ -1523,7 +1670,15 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
                 drawer(draw, rng, x, ground_y, element_scale * rng.uniform(0.9, 1.3))
         
         _draw_horizon_hills(draw, rng, w, ground_y, ground_color)
-        draw.rectangle([0, ground_y, w, h], fill=GROUND_COLORS.get(setting, GROUND_COLORS["default"]))
+        # Small per-scene tint jitter on the ground color - otherwise two
+        # consecutive scenes with the same setting (e.g. two "city" scenes in
+        # a row) are identical besides prop placement, which is exactly the
+        # "same background" complaint even when the setting variety fix
+        # above doesn't kick in (a real, non-overloaded match repeating
+        # legitimately, e.g. two genuine desert scenes).
+        jitter = rng.randint(-14, 14)
+        jittered_ground = tuple(max(0, min(255, c + jitter)) for c in ground_color)
+        draw.rectangle([0, ground_y, w, h], fill=jittered_ground)
         draw.line([(0, ground_y), (w, ground_y)], fill=INK, width=3)
         texture = _GROUND_TEXTURES.get(setting)
         if texture:
@@ -1640,17 +1795,35 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
             composition_info["subject_position"] = (cx, cy)
             draw_character(d, rng, cx, cy, character_scale, outfit, headwear, mood, pose, phase, weapon=archetype_weapon)
 
-    motion = (0.0, 12 * base_scale, 0.0, 2.6)  # gentle in-place bob
+    motion = (0.0, 24 * base_scale, 0.0, 2.6)  # in-place bob - doubled from 12px, which barely registered on screen
     return base, paint, motion, composition_info
+
+
+def _resolve_settings_for_video(scenes: List[Scene]) -> List[str]:
+    """Precomputes each scene's setting for a whole video in one pass so the
+    anti-repeat rule in _resolve_setting can see the *previous* scene's
+    already-resolved setting - not just its own keyword match - without
+    changing generate_scene_image/generate_scene_clip's return type (they're
+    called independently per scene, so this can't live inside them). Uses its
+    own throwaway random.Random(index) per scene, entirely separate from the
+    rng each scene's actual drawing uses, so it doesn't perturb any existing
+    per-scene rendering determinism."""
+    settings = []
+    prev: Optional[str] = None
+    for i, scene in enumerate(scenes):
+        setting = _resolve_setting(scene, prev, random.Random(i))
+        settings.append(setting)
+        prev = setting
+    return settings
 
 
 def generate_scene_image(
     scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
-    subject_fallback: Optional[str] = None,
+    subject_fallback: Optional[str] = None, forced_setting: Optional[str] = None,
 ) -> Path:
     rng = random.Random(index)
     subject = _resolve_subject(scene, index, subject_fallback)
-    base, paint, _motion, _comp = _compose_scene(rng, scene, config, subject)
+    base, paint, _motion, _comp = _compose_scene(rng, scene, config, subject, forced_setting=forced_setting)
     paint(ImageDraw.Draw(base))
     out_path = work_dir / f"scene_{index:02d}_illustration.jpg"
     base.save(out_path, quality=90)
@@ -1688,7 +1861,10 @@ def _draw_bubbles(draw: ImageDraw.ImageDraw, bubbles: list, t: float, h: int) ->
         draw.ellipse([b["x"] - r, y - r, b["x"] + r, y + r], outline=(215, 238, 248), width=3)
 
 
-def _build_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int, bubbles: bool = False) -> Path:
+def _build_sprite_frames(
+    rng: random.Random, paint, w: int, h: int, work_dir: Path, index: int,
+    bubbles: bool = False, loop_frames: int = _LOOP_FRAMES,
+) -> Path:
     """Writes the looping RGBA frame sequence to disk and returns its
     printf-style pattern path. Fed straight into ffmpeg's image2 demuxer
     (with -stream_loop) rather than pre-encoded to a video, since VP9's
@@ -1700,14 +1876,20 @@ def _build_sprite_frames(rng: random.Random, paint, w: int, h: int, work_dir: Pa
     aquatic creatures (tentacle-sway/fin-wiggle, plus rising bubbles) and the
     land character (idle weight-shift + blink) alike - not just aquatic ones,
     since a rigid static PNG was the single biggest source of "this looks
-    like a slideshow" for every character-driven scene."""
+    like a slideshow" for every character-driven scene.
+
+    `loop_frames` defaults to the module-wide _LOOP_FRAMES but callers can
+    vary it per scene (see generate_scene_clip) so every scene in a video
+    doesn't repeat the exact same 2-second cycle - a fixed loop length across
+    a whole ~7 minute video is itself a source of monotony independent of
+    the motion's amplitude."""
     frame_dir = work_dir / f"scene_{index:02d}_frames"
     frame_dir.mkdir(exist_ok=True)
     bubble_specs = _rising_bubbles(rng, w, h) if bubbles else None
 
-    for i in range(_LOOP_FRAMES):
+    for i in range(loop_frames):
         t = i / _LOOP_FPS
-        phase = 2 * math.pi * i / _LOOP_FRAMES
+        phase = 2 * math.pi * i / loop_frames
         frame = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         d = ImageDraw.Draw(frame)
         if bubble_specs is not None:
@@ -1731,7 +1913,7 @@ def _is_dramatic_beat(scene: Scene) -> bool:
 
 def generate_scene_clip(
     scene: Scene, index: int, config: PipelineConfig, work_dir: Path,
-    duration: float, subject_fallback: Optional[str] = None,
+    duration: float, subject_fallback: Optional[str] = None, forced_setting: Optional[str] = None,
 ) -> Path:
     """Renders an animated MP4 for one scene: a slow Ken Burns pan/zoom across
     the background (every scene, subject or not - a scene with no subject
@@ -1748,7 +1930,7 @@ def generate_scene_clip(
     rng = random.Random(index)
     w, h = config.video.resolution
     subject = _resolve_subject(scene, index, subject_fallback)
-    base, paint, (ax, ay, px, py), _comp = _compose_scene(rng, scene, config, subject)
+    base, paint, (ax, ay, px, py), _comp = _compose_scene(rng, scene, config, subject, forced_setting=forced_setting)
 
     bg_path = work_dir / f"scene_{index:02d}_bg.jpg"
     base.save(bg_path, quality=90)
@@ -1757,7 +1939,12 @@ def generate_scene_clip(
         # Aquatic creatures have phase-varying paint() (tentacle-sway/fin-wiggle
         # plus rising bubbles), so they render as a looping animated frame
         # sequence rather than one frozen pose.
-        frame_pattern = _build_sprite_frames(rng, paint, w, h, work_dir, index, bubbles=True)
+        # Vary the loop length +/-40% per scene (still seeded, so
+        # deterministic) - otherwise every scene in the whole video repeats
+        # the identical 2-second cycle, which reads as a metronome over a
+        # long scene and as repetitive from scene to scene.
+        loop_frames = max(4, round(_LOOP_FRAMES * rng.uniform(0.8, 1.4)))
+        frame_pattern = _build_sprite_frames(rng, paint, w, h, work_dir, index, bubbles=True, loop_frames=loop_frames)
         sprite_input = ["-framerate", str(_LOOP_FPS), "-stream_loop", "-1", "-i", str(frame_pattern)]
     else:
         # Land characters (including subject=None for generic narrator) use a
@@ -1836,8 +2023,9 @@ def generate_all(scenes: List[Scene], config: PipelineConfig, work_dir: Path, ti
     # that name it - see _dominant_subject's docstring for why a title/
     # scene-fraction bar is required rather than any keyword hit at all.
     fallback = _dominant_subject(scenes, extra_text=title)
+    settings = _resolve_settings_for_video(scenes)
     return [
-        generate_scene_image(scene, i, config, work_dir, subject_fallback=fallback)
+        generate_scene_image(scene, i, config, work_dir, subject_fallback=fallback, forced_setting=settings[i])
         for i, scene in enumerate(scenes)
     ]
 
@@ -1848,7 +2036,8 @@ def generate_all_clips(
     """Animated per-scene clips (one MP4 each), sized to each scene's audio
     duration. Same subject/fallback logic as generate_all."""
     fallback = _dominant_subject(scenes, extra_text=title)
+    settings = _resolve_settings_for_video(scenes)
     return [
-        generate_scene_clip(scene, i, config, work_dir, dur, subject_fallback=fallback)
+        generate_scene_clip(scene, i, config, work_dir, dur, subject_fallback=fallback, forced_setting=settings[i])
         for i, (scene, dur) in enumerate(zip(scenes, durations))
     ]
