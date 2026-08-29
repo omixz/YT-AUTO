@@ -1,7 +1,9 @@
 """Typed configuration loading: config/channel.yaml plus .env secrets."""
 from __future__ import annotations
 
+import logging
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -11,7 +13,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 ROOT = Path(__file__).resolve().parent.parent
+
+_SENSITIVE_PATTERNS = [
+    (re.compile(r'key["\']?\s*[:=]\s*["\']?[a-zA-Z0-9_-]{10,}'), 'key=<REDACTED>'),
+    (re.compile(r'api[_-]?key["\']?\s*[:=]\s*["\']?[a-zA-Z0-9_-]{10,}'), 'api_key=<REDACTED>'),
+    (re.compile(r'secret["\']?\s*[:=]\s*["\']?[a-zA-Z0-9_-]{10,}'), 'secret=<REDACTED>'),
+    (re.compile(r'token["\']?\s*[:=]\s*["\']?[a-zA-Z0-9_-]{10,}'), 'token=<REDACTED>'),
+    (re.compile(r'password["\']?\s*[:=]\s*["\']?[^\s"\']+'), 'password=<REDACTED>'),
+    (re.compile(r'authorization["\']?\s*[:=]\s*["\']?[\w\-]+'), 'authorization=<REDACTED>'),
+]
+
+def sanitize_error_message(message: str) -> str:
+    for pattern, replacement in _SENSITIVE_PATTERNS:
+        message = pattern.sub(replacement, message, flags=re.IGNORECASE)
+    return message
 
 
 @dataclass
@@ -127,25 +145,16 @@ class Secrets:
     youtube_client_secret_file: str = "client_secret.json"
     youtube_token_file: str = "token.json"
 
-    # google_tts.py (voice.provider == "google" in channel.yaml) - Neural2
-    # voices, 1M characters/month free. tts.py falls back to edge-tts
-    # automatically if this is unset, so leaving it blank never breaks a run.
     google_tts_api_key: Optional[str] = None
 
-    # buffer_publisher.py's fallback path (only used when the direct YouTube
-    # OAuth upload fails, e.g. an expired/revoked token) - posts through
-    # Buffer's connected YouTube channel instead. See media_host.py for the
-    # S3-compatible bucket Buffer's API requires (it needs a public URL, not
-    # a file upload) and buffer_publisher.py's module docstring for why this
-    # is a deliberately best-effort fallback, not a primary upload path.
     buffer_api_key: Optional[str] = None
     buffer_youtube_channel_id: Optional[str] = None
     media_host_bucket: Optional[str] = None
     media_host_access_key: Optional[str] = None
     media_host_secret_key: Optional[str] = None
-    media_host_endpoint_url: Optional[str] = None  # blank/None for real AWS S3
+    media_host_endpoint_url: Optional[str] = None
     media_host_region: str = "auto"
-    media_host_public_base_url: Optional[str] = None  # e.g. https://media.example.com
+    media_host_public_base_url: Optional[str] = None
 
     @classmethod
     def from_env(cls) -> "Secrets":
@@ -164,6 +173,18 @@ class Secrets:
             media_host_region=os.getenv("MEDIA_HOST_REGION", "auto"),
             media_host_public_base_url=os.getenv("MEDIA_HOST_PUBLIC_BASE_URL"),
         )
+
+    def validate(self) -> List[str]:
+        errors = []
+        if not self.gemini_api_key:
+            errors.append("GEMINI_API_KEY not set - required for script generation")
+        if not self.youtube_client_secret_file:
+            errors.append("YOUTUBE_CLIENT_SECRET_FILE not set")
+        if not self.youtube_token_file:
+            errors.append("YOUTUBE_TOKEN_FILE not set")
+        if not self.pexels_api_key:
+            errors.append("PEXELS_API_KEY not set - required for visual assets")
+        return errors
 
 
 @dataclass
@@ -213,3 +234,14 @@ class PipelineConfig:
             growth=GrowthConfig(**raw.get("growth", {})),
             secrets=Secrets.from_env(),
         )
+
+    def validate(self) -> List[str]:
+        errors = []
+        errors.extend(self.secrets.validate())
+        if not self.channel.name:
+            errors.append("channel.name not set")
+        if not self.niches:
+            errors.append("At least one niche must be configured")
+        if not self.video.formats:
+            errors.append("At least one video format must be enabled")
+        return errors

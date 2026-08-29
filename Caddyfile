@@ -1,0 +1,71 @@
+# Caddyfile for ClipAI / Peakcut
+# Replace your-domain.com with your actual domain or DuckDNS hostname
+# Get a free hostname at https://duckdns.org
+
+{$DOMAIN:your-domain.com} {
+    # Automatic HTTPS via Let's Encrypt
+    # Ensure DNS A record points to this server's IP
+
+    # Security headers (additive to app headers)
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options "DENY"
+        # Prevent MIME sniffing
+        X-Content-Type-Options "nosniff"
+        # XSS protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Permissions policy
+        Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+        # Remove server identification
+        -Server
+    }
+
+    # Rate limiting (Caddy level - additional protection)
+    # rate_limit {
+    #     zone api 10r/s
+    #     key {remote_host}
+    # }
+
+    # Proxy to app
+    reverse_proxy app:8000 {
+        # Timeouts for video uploads
+        transport http {
+            response_header_timeout 300s
+        }
+    }
+
+    # Static files for job results (optional - serve directly)
+    @jobs path /jobs/*
+    handle @jobs {
+        root * /app
+        file_server
+    }
+
+    # Health check endpoint (no auth, no rate limit)
+    @health path /healthz
+    handle @health {
+        reverse_proxy app:8000
+    }
+
+    # API docs (only in development)
+    # @docs path /api/docs*
+    # handle @docs {
+    #     reverse_proxy app:8000
+    # }
+}
+
+# Optional: Admin subdomain with IP restriction
+# admin.your-domain.com {
+#     # Only allow from specific IPs
+#     @admin {
+#         remote_ip 1.2.3.4/32  # Your office IP
+#     }
+#     handle @admin {
+#         reverse_proxy app:8000
+#     }
+#     respond "Forbidden" 403
+# }

@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Main API service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+    volumes:
+      - clipai_jobs:/app/jobs
+      - clipai_logs:/app/logs
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Reverse proxy with auto HTTPS (Caddy)
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    environment:
+      - DOMAIN=${DOMAIN:-your-domain.com}
+
+  # Optional: Redis for distributed rate limiting and queue
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: Local worker for hybrid cloud-local processing
+  # Uncomment and run on local hardware with: docker-compose -f docker-compose.yml up local-worker
+  # local-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: local-worker
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   environment:
+  #     - CLOUD_URL=https://your-domain.com
+  #     - WORKER_API_KEY=${LOCAL_WORKER_API_KEY}
+  #   volumes:
+  #     - clipai_jobs:/app/jobs
+  #     - clipai_voices:/app/voices
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 4G
+  #         cpus: '4.0'
+  #   # Run directly on host for better performance (no container limits):
+  #   # python clipai_local_worker.py --cloud-url https://your-domain.com --api-key YOUR_KEY
+
+volumes:
+  clipai_jobs:
+  clipai_logs:
+  clipai_voices:
+  caddy_data:
+  caddy_config:
+  redis_data:

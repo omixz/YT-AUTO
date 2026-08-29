@@ -1,0 +1,11 @@
+with open(r'C:\Users\Omarn\OneDrive\Documents\Default Project\YT-AUTO\youtube_automation\tts.py', 'rb') as f:
+    content = f.read()
+idx = content.find(b'def synthesize_script')
+pos = content.find(b'"""', idx)
+print('First """ after def:', pos)
+pos = content.find(b'"""', pos + 3)
+print('Second """ (end of docstring):', pos)
+pos = content.find(b'"""', pos + 3)
+print('Third """ (extra):', pos)
+pos = content.find(b'"""', pos + 3)
+print('Fourth """ (should be end of file or next):', pos)

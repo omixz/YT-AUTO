@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import List, Optional
 
@@ -9,6 +10,28 @@ import yaml
 
 from .config import ROOT, PipelineConfig
 from .script_writer import brainstorm_topics
+
+_MAX_TOPIC_LENGTH = 1000
+_ALLOWED_TOPIC_PATTERN = re.compile(r'^[\w\s\-.,!?\'"():;\n\r\t@p#%&/\[\]]+$')
+
+
+def _validate_niche_key(niche_key: str) -> None:
+    if not niche_key:
+        raise ValueError("niche_key cannot be empty")
+    if not re.match(r'^[a-zA-Z0-9_-]+$', niche_key):
+        raise ValueError(f"Invalid niche_key format: contains disallowed characters")
+    if '..' in niche_key or niche_key.startswith('/') or niche_key.startswith('\\'):
+        raise ValueError("niche_key contains path traversal characters")
+
+
+def _validate_topic(topic: str) -> str:
+    if not topic:
+        raise ValueError("Topic cannot be empty")
+    if len(topic) > _MAX_TOPIC_LENGTH:
+        raise ValueError(f"Topic exceeds maximum length of {_MAX_TOPIC_LENGTH} characters")
+    if not _ALLOWED_TOPIC_PATTERN.match(topic):
+        raise ValueError("Topic contains disallowed characters")
+    return topic.strip()
 
 
 def _load_history(path: Path) -> List[str]:
@@ -44,8 +67,10 @@ def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] =
     Uses intelligent selection: trend detection, seasonal awareness, competitor
     gap analysis, and topic freshness to pick the best candidate from the queue.
     """
+    _validate_niche_key(niche_key)
+    
     if override:
-        return override
+        return _validate_topic(override)
 
     queue_path = ROOT / config.topics.queue_file.format(niche=niche_key)
     history_path = ROOT / config.topics.history_file.format(niche=niche_key)

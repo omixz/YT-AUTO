@@ -59,7 +59,7 @@ _BREATH_PATTERNS = [
 ]
 
 # Scene-role prosody profiles
-# pitch uses semitones (st) — edge-tts expects semitones, not Hz
+# pitch uses semitones (st) -- edge-tts expects semitones, not Hz
 _ROLE_PROSODY = {
     "hook":     {"rate": "+15%", "pitch": "+5st", "volume": "+3dB"},    # urgent, engaging
     "build":    {"rate": "+5%",  "pitch": "+2st", "volume": "+0dB"},   # steady
@@ -103,11 +103,28 @@ def _approx_cues_from_text(text: str, audio_path: Path) -> List[WordCue]:
     return cues
 
 
+def _escape_xml(text: str) -> str:
+    """Escape text for safe embedding in XML/SSML."""
+    return (
+        text.replace("&", "&")
+            .replace("<", "<")
+            .replace(">", ">")
+            .replace('"', '"')
+            .replace("'", "&apos;")
+    )
+
+
 def _apply_expressiveness(text: str, role: str) -> str:
-    """Convert plain text with markup to SSML with prosody and emphasis."""
+    """Convert plain text with markup to plain text with emphasis/break markers.
+    
+    edge-tts does NOT support SSML - it speaks XML tags literally.
+    This function returns plain text with emphasis/break markers preserved
+    for potential post-processing, but the actual prosody is applied via
+    edge_tts.Communicate() native parameters (rate, pitch, volume).
+    """
     prosody = _ROLE_PROSODY.get(role, _ROLE_PROSODY["build"])
     
-    # Apply emphasis markup
+    # Apply emphasis markup - keep markers for potential post-processing
     for pattern, repl in _EMPHASIS_PATTERNS:
         text = re.sub(pattern, repl, text)
     
@@ -115,25 +132,33 @@ def _apply_expressiveness(text: str, role: str) -> str:
     for pattern, repl in _BREATH_PATTERNS:
         text = re.sub(pattern, repl, text)
     
-    # Wrap in prosody tag
-    ssml = (
-        f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">'
-        f'<prosody rate="{prosody["rate"]}" pitch="{prosody["pitch"]}" volume="{prosody["volume"]}">'
-        f'{text}'
-        f'</prosody></speak>'
-    )
-    return ssml
+    # Return plain text (edge-tts doesn't support SSML)
+    # Prosody is applied via Communicate() parameters
+    return text
+
+
+def _get_prosody_params(role: str) -> dict:
+    """Get prosody parameters for edge_tts.Communicate()."""
+    return _ROLE_PROSODY.get(role, _ROLE_PROSODY["build"])
 
 
 async def _synthesize_one(text: str, voice: VoiceConfig, out_path: Path, role: str = "build") -> List[WordCue]:
-    # Apply expressiveness markup
-    ssml_text = _apply_expressiveness(text, role)
+    # Apply expressiveness markup (plain text with markers)
+    processed_text = _apply_expressiveness(text, role)
     
-    # Try SSML first, fallback to plain text if it fails
-    for attempt_ssml in (True, False):
+    # Get prosody parameters for edge-tts
+    prosody = _get_prosody_params(role)
+    
+    # Try with prosody parameters first, fallback to defaults if it fails
+    for attempt in range(2):
         try:
             communicate = edge_tts.Communicate(
-                ssml_text if attempt_ssml else text, voice.name, rate=voice.rate, pitch=voice.pitch, boundary="WordBoundary"
+                processed_text,
+                voice.name,
+                rate=prosody["rate"] if attempt == 0 else voice.rate,
+                pitch=prosody["pitch"] if attempt == 0 else voice.pitch,
+                volume=prosody["volume"] if attempt == 0 else voice.volume,
+                boundary="WordBoundary"
             )
             cues: List[WordCue] = []
             with open(out_path, "wb") as f:
@@ -155,10 +180,10 @@ async def _synthesize_one(text: str, voice: VoiceConfig, out_path: Path, role: s
             logger.warning(f"TTS generated audio but no word boundaries for scene role={role}; creating approximate cues")
             return _approx_cues_from_text(text, out_path)
         except edge_tts.exceptions.NoAudioReceived as exc:
-            if attempt_ssml:
-                logger.warning(f"SSML synthesis failed, retrying with plain text: {exc}")
+            if attempt == 0:
+                logger.warning(f"TTS with prosody failed, retrying with defaults: {exc}")
                 continue
-            raise RuntimeError(f"edge-tts returned no audio after SSML and plain text attempts: {exc}") from exc
+            raise RuntimeError(f"edge-tts returned no audio after prosody and default attempts: {exc}") from exc
     
     raise RuntimeError("unreachable")
 
@@ -187,7 +212,7 @@ def _synthesize_one_google_with_retry(text: str, voice: VoiceConfig, api_key: st
 def _resolve_synthesizer(voice: VoiceConfig, google_api_key: Optional[str]):
     """Picks which provider actually synthesizes each scene. Falls back to
     edge-tts (never hard-fails a run) if voice.provider == "google" but no
-    key is configured yet - see config.py's Secrets.google_tts_api_key."""
+    key is configured yet - see config.py Secrets.google_tts_api_key."""
     if voice.provider == "google":
         if google_api_key:
             return lambda text, out_path, role="build": _synthesize_one_google_with_retry(text, voice, google_api_key, out_path)
@@ -211,7 +236,7 @@ def _probe_duration(path: Path) -> float:
 
 def concat_audio(paths: List[Path], out_path: Path) -> Path:
     """Decode-and-reconcatenate (rather than stream-copy concat) so per-file mp3
-    encoder padding doesn't accumulate into audible drift across segments."""
+    encoder padding does not accumulate into audible drift across segments."""
     inputs = []
     for p in paths:
         inputs += ["-i", str(p)]
@@ -231,9 +256,7 @@ def concat_audio(paths: List[Path], out_path: Path) -> Path:
 def synthesize_script(
     script: Script, voice: VoiceConfig, work_dir: Path, google_api_key: Optional[str] = None,
 ) -> Tuple[List[SceneAudio], Path]:
-    """Synthesize every scene's narration, returning per-scene audio and a
-    single concatenated narration track for the final mix."""
-    work_dir.mkdir(parents=True, exist_ok=True)
+    """Synthesize narration for the scene."""
     scenes: List[SceneAudio] = []
     synthesize_one = _resolve_synthesizer(voice, google_api_key)
 
@@ -245,19 +268,6 @@ def synthesize_script(
 
     full_narration = concat_audio([s.audio_path for s in scenes], work_dir / "narration_full.mp3")
     return scenes, full_narration
-
-
-def silent_audio(duration: float, out_path: Path) -> Path:
-    subprocess.run(
-        [
-            "ffmpeg", "-y", "-f", "lavfi",
-            "-i", "anullsrc=channel_layout=mono:sample_rate=24000",
-            "-t", f"{duration:.3f}", str(out_path),
-        ],
-        check=True, capture_output=True,
-    )
-    return out_path
-
 
 def silent_audio(duration: float, out_path: Path) -> Path:
     subprocess.run(

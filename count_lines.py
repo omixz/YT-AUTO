@@ -1,0 +1,10 @@
+with open(r'C:\Users\Omarn\OneDrive\Documents\Default Project\YT-AUTO\youtube_automation\tts.py', 'rb') as f:
+    content = f.read()
+lines_crlf = content.split(b'\r\n')
+lines_lf = content.split(b'\n')
+print('split(b\"\\r\\n\"):', len(content.split(b'\r\n')))
+print('split(b\"\\n\"):', len(content.split(b'\n')))
+print('splitlines():', len(content.splitlines()))
+print('CRLF count:', content.count(b'\r\n'))
+print('LF count:', content.count(b'\n'))
+print('CR count:', content.count(b'\r'))

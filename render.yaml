@@ -1,0 +1,82 @@
+# render.yaml for ClipAI / Peakcut deployment on Render.com
+
+services:
+  # Main web service
+  - type: web
+    name: clipai-app
+    runtime: docker
+    plan: free  # or starter/standard for more resources
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: SITE_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID
+        sync: false
+      - key: STRIPE_PRICE_ID_PLUS
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: ADSENSE_PUBLISHER_ID
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: SESSION_SECRET_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: CONTACT_EMAIL
+        sync: false
+      - key: FREE_LIMIT
+        value: "5"
+      - key: MAX_UPLOAD_MB
+        value: "300"
+      - key: WHISPER_MODEL
+        value: "tiny"
+      - key: WHISPER_MAX_MINUTES_PER_MONTH
+        value: "10000"
+      - key: GOOGLE_TRANSLATE_MAX_CHARS_PER_MONTH
+        value: "5000000"
+      - key: PIPER_TTS_MAX_CHARS_PER_MONTH
+        value: "1000000"
+      - key: STRIPE_MAX_WEBHOOKS_PER_HOUR
+        value: "100"
+      - key: COOKIE_SECURE
+        value: "true"
+    # Health check path
+    healthCheckPath: /healthz
+    # Auto-deploy on push to main
+    autoDeploy: true
+    # Disk for job persistence (paid plan)
+    # disk:
+    #   name: clipai-jobs
+    #   mountPath: /app/jobs
+    #   sizeGB: 10
+
+  # Redis for distributed queue (optional - paid plan)
+  # - type: redis
+  #   name: clipai-redis
+  #   plan: free
+  #   ipAllowList: []
+
+# Optional: Background worker for async processing
+# - type: worker
+#   name: clipai-worker
+#   runtime: docker
+#   dockerfilePath: ./Dockerfile
+#   dockerContext: .
+#   envVars:
+#     - key: ENVIRONMENT
+#       value: production
+#   # Worker processes jobs from queue
+#   startCommand: python clipai_worker.py
