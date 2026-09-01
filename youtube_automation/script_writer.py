@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Tuple
 
 import requests
 
@@ -201,17 +201,37 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
     raise RuntimeError(f"Gemini did not call {function_name}: {data}")
 
 
-def generate_script(topic: str, config: PipelineConfig) -> Script:
-    """Ask Gemini to write a full scene-by-scene script for one video."""
+def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
+    """Returns (target_words, suggested_scenes, max_output_tokens) for a
+    given target duration. Pulled out of generate_script so the actual
+    numbers a given target_seconds produces are directly testable, without
+    needing to mock the whole Gemini call chain."""
     # ~140 spoken words per minute is a safe average for narration pacing.
-    target_words = max(60, round(config.video.target_seconds * 140 / 60))
+    target_words = max(60, round(target_seconds * 140 / 60))
     # ~25 words per scene keeps each one a genuine "1-2 sentences a few seconds
     # long" beat rather than a paragraph - matters a lot once target_words
     # gets into longform territory (a fixed "6-9 scenes" would otherwise force
     # multi-sentence walls of narration per scene, or the model quietly
     # ignoring the length target to keep scenes short).
-    suggested_scenes = max(6, min(60, round(target_words / 25)))
-    max_output_tokens = min(8000, max(2000, round(target_words * 4) + 500))
+    # Both caps below (scene count, output tokens) used to be tuned for a
+    # ~20-minute longform target and worked fine at that length in
+    # production - they were left at their smaller values from when
+    # target_seconds was temporarily reduced to ~7 minutes, which silently
+    # capped every longform video back down regardless of what
+    # config.yaml's target_seconds actually asked for. Raised back up
+    # (with headroom) rather than exactly matching today's target, so this
+    # isn't a recurring one-off fix if target_seconds moves again later.
+    # gemini-3.5-flash's real ceiling is 65,536 output tokens (confirmed
+    # against Google's published model card) - 8000 was never actually
+    # close to that limit, it was just an unrelated conservative guess.
+    suggested_scenes = max(6, min(160, round(target_words / 25)))
+    max_output_tokens = min(32000, max(2000, round(target_words * 4) + 500))
+    return target_words, suggested_scenes, max_output_tokens
+
+
+def generate_script(topic: str, config: PipelineConfig) -> Script:
+    """Ask Gemini to write a full scene-by-scene script for one video."""
+    target_words, suggested_scenes, max_output_tokens = _script_length_params(config.video.target_seconds)
 
     # Shorts use these directly for Pexels stock-footage search; longform
     # uses them too, for procedural_illustration.py's setting/outfit/headwear/

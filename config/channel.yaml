@@ -54,9 +54,15 @@ video:
       weight: 0.0
     longform:
       enabled: true
-      target_seconds: 420        # ~7 min (~25-30 scenes) - within Gemini's single-call output budget
-                                  # (see script_writer.py's max_output_tokens formula); raise further only
-                                  # after confirming a run at this length still holds together end to end.
+      # 1200s = 20 min. Was previously running successfully in production
+      # at this length (real precedent, not just a theoretical budget
+      # calculation) before it got temporarily reduced to ~7 min - see
+      # script_writer.py's generate_script for the scene-count/output-token
+      # caps that were left capping it back down even after this value
+      # changes. gemini-3.5-flash's real output ceiling is 65,536 tokens,
+      # confirmed against Google's published model card - comfortably
+      # covers a 20-minute script.
+      target_seconds: 1200
       weight: 1.0
 
 voice:
