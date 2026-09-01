@@ -67,6 +67,44 @@ def test_human_scale_keeps_character_shorter_than_a_house():
     )
 
 
+def test_character_feet_land_on_the_actual_ground_line(tmp_path):
+    # Regression test for a reported "floating guy" bug: the generic
+    # single-character branch of _compose_scene computed `cy = ground_y -
+    # 180 * element_scale` for composition_info's own subject-position
+    # metadata (a deliberate above-ground reference point for downstream
+    # camera-angle/framing consumers), then passed that SAME `cy` straight
+    # through as draw_character's `ground_y` argument - which is not a
+    # "position" value, it's a hard anchor that draw_character's leg
+    # polylines literally end at. Every character's feet landed ~180px
+    # above the actual drawn ground line, present even in the raw sprite
+    # with no Ken Burns pan/zoom involved (confirmed by measuring an actual
+    # rendered sprite's pixel bounding box before this fix: feet at
+    # y=1395 against an expected ground_y of 1574).
+    #
+    # Checked directly against _compose_scene's own paint() output (not a
+    # full generate_scene_clip render) so this is a fast, precise
+    # regression on the actual bug rather than an approximate visual check.
+    from PIL import ImageChops, ImageDraw
+
+    config = _config()
+    w, h = config.video.resolution
+    scene = Scene(narration="A farmer walked through the fields at dawn.", visual_keywords=["field"], role="build")
+    rng = pi.random.Random(0)
+    base, paint, _motion, _comp = pi._compose_scene(rng, scene, config, subject=None)
+
+    sprite = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    paint(ImageDraw.Draw(sprite))
+    bbox = sprite.getbbox()
+    assert bbox is not None
+
+    expected_ground_y = round(h * 0.82)
+    feet_y = bbox[3]
+    assert abs(feet_y - expected_ground_y) <= 5, (
+        f"character's feet are at y={feet_y}, expected ~{expected_ground_y} (the drawn ground line) - "
+        f"off by {expected_ground_y - feet_y}px, looks like it's floating/sunk"
+    )
+
+
 def test_indoor_scene_renders_a_wall_not_open_sky(tmp_path):
     # Regression test: "indoor" used to draw a house prop standing on grass
     # under an open sky - a literal exterior shot regardless of the setting

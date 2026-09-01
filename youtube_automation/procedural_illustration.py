@@ -1793,7 +1793,23 @@ def _compose_scene(rng, scene: Scene, config: PipelineConfig, subject: Optional[
 
             cy = ground_y - 180 * element_scale
             composition_info["subject_position"] = (cx, cy)
-            draw_character(d, rng, cx, cy, character_scale, outfit, headwear, mood, pose, phase, weapon=archetype_weapon)
+            # draw_character's `ground_y` parameter is a hard anchor - its
+            # leg-polyline endpoints are literally defined as ending AT that
+            # y-coordinate (see draw_character's leg-drawing lines) - it is
+            # not a "center" or "position" value, it's where the feet go.
+            # `cy` above is deliberately offset 180px *above* true ground
+            # for composition_info's own purposes (framing/camera-angle
+            # metadata for downstream consumers), but was then being passed
+            # straight through here as if it WERE ground_y - so every
+            # character's feet landed ~180px above the actual drawn ground
+            # line/horizon, a constant offset present even in the raw
+            # sprite with no Ken Burns pan/zoom involved at all. Confirmed
+            # by measuring an actual rendered sprite's pixel bounding box:
+            # feet at y=1395 against an expected ground_y of 1574 - a 179px
+            # gap, matching 180*element_scale (element_scale=1.0 for this
+            # resolution) almost exactly. This is the reported "floating
+            # guy" bug.
+            draw_character(d, rng, cx, ground_y, character_scale, outfit, headwear, mood, pose, phase, weapon=archetype_weapon)
 
     motion = (0.0, 24 * base_scale, 0.0, 2.6)  # in-place bob - doubled from 12px, which barely registered on screen
     return base, paint, motion, composition_info
@@ -1983,6 +1999,24 @@ def generate_scene_clip(
     subj_x = f"{ax:.1f}*sin(2*PI*t/{px})" if ax and px else "0"
     subj_y = f"{ay:.1f}*sin(2*PI*t/{py})" if ay and py else "0"
 
+    # The sprite/character layer used to be overlaid at native (w,h)
+    # resolution directly onto the Ken-Burns-zoomed-and-cropped background -
+    # but the background's ground line moves within the frame as soon as
+    # zoom>1 (scaling up shifts every feature's position, then the crop
+    # window only shows a portion of that), while the character stayed
+    # fixed at its un-zoomed ground_y with no compensation. Reproduced and
+    # measured directly: for a typical zoom (~1.2) the character's feet
+    # ended up floating 100-300+ px above the visible ground line,
+    # constantly (not just during the bob) - a real, reported "floating
+    # guy" bug, not merely the idle-bob amplitude being too large. Fixed by
+    # running the sprite layer through the exact same scale+crop transform
+    # as the background before overlaying, so both layers share identical
+    # geometry - this also correctly handles crowd/fight scenes (multiple
+    # characters at different x positions) since it's a uniform transform,
+    # not a single anchor-point correction that would only be exact for
+    # one character.
+    transform = f"scale={ow}:{oh},crop=w={w}:h={h}:x='{bg_x}':y='{bg_y}'"
+
     # A quick flash-in from white on the hook (every video's make-or-break
     # first moment) and on shock/twist/fight beats elsewhere - a real,
     # deliberate punctuation mark instead of hoping the character's face
@@ -1992,11 +2026,15 @@ def generate_scene_clip(
     if dramatic:
         flash_d = min(0.18, max(0.06, duration * 0.12))
         final_filter = (
-            f"[bg][1:v]overlay=x={subj_x}:y={subj_y}:eval=frame[ov];"
+            f"[1:v]{transform}[fg];"
+            f"[bg][fg]overlay=x={subj_x}:y={subj_y}:eval=frame[ov];"
             f"[ov]fade=t=in:st=0:d={flash_d:.3f}:color=white[v]"
         )
     else:
-        final_filter = f"[bg][1:v]overlay=x={subj_x}:y={subj_y}:eval=frame[v]"
+        final_filter = (
+            f"[1:v]{transform}[fg];"
+            f"[bg][fg]overlay=x={subj_x}:y={subj_y}:eval=frame[v]"
+        )
 
     out_path = work_dir / f"scene_{index:02d}_anim.mp4"
     cmd = [
