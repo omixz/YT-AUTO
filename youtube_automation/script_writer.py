@@ -402,25 +402,32 @@ def _call_gemini_grounded(prompt: str, config: PipelineConfig, max_output_tokens
 def brainstorm_trending_topics(config: PipelineConfig, existing: List[str], count: int = 5) -> List[str]:
     """Like brainstorm_topics(), but grounded in real current trending stories/
     news via Google Search, rather than Gemini's training-knowledge-only ideas.
-    Two-step: (1) a grounded search call finds what's actually trending right
-    now that fits the niche, (2) that real, current-events context is handed
-    to the existing forced-function-call path to shape it into the same
-    dramatic, hook-forward topic format brainstorm_topics() produces - see
-    that function's prompt for the shared topic-selection criteria.
+    Two-step: (1) a grounded search call finds what's genuinely trending a lot
+    right now (not narrowly filtered to the niche label - see the prompt for
+    why), (2) that real, current-events context is handed to the existing
+    forced-function-call path to shape it into the same dramatic, hook-forward
+    topic format brainstorm_topics() produces - see that function's prompt for
+    the shared topic-selection criteria.
     """
-    search_prompt = f"""Search for what's genuinely trending or newsworthy RIGHT NOW (today) that fits this
-YouTube channel's niche: "{config.channel.niche}" (tone: {config.channel.tone}).
+    search_prompt = f"""Search for what's genuinely trending A LOT right now (today) - broadly, not limited to
+any narrow category. This channel makes {config.channel.tone} narrative videos for {config.channel.audience},
+so lean toward the kind of trending stories that could sustain a substantial, genuinely interesting
+narrative video: major historical anniversaries getting renewed attention, significant rediscoveries
+or new evidence in a known story, a big documentary/book release reviving interest in something, a
+genuinely major current event with real depth and a strong angle - basically the internet's actual big
+talking points right now, not this week's niche noise.
 
-This could be: a story back in the news due to a recent development, an anniversary of a
-historical event getting renewed attention, a documentary/book/show release reviving interest
-in a topic, or a genuinely current event with a strong angle for this niche.
+Do NOT include unimportant or shallow trending stuff - skip minor celebrity gossip, fleeting memes,
+routine sports results, minor product launches, or anything too thin to sustain real depth. Only list
+things substantial enough that a person could stay interested in a full 20-minute deep dive on it.
 
-List up to 8 real, specific, currently-relevant stories or angles you found, each as one line:
-a concrete name/event/story plus a one-sentence note on why it's trending right now. Only include
-things you actually found evidence of being current - do not invent or guess at trends."""
+List up to 10 real, specific, currently-relevant stories or angles you found, each as one line: a
+concrete name/event/story plus a one-sentence note on why it's trending right now and why it has
+enough real substance/depth for a long-form video. Only include things you actually found evidence
+of being current - do not invent or guess at trends."""
 
     try:
-        grounded_findings = _call_gemini_grounded(search_prompt, config, max_output_tokens=1500)
+        grounded_findings = _call_gemini_grounded(search_prompt, config, max_output_tokens=1800)
     except Exception as exc:
         raise RuntimeError(f"Grounded trending search failed: {exc}") from exc
 
@@ -433,21 +440,25 @@ things you actually found evidence of being current - do not invent or guess at 
     }
 
     used_list = "\n".join(f"- {t}" for t in existing) or "(none yet)"
-    prompt = f"""Channel niche: {config.channel.niche}
+    prompt = f"""Channel niche (a loose starting point, not a hard filter): {config.channel.niche}
+Channel tone: {config.channel.tone}
 Audience: {config.channel.audience}
 
 Already-used topics (do not repeat these or close variants):
 {used_list}
 
-Here is a real, current-events research pass on what's genuinely trending right now that could
-fit this channel (from a live web search, not guesswork):
+Here is a real, current-events research pass on what's genuinely trending a lot right now (from a
+live web search, not guesswork) - deliberately not narrowed to the niche above, since the goal is
+whatever's actually a big current talking point, as long as it's substantial enough for a real video:
 
 {grounded_findings}
 
-From this, pick and shape {count} video topics that both (a) genuinely connect to something
-trending/current from the research above, and (b) meet this channel's usual bar - bias hard
-toward genuinely dramatic, high-stakes, shocking, vivid, or emotionally charged stories over
-bland "fun fact" trivia or generic topic labels.
+From this, pick and shape {count} video topics. The topic doesn't need to fit the niche label
+narrowly - what matters is (a) it's genuinely one of the bigger current trending talking points from
+the research above, (b) it's substantial enough to sustain ~20 minutes of genuinely interesting
+narrative content (skip anything too thin, trivial or shallow even if it's technically trending),
+and (c) it meets this channel's usual bar - bias hard toward genuinely dramatic, high-stakes,
+shocking, vivid, or emotionally charged angles over bland "fun fact" trivia or generic topic labels.
 
 TOPIC SELECTION CRITERIA (each topic MUST score high on):
 1. CURIOSITY GAP: Can the title alone create "I NEED to know" urgency?
@@ -455,11 +466,13 @@ TOPIC SELECTION CRITERIA (each topic MUST score high on):
 3. EMOTIONAL STAKES: Life/death, freedom/slavery, truth/lie, survival/extinction
 4. NARRATIVE MOMENTUM: A clear beginning->middle->end with escalation
 5. UNIQUENESS: Not a Wikipedia summary - a SPECIFIC untold angle
+6. DEPTH: Enough real substance to fill ~20 minutes without padding or repetition
 
 Each topic needs a clear, specific, named anchor (a person, role, place, or event) - not a vague
 category on its own. Avoid anything copyrighted or that would require paid licensing to depict.
-If fewer than {count} of the research findings above genuinely fit this channel well, it's fine
-to return fewer than {count} rather than force a weak fit. Call {EMIT_TOPICS} with the result."""
+If fewer than {count} of the research findings above are genuinely substantial and interesting
+enough, it's fine to return fewer than {count} rather than force a weak or trivial one in. Call
+{EMIT_TOPICS} with the result."""
 
     data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=600)
     topics = list(data["topics"])
