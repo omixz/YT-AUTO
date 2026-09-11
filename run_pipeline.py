@@ -10,9 +10,17 @@ from __future__ import annotations
 
 import argparse
 import logging
+import traceback
 
 from youtube_automation.config import PipelineConfig
 from youtube_automation.pipeline import run
+
+
+def _escape_for_annotation(text: str) -> str:
+    """Escapes a string for a GitHub Actions workflow command value, per
+    https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions
+    (order matters: escape % first, or the %0A/%0D we add get double-escaped)."""
+    return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
 
 def main() -> None:
@@ -33,15 +41,24 @@ def main() -> None:
     )
 
     config = PipelineConfig.load(args.config)
-    manifest = run(
-        config,
-        topic_override=args.topic,
-        dry_run=args.dry_run,
-        publish_at=args.publish_at,
-        publish_now=args.publish_now,
-        keep_work_dir=args.keep_work_dir,
-        format_override=args.format,
-    )
+    try:
+        manifest = run(
+            config,
+            topic_override=args.topic,
+            dry_run=args.dry_run,
+            publish_at=args.publish_at,
+            publish_now=args.publish_now,
+            keep_work_dir=args.keep_work_dir,
+            format_override=args.format,
+        )
+    except Exception:
+        # Surface the real failure as a GitHub Actions error annotation, so it's
+        # readable via the plain Checks/annotations REST API even in contexts
+        # that can't follow the Azure Blob Storage redirect GitHub uses for full
+        # job log downloads (e.g. a sandboxed debugging environment restricted
+        # to a fixed domain allowlist that doesn't include Azure blob storage).
+        print(f"::error title=Pipeline failed::{_escape_for_annotation(traceback.format_exc())}")
+        raise
 
     print("\n=== Run complete ===")
     for key, value in manifest.items():
