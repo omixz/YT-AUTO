@@ -334,6 +334,140 @@ fabricate statistics or quotes. Call emit_script with the final result."""
     )
 
 
+def _call_gemini_grounded(prompt: str, config: PipelineConfig, max_output_tokens: int) -> str:
+    """Calls Gemini with Google Search grounding enabled and returns the plain
+    text response (real, current web results - not just the model's training
+    knowledge). No function calling here: the stable generateContent REST API
+    this project uses (see the module docstring) only supports combining
+    google_search grounding with *forced* function calling via Gemini's newer
+    Interactions API, which is still Preview/Gemini-3-only - mixing them into
+    one _call_gemini-style request would risk a 400 on the stable endpoint.
+    Kept as a separate, deliberately simple call; brainstorm_trending_topics()
+    below is the two-step caller that turns this free-text output into a
+    structured topic list via the existing _call_gemini function-calling path.
+    """
+    if not config.secrets.gemini_api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY is not set. Add it to youtube-automation/.env "
+            "(copy .env.example first)."
+        )
+
+    body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "tools": [{"google_search": {}}],
+        "generationConfig": {"maxOutputTokens": max_output_tokens, "thinkingConfig": {"thinkingLevel": "minimal"}},
+    }
+
+    last_error = None
+    response = None
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            response = requests.post(
+                API_URL,
+                params={"key": config.secrets.gemini_api_key},
+                json=body,
+                timeout=180,
+            )
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
+            last_error = str(exc)
+            if attempt < _MAX_RETRIES:
+                time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
+                continue
+            raise RuntimeError(
+                f"Gemini grounded search request timed out after {_MAX_RETRIES + 1} attempts: {last_error}"
+            ) from exc
+
+        if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+            last_error = response.text
+            time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
+            continue
+        break
+
+    if response.status_code != 200:
+        raise RuntimeError(f"Gemini grounded search error {response.status_code}: {response.text[:2000]}")
+
+    data = response.json()
+    candidates = data.get("candidates") or []
+    if not candidates:
+        raise RuntimeError(f"Gemini grounded search returned no candidates: {data}")
+
+    text = "".join(
+        part.get("text", "") for part in candidates[0].get("content", {}).get("parts", [])
+    ).strip()
+    if not text:
+        raise RuntimeError(f"Gemini grounded search returned no text: {data}")
+    return text
+
+
+def brainstorm_trending_topics(config: PipelineConfig, existing: List[str], count: int = 5) -> List[str]:
+    """Like brainstorm_topics(), but grounded in real current trending stories/
+    news via Google Search, rather than Gemini's training-knowledge-only ideas.
+    Two-step: (1) a grounded search call finds what's actually trending right
+    now that fits the niche, (2) that real, current-events context is handed
+    to the existing forced-function-call path to shape it into the same
+    dramatic, hook-forward topic format brainstorm_topics() produces - see
+    that function's prompt for the shared topic-selection criteria.
+    """
+    search_prompt = f"""Search for what's genuinely trending or newsworthy RIGHT NOW (today) that fits this
+YouTube channel's niche: "{config.channel.niche}" (tone: {config.channel.tone}).
+
+This could be: a story back in the news due to a recent development, an anniversary of a
+historical event getting renewed attention, a documentary/book/show release reviving interest
+in a topic, or a genuinely current event with a strong angle for this niche.
+
+List up to 8 real, specific, currently-relevant stories or angles you found, each as one line:
+a concrete name/event/story plus a one-sentence note on why it's trending right now. Only include
+things you actually found evidence of being current - do not invent or guess at trends."""
+
+    try:
+        grounded_findings = _call_gemini_grounded(search_prompt, config, max_output_tokens=1500)
+    except Exception as exc:
+        raise RuntimeError(f"Grounded trending search failed: {exc}") from exc
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "topics": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["topics"],
+    }
+
+    used_list = "\n".join(f"- {t}" for t in existing) or "(none yet)"
+    prompt = f"""Channel niche: {config.channel.niche}
+Audience: {config.channel.audience}
+
+Already-used topics (do not repeat these or close variants):
+{used_list}
+
+Here is a real, current-events research pass on what's genuinely trending right now that could
+fit this channel (from a live web search, not guesswork):
+
+{grounded_findings}
+
+From this, pick and shape {count} video topics that both (a) genuinely connect to something
+trending/current from the research above, and (b) meet this channel's usual bar - bias hard
+toward genuinely dramatic, high-stakes, shocking, vivid, or emotionally charged stories over
+bland "fun fact" trivia or generic topic labels.
+
+TOPIC SELECTION CRITERIA (each topic MUST score high on):
+1. CURIOSITY GAP: Can the title alone create "I NEED to know" urgency?
+2. VISUAL THUMBNAIL POTENTIAL: One concrete, striking image that reads at 160x90px
+3. EMOTIONAL STAKES: Life/death, freedom/slavery, truth/lie, survival/extinction
+4. NARRATIVE MOMENTUM: A clear beginning->middle->end with escalation
+5. UNIQUENESS: Not a Wikipedia summary - a SPECIFIC untold angle
+
+Each topic needs a clear, specific, named anchor (a person, role, place, or event) - not a vague
+category on its own. Avoid anything copyrighted or that would require paid licensing to depict.
+If fewer than {count} of the research findings above genuinely fit this channel well, it's fine
+to return fewer than {count} rather than force a weak fit. Call {EMIT_TOPICS} with the result."""
+
+    data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=600)
+    topics = list(data["topics"])
+    if not topics:
+        raise RuntimeError("Grounded trending search found nothing that fit this channel's niche well enough.")
+    return topics
+
+
 def brainstorm_topics(config: PipelineConfig, existing: List[str], count: int = 5) -> List[str]:
     """Ask Gemini for fresh topic ideas that avoid what's already been made."""
     schema = {

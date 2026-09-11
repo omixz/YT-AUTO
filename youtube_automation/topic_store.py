@@ -8,7 +8,11 @@ from typing import List, Optional
 import yaml
 
 from .config import ROOT, PipelineConfig
-from .script_writer import brainstorm_topics
+from .script_writer import brainstorm_topics, brainstorm_trending_topics
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _load_history(path: Path) -> List[str]:
@@ -54,7 +58,19 @@ def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] =
     history = _load_history(history_path)
 
     if not queue:
-        queue = brainstorm_topics(config, existing=history, count=5)
+        if config.topics.use_trending:
+            try:
+                queue = brainstorm_trending_topics(config, existing=history, count=5)
+                logger.info("Brainstormed %d topic(s) from real current trending stories.", len(queue))
+            except Exception as exc:
+                # A grounding hiccup (Google Search tool unavailable, no
+                # genuinely-fitting trends found this run, etc.) shouldn't
+                # take down the whole scheduled run - fall back to the
+                # un-grounded brainstorm, same as before this feature existed.
+                logger.warning("Trending topic brainstorm failed (%s) - falling back to regular brainstorm.", exc)
+                queue = brainstorm_topics(config, existing=history, count=5)
+        else:
+            queue = brainstorm_topics(config, existing=history, count=5)
 
     # Intelligent selection: if we have multiple candidates, pick the best one
     # based on seasonal trends, competitor gaps, and topic freshness.

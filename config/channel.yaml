@@ -101,6 +101,7 @@ quality:
 topics:
   queue_file: "config/topics/{niche}.yaml"
   history_file: "config/topic_history/{niche}.json"
+  use_trending: true    # brainstorm from real current trending news/stories (Gemini + Google Search grounding) when the queue is empty, falling back to un-grounded brainstorming if that fails
 
 growth:
   stats_file: config/performance_stats.json

@@ -109,6 +109,13 @@ class QualityConfig:
 class TopicsConfig:
     queue_file: str = "config/topics/{niche}.yaml"
     history_file: str = "config/topic_history/{niche}.json"
+    # When the queue runs dry, brainstorm_trending_topics() (real current
+    # trending stories/news, via Gemini's Google Search grounding) is tried
+    # first instead of the plain brainstorm_topics() (Gemini's un-grounded
+    # ideas from training knowledge alone). Falls back to brainstorm_topics
+    # automatically if the grounded call fails for any reason, so a search-
+    # grounding hiccup can't take down the whole run - see topic_store.py.
+    use_trending: bool = True
 
 
 @dataclass
