@@ -32,10 +32,22 @@ def _save(path: Path, records: List[dict]) -> None:
 def record_published(
     niche_key: str, format_name: str, video_id: str,
     title: str = "", topic: str = "",
+    privacy_status: str = "", passed_quality_gate: "bool | None" = None,
+    quality_gate_reasons: "List[str] | None" = None,
 ) -> None:
     # Title/topic are captured here because the analytics token's scopes
     # can't read video metadata back from the Data API later - reporting.py
     # needs them when it writes the post-mortem report at maturity.
+    #
+    # privacy_status/passed_quality_gate/quality_gate_reasons are captured
+    # for a different reason: a quality-gate failure still uploads and still
+    # reaches this call (see pipeline.py) - it just uploads under
+    # quality.fallback_privacy_status (typically "private") instead of the
+    # configured public/unlisted default. Without recording that here, this
+    # ledger makes a silently-private, gate-failed upload look identical to
+    # a genuinely public one - "published" either way - so a real "why isn't
+    # this video showing up on the channel" report has no state in the repo
+    # to check against, only guesswork.
     path = ROOT / LEDGER_PATH
     records = _load(path)
     records.append({
@@ -46,6 +58,9 @@ def record_published(
         "topic": topic,
         "published_at": dt.date.today().isoformat(),
         "scored": False,
+        "privacy_status": privacy_status,
+        "passed_quality_gate": passed_quality_gate,
+        "quality_gate_reasons": quality_gate_reasons or [],
     })
     _save(path, records)
 
