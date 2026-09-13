@@ -7,6 +7,7 @@ enough that a thin wrapper here is less to maintain than a full SDK.
 """
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import List, Tuple
@@ -14,6 +15,8 @@ from typing import List, Tuple
 import requests
 
 from .config import PipelineConfig
+
+logger = logging.getLogger(__name__)
 
 # Pinned to gemini-3.5-flash - a specific, stable, GA model id, NOT a
 # rolling "-latest" alias (which silently hot-swaps to whatever release is
@@ -88,6 +91,18 @@ SCRIPT_SCHEMA = {
 
 EMIT_SCRIPT = "emit_script"
 EMIT_TOPICS = "emit_topics"
+
+# Real production incident this guards against: a script came back at ~45%
+# of its requested length (a 20-minute/1200s target produced only a ~9-
+# minute video), and shipped anyway - the prompt only asks for "roughly"
+# the target words/scenes, a soft ask the model doesn't always honor,
+# especially for a topic whose natural story arc feels "finished" well
+# before the requested length. Used in two places: generate_script() below
+# retries once with a reinforced prompt if the first attempt undershoots
+# this badly, and quality_check.py imports the same constant to make the
+# final gate's threshold match what generate_script() already tried to fix,
+# rather than two independently-tuned numbers silently drifting apart.
+MIN_TARGET_LENGTH_FRACTION = 0.7
 
 # Transient 429/503 "overloaded/rate-limited" responses, and read timeouts
 # under load, are common and worth retrying rather than failing a whole
@@ -303,7 +318,14 @@ this shape:
 - One "hook" scene (first): pattern interrupt + curiosity gap that earns the runtime.
 - {suggested_scenes - 2}+ "build" scenes: connected facts, each opening a new loop before
   closing the last. Use connective tissue ("but here's the twist...", "which raises the
-  question...", "and that's the part most people get wrong...").
+  question...", "and that's the part most people get wrong..."). If the most obvious version of
+  this story feels "finished" well before {target_words} words, that's a sign to go deeper, not
+  a sign the story is done - add texture: what specific people involved were thinking and feeling
+  in the moment, the smaller decisions and near-misses along the way, what almost happened
+  instead, the aftermath and how it rippled outward, how contemporaries reacted. A real target
+  this channel has hit before: coming in well short of {target_words} words undermines the
+  format this channel runs on and the video won't ship as-is - depth and richness of a single
+  well-chosen story beats moving on to a new one early.
 - One "insight" scene (last): perspective shift that reframes the whole story.
 
 Each scene's narration should target {config.video.target_scene_duration} seconds of speech 
@@ -314,6 +336,40 @@ Do not use markdown in the narration. Only state facts you're confident are accu
 fabricate statistics or quotes. Call emit_script with the final result."""
 
     data = _call_gemini(prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
+
+    word_count = sum(len(s["narration"].split()) for s in data["scenes"])
+    min_acceptable_words = round(target_words * MIN_TARGET_LENGTH_FRACTION)
+    if word_count < min_acceptable_words:
+        # The prompt above only asks for "roughly" the target length - a soft
+        # ask the model doesn't always honor (see MIN_TARGET_LENGTH_FRACTION's
+        # docstring for the real incident this guards against). One retry
+        # with the actual shortfall spelled out explicitly is cheap compared
+        # to shipping a video at half its requested length, or worse, having
+        # quality_check.py catch it only after TTS/rendering has already run.
+        logger.warning(
+            "Script came back at %d words, well under this %ds video's target of ~%d words - "
+            "retrying once with a reinforced prompt before falling through to the quality gate.",
+            word_count, config.video.target_seconds, target_words,
+        )
+        reinforced_prompt = prompt + f"""
+
+IMPORTANT: A previous attempt at this exact prompt came back with only {word_count} words of
+narration - well short of the ~{target_words} words this video needs. Do not stop the story early
+just because the most obvious version of it feels complete - go deeper into the specific people,
+decisions, near-misses, and aftermath involved (see the guidance above on adding texture rather
+than moving on early). This attempt must reach at least {min_acceptable_words} words of total
+narration."""
+        retry_data = _call_gemini(reinforced_prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
+        retry_word_count = sum(len(s["narration"].split()) for s in retry_data["scenes"])
+        if retry_word_count > word_count:
+            logger.info("Retry produced %d words (up from %d) - using the retry.", retry_word_count, word_count)
+            data = retry_data
+        else:
+            logger.warning(
+                "Retry did not improve length (%d words vs original %d) - keeping the original "
+                "rather than a second shot in the dark; quality_check.py will catch it if it's "
+                "still too short.", retry_word_count, word_count,
+            )
 
     scenes = [
         Scene(

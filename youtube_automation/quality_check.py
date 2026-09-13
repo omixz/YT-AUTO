@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from .config import PipelineConfig
-from .script_writer import Script
+from .script_writer import MIN_TARGET_LENGTH_FRACTION, Script, _script_length_params
 from .tts import SceneAudio
 
 logger = logging.getLogger(__name__)
@@ -82,6 +82,10 @@ MIN_SCENE_WORDS = 3
 MIN_DESCRIPTION_WORDS = 8
 MIN_TAGS = 3
 
+# See script_writer.MIN_TARGET_LENGTH_FRACTION's docstring for the incident
+# this guards against and why the threshold is shared with generate_script()'s
+# retry rather than tuned separately here.
+
 # The "10/10, super interesting" bar: reject vague listicles ("5 Facts About
 # Rome") and bare topic labels ("Ancient Rome: A Documentary" / "Greek
 # Mythology Explained"), not require the title to match a specific "strong
@@ -123,6 +127,15 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
     word_count = len(script.full_narration.split())
     if word_count < q.min_words:
         reasons.append(f"only {word_count} words of narration (min {q.min_words})")
+
+    target_words, _, _ = _script_length_params(config.video.target_seconds)
+    min_acceptable_words = round(target_words * MIN_TARGET_LENGTH_FRACTION)
+    if word_count >= q.min_words and word_count < min_acceptable_words:
+        reasons.append(
+            f"only {word_count} words of narration, well under this {config.video.target_seconds}s "
+            f"video's own target of ~{target_words} words (expected at least {min_acceptable_words}) "
+            "- the model undershot the requested length rather than a hard generation failure"
+        )
 
     if len(script.scenes) < q.min_scenes:
         reasons.append(f"only {len(script.scenes)} scenes (min {q.min_scenes})")
