@@ -342,33 +342,47 @@ fabricate statistics or quotes. Call emit_script with the final result."""
     if word_count < min_acceptable_words:
         # The prompt above only asks for "roughly" the target length - a soft
         # ask the model doesn't always honor (see MIN_TARGET_LENGTH_FRACTION's
-        # docstring for the real incident this guards against). One retry
-        # with the actual shortfall spelled out explicitly is cheap compared
-        # to shipping a video at half its requested length, or worse, having
+        # docstring for the real incident this guards against). Retrying with
+        # the actual shortfall spelled out explicitly is cheap compared to
+        # shipping a video at half its requested length, or worse, having
         # quality_check.py catch it only after TTS/rendering has already run.
-        logger.warning(
-            "Script came back at %d words, well under this %ds video's target of ~%d words - "
-            "retrying once with a reinforced prompt before falling through to the quality gate.",
-            word_count, config.video.target_seconds, target_words,
-        )
-        reinforced_prompt = prompt + f"""
+        # Up to 2 retries (3 attempts total): a real incident's first retry
+        # brought word count from ~1250 to 1915 against a 1960-word bar -
+        # genuine, substantial improvement that still narrowly missed, so a
+        # second attempt is worth it rather than accepting a near-miss.
+        best_data, best_word_count = data, word_count
+        for attempt in range(1, 3):
+            logger.warning(
+                "Script at %d words, under this %ds video's target of ~%d words - "
+                "retry %d/2 with a reinforced prompt.",
+                best_word_count, config.video.target_seconds, target_words, attempt,
+            )
+            reinforced_prompt = prompt + f"""
 
-IMPORTANT: A previous attempt at this exact prompt came back with only {word_count} words of
+IMPORTANT: A previous attempt at this exact prompt came back with only {best_word_count} words of
 narration - well short of the ~{target_words} words this video needs. Do not stop the story early
 just because the most obvious version of it feels complete - go deeper into the specific people,
 decisions, near-misses, and aftermath involved (see the guidance above on adding texture rather
 than moving on early). This attempt must reach at least {min_acceptable_words} words of total
 narration."""
-        retry_data = _call_gemini(reinforced_prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
-        retry_word_count = sum(len(s["narration"].split()) for s in retry_data["scenes"])
-        if retry_word_count > word_count:
-            logger.info("Retry produced %d words (up from %d) - using the retry.", retry_word_count, word_count)
-            data = retry_data
-        else:
+            retry_data = _call_gemini(reinforced_prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
+            retry_word_count = sum(len(s["narration"].split()) for s in retry_data["scenes"])
+            if retry_word_count > best_word_count:
+                logger.info("Retry %d produced %d words (up from %d).", attempt, retry_word_count, best_word_count)
+                best_data, best_word_count = retry_data, retry_word_count
+            else:
+                logger.warning(
+                    "Retry %d did not improve length (%d words vs best-so-far %d).",
+                    attempt, retry_word_count, best_word_count,
+                )
+            if best_word_count >= min_acceptable_words:
+                break
+        data = best_data
+        if best_word_count < min_acceptable_words:
             logger.warning(
-                "Retry did not improve length (%d words vs original %d) - keeping the original "
-                "rather than a second shot in the dark; quality_check.py will catch it if it's "
-                "still too short.", retry_word_count, word_count,
+                "Still under target after retries (%d words, best of %d attempts) - "
+                "keeping the best attempt; quality_check.py will catch it if it's still too short.",
+                best_word_count, attempt + 1,
             )
 
     scenes = [
