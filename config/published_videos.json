@@ -449,5 +449,19 @@
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": []
+  },
+  {
+    "video_id": "V0xukTbsMkQ",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Mystery of the Nile: How an Emperor's Grief Created a God",
+    "topic": "The tragic drowning of Antinous: how the beloved companion of Emperor Hadrian died mysteriously in the Nile, driving the ruler of the Roman world to madness, deifying his dead lover, and forcing an entire empire to worship him.",
+    "published_at": "2026-09-14",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1915 words of narration, well under this 1200s video's own target of ~2800 words (expected at least 1960) - the model undershot the requested length rather than a hard generation failure"
+    ]
   }
 ]
