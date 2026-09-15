@@ -463,5 +463,19 @@
     "quality_gate_reasons": [
       "only 1915 words of narration, well under this 1200s video's own target of ~2800 words (expected at least 1960) - the model undershot the requested length rather than a hard generation failure"
     ]
+  },
+  {
+    "video_id": "vAvnn2Gi9Pw",
+    "niche": "world_wars",
+    "format": "longform",
+    "title": "The Secret Gestapo Trap That Destroyed the King of Italy\u2019s Daughter",
+    "topic": "The desperate, secret flight of Princess Mafalda of Savoy: How the daughter of the Italian King was lured into a trap by the Gestapo on the pretext of a phone call from her missing husband, ending in her tragic imprisonment in Buchenwald.",
+    "published_at": "2026-09-15",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1651 words of narration, well under this 1200s video's own target of ~2800 words (expected at least 1960) - the model undershot the requested length rather than a hard generation failure"
+    ]
   }
 ]
