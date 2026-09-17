@@ -477,5 +477,17 @@
     "quality_gate_reasons": [
       "only 1651 words of narration, well under this 1200s video's own target of ~2800 words (expected at least 1960) - the model undershot the requested length rather than a hard generation failure"
     ]
+  },
+  {
+    "video_id": "8Fvz0iZ6bG8",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Chilling Polaroid That Reopened a Forgotten Cold Case",
+    "topic": "The haunting 1988 vanishing of Tara Calico, whose disappearance was suddenly thrust back into the light when a Polaroid photo of a bound young woman and boy was found in a convenience store parking lot.",
+    "published_at": "2026-09-17",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": []
   }
 ]
