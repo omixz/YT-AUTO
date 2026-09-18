@@ -279,6 +279,27 @@ def check_media(
             f"(drift {drift:.1f}s) - possible truncated/corrupted render"
         )
 
+    # This is the authoritative length check - not the word-count estimate
+    # check() runs on the script (see MIN_TARGET_LENGTH_FRACTION's docstring).
+    # A real incident showed why the two can disagree: a script cleared the
+    # word-count bar (>=1960 words against a 2800-word/140-wpm-derived
+    # target) and still rendered at ~12 minutes instead of ~14+, because
+    # actual spoken pace runs faster than the flat 140 wpm assumption -
+    # tts.py applies per-scene rate boosts (+15% on hook scenes, +5% on
+    # build scenes, which make up most of a script) on top of the
+    # configured base rate, and even the base rate varies by voice. Word
+    # count estimated at script-generation time, before any TTS has run,
+    # can only ever be a heuristic; actual_duration here is measured from
+    # the real rendered file and can't be wrong the same way.
+    min_acceptable_duration = config.video.target_seconds * MIN_TARGET_LENGTH_FRACTION
+    if actual_duration > 0 and actual_duration < min_acceptable_duration:
+        reasons.append(
+            f"rendered video is only {actual_duration:.0f}s ({actual_duration / 60:.1f} min), well under "
+            f"this video's own target of {config.video.target_seconds}s ({config.video.target_seconds / 60:.0f} min) "
+            f"(expected at least {min_acceptable_duration:.0f}s / {min_acceptable_duration / 60:.1f} min) - "
+            "actual TTS pace ran faster than script-generation's word-count estimate assumed"
+        )
+
     if audio_streams:
         mean_db = _mean_volume_db(video_path)
         if mean_db is None:
