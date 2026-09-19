@@ -119,8 +119,16 @@ MIN_TARGET_LENGTH_FRACTION = 0.7
 # free; losing the whole day's video to a spike that would've cleared 30
 # seconds later is not.
 _RETRY_STATUSES = {429, 503}
-_MAX_RETRIES = 7
-_MAX_BACKOFF_SECONDS = 60
+# Bumped from 7 retries/60s cap after three separate scheduled runs (Sep 15,
+# 16, 18) all failed on the same Gemini 503 "high demand" error, at similar
+# times of day - suggesting genuine sustained congestion at that slot, not
+# an isolated blip the old budget (~123s total wait across 7 retries) could
+# reliably ride out. 10 retries with a 120s cap gives ~8 minutes of total
+# wait before giving up, which is a small addition against a full pipeline
+# run's 15-25 minute runtime, but meaningfully more likely to survive a
+# sustained outage rather than exhausting retries partway through it.
+_MAX_RETRIES = 10
+_MAX_BACKOFF_SECONDS = 120
 
 
 @dataclass
