@@ -489,5 +489,19 @@
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": []
+  },
+  {
+    "video_id": "1TwLFOQTdfo",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Chilling Truth Behind Prometheus's Eternal Torture",
+    "topic": "The agonizing punishment of Prometheus: not just the eagle tearing his liver, but the psychological torture of Zeus chaining him to a freezing mountain peak where he was forced to watch humanity suffer from afar while refusing to reveal the secret of Zeus's own downfall.",
+    "published_at": "2026-09-20",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "rendered video is only 767s (12.8 min), well under this video's own target of 1200s (20 min) (expected at least 840s / 14.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
