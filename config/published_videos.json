@@ -503,5 +503,20 @@
     "quality_gate_reasons": [
       "rendered video is only 767s (12.8 min), well under this video's own target of 1200s (20 min) (expected at least 840s / 14.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
     ]
+  },
+  {
+    "video_id": "ozN-yKsiLEk",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Horrific Curse of the Starving Blind King",
+    "topic": "The horrific curse of Phineus: how a blind prophet was starved to the brink of death by Harpies who violently defiled his food every time he tried to eat, until two winged demigods hunted them down.",
+    "published_at": "2026-09-20",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1835 words of narration, well under this 1200s video's own target of ~2800 words (expected at least 1960) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 654s (10.9 min), well under this video's own target of 1200s (20 min) (expected at least 840s / 14.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
