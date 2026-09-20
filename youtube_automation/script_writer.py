@@ -152,6 +152,43 @@ class Script:
         return " ".join(scene.narration for scene in self.scenes)
 
 
+def _daily_quota_exhausted_message(response) -> "str | None":
+    """If this 429 response is a genuine daily quota exhaustion (as opposed to
+    a short-lived per-minute rate limit, which IS worth retrying), returns a
+    clear diagnostic message; otherwise returns None.
+
+    Real incident this guards against: a scheduled run failed with a 429,
+    which _RETRY_STATUSES treated identically to a transient rate limit -
+    retrying with exponential backoff for minutes on something that can't
+    possibly succeed until the quota resets (once per day). The response
+    body is explicit about which case it is: a genuine daily cap comes back
+    with a quotaId containing 'PerDay' (e.g.
+    'GenerateRequestsPerDayPerProjectPerModel-FreeTier') - Google's own
+    suggested retryDelay in the body (often just a few seconds) is a generic
+    default for 429s generally and does NOT mean the daily quota will have
+    refreshed by then, so it should not be trusted to decide whether to
+    retry."""
+    if response.status_code != 429:
+        return None
+    try:
+        violations = response.json()["error"]["details"]
+    except (ValueError, KeyError, TypeError, IndexError):
+        return None
+    for detail in violations:
+        for violation in detail.get("violations", []):
+            quota_id = violation.get("quotaId", "")
+            if "PerDay" in quota_id:
+                return (
+                    f"Gemini API daily quota exhausted ({quota_id}, limit "
+                    f"{violation.get('quotaValue', '?')} requests/day for "
+                    f"model {violation.get('quotaDimensions', {}).get('model', MODEL)}). "
+                    "This will not resolve by retrying within the same day - it needs "
+                    "either waiting for the daily reset or upgrading the API key off the "
+                    "free tier (https://ai.google.dev/gemini-api/docs/rate-limits)."
+                )
+    return None
+
+
 def _call_gemini(prompt: str, function_name: str, parameters: dict, config: PipelineConfig, max_output_tokens: int) -> dict:
     """Calls Gemini with a single forced function call and returns its args."""
     if not config.secrets.gemini_api_key:
@@ -203,6 +240,9 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
             ) from exc
 
         if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+            quota_message = _daily_quota_exhausted_message(response)
+            if quota_message:
+                raise RuntimeError(quota_message)
             last_error = response.text
             time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
             continue
@@ -456,6 +496,9 @@ def _call_gemini_grounded(prompt: str, config: PipelineConfig, max_output_tokens
             ) from exc
 
         if response.status_code in _RETRY_STATUSES and attempt < _MAX_RETRIES:
+            quota_message = _daily_quota_exhausted_message(response)
+            if quota_message:
+                raise RuntimeError(quota_message)
             last_error = response.text
             time.sleep(min(2 ** attempt, _MAX_BACKOFF_SECONDS))
             continue
