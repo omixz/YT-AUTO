@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from .config import PipelineConfig
-from .script_writer import MIN_TARGET_LENGTH_FRACTION, Script, _script_length_params
+from .script_writer import MIN_PUBLISH_DURATION_FRACTION, Script, _script_length_params
 from .tts import SceneAudio
 
 logger = logging.getLogger(__name__)
@@ -82,9 +82,10 @@ MIN_SCENE_WORDS = 3
 MIN_DESCRIPTION_WORDS = 8
 MIN_TAGS = 3
 
-# See script_writer.MIN_TARGET_LENGTH_FRACTION's docstring for the incident
-# this guards against and why the threshold is shared with generate_script()'s
-# retry rather than tuned separately here.
+# See script_writer.MIN_PUBLISH_DURATION_FRACTION's docstring for why this
+# uses a separate, more lenient threshold than generate_script()'s retry
+# trigger (script_writer.MIN_TARGET_LENGTH_FRACTION) - this one decides
+# whether a video actually ships, that one only decides whether to retry.
 
 # The "10/10, super interesting" bar: reject vague listicles ("5 Facts About
 # Rome") and bare topic labels ("Ancient Rome: A Documentary" / "Greek
@@ -129,7 +130,7 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
         reasons.append(f"only {word_count} words of narration (min {q.min_words})")
 
     target_words, _, _ = _script_length_params(config.video.target_seconds)
-    min_acceptable_words = round(target_words * MIN_TARGET_LENGTH_FRACTION)
+    min_acceptable_words = round(target_words * MIN_PUBLISH_DURATION_FRACTION)
     if word_count >= q.min_words and word_count < min_acceptable_words:
         reasons.append(
             f"only {word_count} words of narration, well under this {config.video.target_seconds}s "
@@ -291,7 +292,7 @@ def check_media(
     # count estimated at script-generation time, before any TTS has run,
     # can only ever be a heuristic; actual_duration here is measured from
     # the real rendered file and can't be wrong the same way.
-    min_acceptable_duration = config.video.target_seconds * MIN_TARGET_LENGTH_FRACTION
+    min_acceptable_duration = config.video.target_seconds * MIN_PUBLISH_DURATION_FRACTION
     if actual_duration > 0 and actual_duration < min_acceptable_duration:
         reasons.append(
             f"rendered video is only {actual_duration:.0f}s ({actual_duration / 60:.1f} min), well under "

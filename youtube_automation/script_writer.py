@@ -97,11 +97,12 @@ EMIT_TOPICS = "emit_topics"
 # minute video), and shipped anyway - the prompt only asks for "roughly"
 # the target words/scenes, a soft ask the model doesn't always honor,
 # especially for a topic whose natural story arc feels "finished" well
-# before the requested length. Used in two places: generate_script() below
-# retries once with a reinforced prompt if the first attempt undershoots
-# this badly, and quality_check.py imports the same constant to make the
-# final gate's threshold match what generate_script() already tried to fix,
-# rather than two independently-tuned numbers silently drifting apart.
+# before the requested length. Used by generate_script() below as the
+# trigger for retrying with a reinforced prompt - deliberately kept
+# aggressive/high, since the only cost of retrying "too eagerly" is one
+# extra cheap Gemini call, not a blocked publish. See
+# MIN_PUBLISH_DURATION_FRACTION for the separate, more lenient threshold
+# that actually decides whether a video is good enough to ship.
 #
 # Raised from 0.7 to 0.85 after a second incident showed 0.7 wasn't enough
 # headroom on its own: the channel went quiet for 4 real days (last public
@@ -109,10 +110,24 @@ EMIT_TOPICS = "emit_topics"
 # private, never crashing, just never shipping) because a script could
 # clear the OLD 0.7 bar on word count while still rendering short once
 # actually spoken - see _script_length_params()'s wpm comment for why the
-# word-count estimate itself was still too generous even post-retry. 0.85
-# leaves much less room for that estimation error to still slip a
-# too-short script past the retry loop.
+# word-count estimate itself was still too generous even post-retry.
 MIN_TARGET_LENGTH_FRACTION = 0.85
+
+# Separate from MIN_TARGET_LENGTH_FRACTION above on purpose: that constant
+# exists to keep PUSHING generate_script() to try harder (cheap to be
+# aggressive about, since retrying just costs one more API call), but this
+# one is the actual "is this video good enough to publish" bar - and being
+# too aggressive here has a real cost, since it means a genuinely solid,
+# complete, coherent video gets hidden as private just for landing at 16-17
+# minutes instead of a full 20. Used by quality_check.py for both the
+# script-level word-count sanity check and the final real-duration check,
+# so a script doesn't get blocked by one threshold only to have cleared the
+# other. Real incident: a script that only cleared the retry loop at 2589
+# words (against a 2805-word/0.85 bar) would, at the observed real ~154-165
+# wpm pace, still render to a genuinely watchable ~16 minutes - comfortably
+# worth publishing, not worth hiding, hence 0.75 (15 min for a 20-min
+# target) here rather than reusing 0.85.
+MIN_PUBLISH_DURATION_FRACTION = 0.75
 
 # Transient 429/503 "overloaded/rate-limited" responses, and read timeouts
 # under load, are common and worth retrying rather than failing a whole
