@@ -518,5 +518,19 @@
       "only 1835 words of narration, well under this 1200s video's own target of ~2800 words (expected at least 1960) - the model undershot the requested length rather than a hard generation failure",
       "rendered video is only 654s (10.9 min), well under this video's own target of 1200s (20 min) (expected at least 840s / 14.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
     ]
+  },
+  {
+    "video_id": "SnNWj0Vb5Ng",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "The Toxic Secret that Drove the 1845 Franklin Expedition to Cannibalism",
+    "topic": "The 1845 Franklin Expedition and the Cannibalism of Terror: After their Royal Navy ships become trapped in the arctic ice, Captain Sir John Franklin's elite crew of 129 men slowly succumb to lead poisoning, madness, and starvation, ultimately resorting to desecrating and consuming their own dead.",
+    "published_at": "2026-09-21",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 2589 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2805) - the model undershot the requested length rather than a hard generation failure"
+    ]
   }
 ]
