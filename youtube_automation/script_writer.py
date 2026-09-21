@@ -102,7 +102,17 @@ EMIT_TOPICS = "emit_topics"
 # this badly, and quality_check.py imports the same constant to make the
 # final gate's threshold match what generate_script() already tried to fix,
 # rather than two independently-tuned numbers silently drifting apart.
-MIN_TARGET_LENGTH_FRACTION = 0.7
+#
+# Raised from 0.7 to 0.85 after a second incident showed 0.7 wasn't enough
+# headroom on its own: the channel went quiet for 4 real days (last public
+# video Sep 17; every attempt Sep 14/15/20 correctly got caught and kept
+# private, never crashing, just never shipping) because a script could
+# clear the OLD 0.7 bar on word count while still rendering short once
+# actually spoken - see _script_length_params()'s wpm comment for why the
+# word-count estimate itself was still too generous even post-retry. 0.85
+# leaves much less room for that estimation error to still slip a
+# too-short script past the retry loop.
+MIN_TARGET_LENGTH_FRACTION = 0.85
 
 # Transient 429/503 "overloaded/rate-limited" responses, and read timeouts
 # under load, are common and worth retrying rather than failing a whole
@@ -269,8 +279,21 @@ def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
     given target duration. Pulled out of generate_script so the actual
     numbers a given target_seconds produces are directly testable, without
     needing to mock the whole Gemini call chain."""
-    # ~140 spoken words per minute is a safe average for narration pacing.
-    target_words = max(60, round(target_seconds * 140 / 60))
+    # Words-per-minute assumption used to convert a target duration into a
+    # target word count. Was 140 (a generic "safe average narration pace"
+    # guess) until real evidence showed it was too slow for this specific
+    # setup: tts.py applies per-scene rate boosts on top of the base voice
+    # rate (+15% on hook scenes, +5% on build scenes, which dominate a
+    # script's scene count), so actual spoken pace runs measurably faster
+    # than a flat, unboosted assumption. A real published video that had
+    # cleared the (then-current) word-count retry threshold still rendered
+    # at ~154 words/minute once actually spoken - i.e. even AFTER passing
+    # the check meant to catch this, real pace still exceeded the 140
+    # assumption by ~10%. Raised to 165 (headroom above 154, not just
+    # matching it exactly) so target_words - and everything derived from it,
+    # including the retry threshold - reflects real achieved pace rather
+    # than reproducing the same gap the retry mechanism exists to catch.
+    target_words = max(60, round(target_seconds * 165 / 60))
     # ~25 words per scene keeps each one a genuine "1-2 sentences a few seconds
     # long" beat rather than a paragraph - matters a lot once target_words
     # gets into longform territory (a fixed "6-9 scenes" would otherwise force
@@ -394,15 +417,19 @@ fabricate statistics or quotes. Call emit_script with the final result."""
         # the actual shortfall spelled out explicitly is cheap compared to
         # shipping a video at half its requested length, or worse, having
         # quality_check.py catch it only after TTS/rendering has already run.
-        # Up to 2 retries (3 attempts total): a real incident's first retry
-        # brought word count from ~1250 to 1915 against a 1960-word bar -
-        # genuine, substantial improvement that still narrowly missed, so a
-        # second attempt is worth it rather than accepting a near-miss.
+        # Up to 3 retries (4 attempts total, up from 2/3 after the channel
+        # went 4 real days without a public video - see
+        # MIN_TARGET_LENGTH_FRACTION's docstring): a real incident's first
+        # retry brought word count from ~1250 to 1915 against the bar in
+        # effect at the time - genuine, substantial improvement that still
+        # narrowly missed, so more attempts are worth it rather than
+        # accepting a near-miss, especially now the bar itself (0.85, up
+        # from 0.7) and target_words (165 wpm, up from 140) are both higher.
         best_data, best_word_count = data, word_count
-        for attempt in range(1, 3):
+        for attempt in range(1, 4):
             logger.warning(
                 "Script at %d words, under this %ds video's target of ~%d words - "
-                "retry %d/2 with a reinforced prompt.",
+                "retry %d/3 with a reinforced prompt.",
                 best_word_count, config.video.target_seconds, target_words, attempt,
             )
             reinforced_prompt = prompt + f"""
