@@ -335,6 +335,20 @@ def _synth_war_ambience(duration: float) -> np.ndarray:
         length = min(int(rng.uniform(0.8, 1.5) * SAMPLE_RATE), n - start)
         voice = _lowpass(_white_noise(length / SAMPLE_RATE, seed=rng.integers(0, 10000)), 
                          rng.integers(30, 80))
+        # _white_noise() re-derives its own sample count from a duration
+        # float (int(duration * SAMPLE_RATE)) rather than taking an exact
+        # sample count directly - round-tripping length -> seconds -> length
+        # through that float division/multiplication can lose a sample to
+        # floating-point rounding (confirmed via a real crash: voice came
+        # back 52034 samples against an expected 52035). mod below is built
+        # directly from `length` via np.linspace's exact sample-count
+        # argument, so it's always exactly right; voice is the one that can
+        # drift, so pad/truncate it to match exactly before combining, since
+        # trusting the duration round-trip to always land exactly isn't safe.
+        if len(voice) < length:
+            voice = np.pad(voice, (0, length - len(voice)))
+        elif len(voice) > length:
+            voice = voice[:length]
         mod = 0.5 + 0.5 * np.sin(2 * np.pi * rng.uniform(0.5, 2.0) * np.linspace(0, length/SAMPLE_RATE, length))
         out[start:start+length] += voice * mod * 0.08
     
