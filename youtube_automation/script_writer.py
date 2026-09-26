@@ -18,13 +18,31 @@ from .config import PipelineConfig
 
 logger = logging.getLogger(__name__)
 
-# Pinned to gemini-3.5-flash - a specific, stable, GA model id, NOT a
+# Pinned to gemini-3.5-flash-lite - a specific, stable, GA model id, NOT a
 # rolling "-latest" alias (which silently hot-swaps to whatever release is
 # current) and NOT gemini-2.5-flash (which turned out to already be
 # deprecated: "no longer available to new users", a live 404 on a real
 # scheduled run). Pinning to an explicit stable id means this can't get
 # silently broken again by a future release swap; bump deliberately.
-MODEL = "gemini-3.5-flash"
+#
+# Switched from gemini-3.5-flash to the -lite variant after the free-tier
+# gemini-3.5-flash quota (confirmed via a real 429 response body: 20
+# requests/day, quotaId GenerateRequestsPerDayPerProjectPerModel-FreeTier)
+# repeatedly blocked real runs - each pipeline run needs several Gemini
+# calls (topic brainstorm, up to 4 script-generation attempts), so 20/day
+# barely covers one run, let alone survives any manual testing on top of
+# the scheduled run. Free-tier quotas are allocated per-model, and every
+# source checked (Google's own docs plus third-party API references)
+# consistently describes Flash-Lite tiers as the higher-throughput,
+# higher-RPD option specifically meant for exactly this kind of high-
+# volume, low-complexity structured-output workload - confirmed as a real,
+# valid model id supporting function calling, structured JSON output and
+# Search grounding (google_search tool), all of which this file already
+# depends on, so no other code here needs to change for the switch itself.
+# If a future run still hits a 429 with "PerDay" in its quotaId even on
+# this model, _daily_quota_exhausted_message() below will say so plainly
+# rather than needing another guess-and-check cycle to find out.
+MODEL = "gemini-3.5-flash-lite"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
 SCRIPT_SCHEMA = {
@@ -322,9 +340,11 @@ def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
     # config.yaml's target_seconds actually asked for. Raised back up
     # (with headroom) rather than exactly matching today's target, so this
     # isn't a recurring one-off fix if target_seconds moves again later.
-    # gemini-3.5-flash's real ceiling is 65,536 output tokens (confirmed
-    # against Google's published model card) - 8000 was never actually
-    # close to that limit, it was just an unrelated conservative guess.
+    # This model's real ceiling is 65,536 output tokens (confirmed against
+    # Google's published model card for both gemini-3.5-flash and the
+    # -lite variant this is now pinned to - same ceiling on both) - 8000
+    # was never actually close to that limit, it was just an unrelated
+    # conservative guess.
     suggested_scenes = max(6, min(160, round(target_words / 25)))
     max_output_tokens = min(32000, max(2000, round(target_words * 4) + 500))
     return target_words, suggested_scenes, max_output_tokens

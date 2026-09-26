@@ -44,15 +44,15 @@ def test_20_minute_target_is_not_silently_capped_down():
     # got left at values tuned for a temporarily-reduced ~7 minute target -
     # meaning config.yaml asking for 1200s would have silently produced a
     # much shorter script regardless, since suggested_scenes was capped at
-    # 60 and max_output_tokens at 8000 (gemini-3.5-flash's real ceiling is
+    # 60 and max_output_tokens at 8000 (this model's real ceiling is
     # 65,536 - nowhere close to being reached at 20 minutes).
     target_words, suggested_scenes, max_output_tokens = script_writer._script_length_params(1200)
     assert target_words >= 2500, "20 minutes of narration should be at least ~2500 words"
     # ~25 words/scene is the intended per-scene pacing - the scene count
     # cap must not force scenes far longer than that at this duration.
     assert suggested_scenes >= target_words / 30
-    # Real headroom under gemini-3.5-flash's actual 65,536-token ceiling,
-    # not silently clamped back down to a value tuned for a shorter script.
+    # Real headroom under this model's actual 65,536-token ceiling, not
+    # silently clamped back down to a value tuned for a shorter script.
     assert max_output_tokens >= round(target_words * 3)
 
 

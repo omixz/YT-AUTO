@@ -271,6 +271,12 @@ def _scene_audio(duration):
 def test_check_media_passes_a_correct_render(tmp_path):
     config = _config()
     config.video.format = "shorts"
+    # This test is about technical correctness (resolution/audio/captions
+    # sanity), not duration - target_seconds is overridden to match the
+    # deliberately tiny 3s dummy clip below, rather than generating a much
+    # longer (slower, more wasteful) dummy clip just to clear the real
+    # duration-vs-target check quality_check.check_media() now also does.
+    config.video.target_seconds = 3
     w, h = config.video.resolution
     video = tmp_path / "final.mp4"
     _make_clip(video, duration=3.0, w=w, h=h, with_audio=True)
