@@ -532,5 +532,21 @@
     "quality_gate_reasons": [
       "only 2589 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2805) - the model undershot the requested length rather than a hard generation failure"
     ]
+  },
+  {
+    "video_id": "Ku_e_NYbP04",
+    "niche": "world_wars",
+    "format": "longform",
+    "title": "The Polish Doctor Who Faked a Plague to Fool the Gestapo",
+    "topic": "The agonizing gamble of Dr. Eugene Lazowski: The Polish doctor who created a fake typhus epidemic by injecting thousands of villagers with a harmless dead bacterium, risking execution by the Gestapo to save entire towns from being sent to concentration camps.",
+    "published_at": "2026-09-30",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1567 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
+      "last scene is not role=insight",
+      "rendered video is only 600s (10.0 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
