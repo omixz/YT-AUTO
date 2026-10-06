@@ -591,5 +591,19 @@
     "quality_gate_reasons": [
       "last scene is not role=insight"
     ]
+  },
+  {
+    "video_id": "PuNyh55C4l8",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "How a Goddess Got the God of Wisdom Drunk to Steal Civilization",
+    "topic": "The cosmic theft of the Me: how Inanna seduced the god of wisdom with alcohol to steal the divine blueprints of civilization, fleeing down the Euphrates in a high-stakes boat chase as monsters were sent to reclaim them.",
+    "published_at": "2026-10-06",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "last scene is not role=insight"
+    ]
   }
 ]
