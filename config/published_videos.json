@@ -605,5 +605,19 @@
     "quality_gate_reasons": [
       "last scene is not role=insight"
     ]
+  },
+  {
+    "video_id": "2-blbe00uGo",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Bizarre 1980 Case of Zigmund Adamski: The Coal Miner Found on a 10-Foot Coal Pile",
+    "topic": "The bizarre 1980 case of Zigmund Adamski, a coal miner who went out to buy groceries and was found dead five days later atop a 10-foot-high coal pile, with strange chemical burns on his neck and an expression of pure terror.",
+    "published_at": "2026-10-07",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "last scene is not role=insight"
+    ]
   }
 ]
