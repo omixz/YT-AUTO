@@ -176,3 +176,38 @@ def test_synthesize_one_passes_plain_text_and_valid_kwargs_to_communicate(tmp_pa
     assert captured["kwargs"]["rate"] == "+15%"
     assert captured["kwargs"]["pitch"] == "+20Hz"
     assert captured["kwargs"]["volume"] == "+10%"
+
+
+def test_real_synthesize_one_lets_no_audio_propagate_for_retry(tmp_path):
+    """Regression: _synthesize_one used to wrap NoAudioReceived in RuntimeError,
+    so the retry loop never saw it and a single transient failure killed the run."""
+    import asyncio
+    from unittest.mock import patch
+
+    class _Boom:
+        def __init__(self, *a, **k): pass
+        async def stream(self):
+            raise edge_tts.exceptions.NoAudioReceived("no audio")
+            yield  # pragma: no cover
+
+    with patch("youtube_automation.tts.edge_tts.Communicate", _Boom):
+        with pytest.raises(edge_tts.exceptions.NoAudioReceived):
+            asyncio.run(tts._synthesize_one("hi", _voice(), tmp_path / "o.mp3"))
+
+
+def test_retry_recovers_when_real_synthesize_one_fails_once(tmp_path):
+    from unittest.mock import patch
+    calls = {"n": 0}
+
+    class _Flaky:
+        def __init__(self, *a, **k): pass
+        async def stream(self):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise edge_tts.exceptions.NoAudioReceived("blip")
+            yield {"type": "audio", "data": b"x"}
+            yield {"type": "WordBoundary", "text": "hi", "offset": 0, "duration": 1000}
+
+    with patch("youtube_automation.tts.edge_tts.Communicate", _Flaky), patch("youtube_automation.tts.time.sleep"):
+        cues = tts._synthesize_one_with_retry("hi", _voice(), tmp_path / "o.mp3")
+    assert calls["n"] == 2 and cues

@@ -199,8 +199,26 @@ async def _synthesize_one(text: str, voice: VoiceConfig, out_path: Path, role: s
         # If no cues but audio generated, create approximate cues from text
         logger.warning(f"TTS generated audio but no word boundaries for scene role={role}; creating approximate cues")
         return _approx_cues_from_text(text, out_path)
-    except edge_tts.exceptions.NoAudioReceived as exc:
-        raise RuntimeError(f"edge-tts returned no audio: {exc}") from exc
+    except edge_tts.exceptions.NoAudioReceived:
+        # Re-raised as-is (NOT wrapped in RuntimeError) so the caller's retry
+        # loop can see it: wrapping it here meant _synthesize_one_with_retry's
+        # `except NoAudioReceived` never matched and one transient hiccup from
+        # edge-tts's free endpoint failed the whole run with zero retries.
+        raise
+
+
+# Transient edge-tts/network failures worth retrying (rather than failing the
+# whole daily run on one blip).
+_TRANSIENT_TTS_ERRORS = (
+    edge_tts.exceptions.NoAudioReceived,
+    edge_tts.exceptions.WebSocketError,
+    edge_tts.exceptions.UnexpectedResponse,
+    edge_tts.exceptions.UnknownResponse,
+    edge_tts.exceptions.SkewAdjustmentError,
+    asyncio.TimeoutError,
+    ConnectionError,
+    OSError,
+)
 
 
 def _synthesize_one_with_retry(text: str, voice: VoiceConfig, out_path: Path, role: str = "build") -> List[WordCue]:
@@ -208,9 +226,10 @@ def _synthesize_one_with_retry(text: str, voice: VoiceConfig, out_path: Path, ro
     for attempt in range(_MAX_TTS_RETRIES + 1):
         try:
             return asyncio.run(_synthesize_one(text, voice, out_path, role))
-        except edge_tts.exceptions.NoAudioReceived as exc:
+        except _TRANSIENT_TTS_ERRORS as exc:
             last_error = exc
             if attempt < _MAX_TTS_RETRIES:
+                logger.warning(f"edge-tts attempt {attempt + 1} failed ({type(exc).__name__}: {exc}); retrying")
                 time.sleep(2 ** attempt)
                 continue
             raise RuntimeError(
