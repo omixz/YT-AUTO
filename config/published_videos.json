@@ -619,5 +619,20 @@
     "quality_gate_reasons": [
       "last scene is not role=insight"
     ]
+  },
+  {
+    "video_id": "tyLKN9gT_hM",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Death-Bed Betrayal That Tried to Erase Egypt\u2019s Greatest Queen",
+    "topic": "The Death-Bed Betrayal of Queen Hatshepsut: How her desperate attempt to erase her successor, Thutmose III, from history backfired when he smashed her monuments, chiseled away her name, and left her secret tomb empty.",
+    "published_at": "2026-10-08",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 2160 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 826s (13.8 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
