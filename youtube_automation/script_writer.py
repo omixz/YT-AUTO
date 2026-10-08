@@ -350,6 +350,36 @@ def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
     return target_words, suggested_scenes, max_output_tokens
 
 
+_LENGTH_RETRIES = 5
+
+
+def _draft_text(data: dict) -> str:
+    return "\n\n".join(s["narration"].strip() for s in data["scenes"])
+
+
+_MIN_ROLE_REPAIR_WORDS = 15
+
+
+def _repair_roles(data: dict) -> dict:
+    """The prompt always asks for first scene=hook and last scene=insight, but
+    the model sometimes writes exactly that and still tags the last scene
+    "build" - which made quality_check.py fail otherwise-fine videos and
+    upload them as private. Fix the labels when the scene is clearly real
+    narration; leave genuinely empty/tiny scenes alone so the gate still
+    catches truncated output."""
+    scenes = data.get("scenes") or []
+    if not scenes:
+        return data
+    first, last = scenes[0], scenes[-1]
+    if first.get("role") != "hook" and len(first["narration"].split()) >= _MIN_ROLE_REPAIR_WORDS:
+        logger.warning("First scene was tagged role=%r; relabeling as 'hook'.", first.get("role"))
+        first["role"] = "hook"
+    if last.get("role") != "insight" and len(last["narration"].split()) >= _MIN_ROLE_REPAIR_WORDS:
+        logger.warning("Last scene was tagged role=%r; relabeling as 'insight'.", last.get("role"))
+        last["role"] = "insight"
+    return data
+
+
 def generate_script(topic: str, config: PipelineConfig) -> Script:
     """Ask Gemini to write a full scene-by-scene script for one video."""
     target_words, suggested_scenes, max_output_tokens = _script_length_params(config.video.target_seconds)
@@ -461,11 +491,11 @@ fabricate statistics or quotes. Call emit_script with the final result."""
         # accepting a near-miss, especially now the bar itself (0.85, up
         # from 0.7) and target_words (165 wpm, up from 140) are both higher.
         best_data, best_word_count = data, word_count
-        for attempt in range(1, 4):
+        for attempt in range(1, _LENGTH_RETRIES + 1):
             logger.warning(
                 "Script at %d words, under this %ds video's target of ~%d words - "
-                "retry %d/3 with a reinforced prompt.",
-                best_word_count, config.video.target_seconds, target_words, attempt,
+                "retry %d/%d with a reinforced prompt.",
+                best_word_count, config.video.target_seconds, target_words, attempt, _LENGTH_RETRIES,
             )
             reinforced_prompt = prompt + f"""
 
@@ -474,7 +504,15 @@ narration - well short of the ~{target_words} words this video needs. Do not sto
 just because the most obvious version of it feels complete - go deeper into the specific people,
 decisions, near-misses, and aftermath involved (see the guidance above on adding texture rather
 than moving on early). This attempt must reach at least {min_acceptable_words} words of total
-narration."""
+narration.
+
+Here is the narration of the best previous draft ({best_word_count} words). Keep the same story and
+the same hook -> build -> insight structure, but EXPAND it: add the missing depth, specifics and
+aftermath until it clears {min_acceptable_words} words. Do not shorten or drop anything that is
+already here.
+---
+{_draft_text(best_data)}
+---"""
             retry_data = _call_gemini(reinforced_prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
             retry_word_count = sum(len(s["narration"].split()) for s in retry_data["scenes"])
             if retry_word_count > best_word_count:
@@ -494,6 +532,8 @@ narration."""
                 "keeping the best attempt; quality_check.py will catch it if it's still too short.",
                 best_word_count, attempt + 1,
             )
+
+    data = _repair_roles(data)
 
     scenes = [
         Scene(
