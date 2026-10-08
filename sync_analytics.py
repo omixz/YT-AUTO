@@ -13,9 +13,21 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
+import sys
 
 from youtube_automation import analytics, growth_ledger, reporting
 from youtube_automation.config import PipelineConfig
+
+
+def _describe(exc: Exception) -> str:
+    """One-line, human-readable cause. For Google API errors this includes the
+    HTTP status and reason (e.g. 403 accessNotConfigured / insufficientPermissions)."""
+    status = getattr(getattr(exc, "resp", None), "status", None)
+    content = getattr(exc, "content", b"")
+    if isinstance(content, bytes):
+        content = content.decode("utf-8", "replace")
+    detail = f" status={status} body={str(content)[:400]}" if status else ""
+    return f"{type(exc).__name__}: {exc}{detail}".replace("\n", " ")
 
 
 def main() -> None:
@@ -28,11 +40,17 @@ def main() -> None:
     records = growth_ledger.unscored_mature_records(config)
     logger.info("%d matured, unscored video(s) to check.", len(records))
 
+    failures: list = []
     for record in records:
         published = dt.date.fromisoformat(record["published_at"])
-        stats = analytics.fetch_video_stats(
-            record["video_id"], published, config, window_days=config.growth.maturity_days
-        )
+        try:
+            stats = analytics.fetch_video_stats(
+                record["video_id"], published, config, window_days=config.growth.maturity_days
+            )
+        except Exception as exc:  # noqa: BLE001 - surface the real cause, keep scoring the rest
+            failures.append((record["video_id"], _describe(exc)))
+            logger.exception("Analytics fetch failed for %s - continuing.", record["video_id"])
+            continue
         if stats is None:
             logger.warning("No analytics data yet for %s - will retry next sync.", record["video_id"])
             continue
@@ -54,5 +72,18 @@ def main() -> None:
             logger.exception("Report generation failed for %s - continuing.", record["video_id"])
 
 
+    if failures:
+        for vid, why in failures:
+            # GitHub Actions turns this into a visible annotation on the run.
+            print(f"::error title=Analytics sync failed for {vid}::{why}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        print(f"::error title=Analytics sync crashed::{_describe(exc)}")
+        raise
