@@ -1,0 +1,26 @@
+# Video report: How One Soviet Officer’s Gut Feeling Saved the World From Nuclear War
+
+- **Video:** https://youtu.be/imRXjg7OPrs
+- **Niche / format:** world_wars / longform
+- **Published:** 2026-08-05 (stats window: first 7 days)
+
+## Performance
+
+- Views: **16** (+115% vs channel avg)
+- Average watched: **8%** (24s) (-69% vs channel avg)
+- Watch time: **6 min**
+- Subscribers gained: **0**
+- Likes / comments / shares: 0 / 0 / 0
+
+## Where the views came from
+
+| Source | Views | Share | How to get more from it |
+|---|---|---|---|
+| Suggested videos | 16 | 100% | Retention drives this: stronger hooks, faster pacing, and topics adjacent to big channels' hits. |
+| Direct / unknown | 0 | 0% | Low-leverage; no direct action. |
+
+## What to do next
+
+- Retention is low (8% average watched): tighten the hook so the first sentence pays off the title's promise, and cut any scene that doesn't advance the story.
+- This video beat the channel average on views, driven mostly by Suggested videos - study what it did differently (topic, title shape, thumbnail) and repeat it.
+- Search is a small share of views: work searchable phrases into titles (what would someone actually type?) and the first two description lines.
