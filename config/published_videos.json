@@ -556,7 +556,7 @@
     "title": "The Terrifying 1997 Outback Radio Transmission of the 'Screaming Man'",
     "topic": "The terrifying 1997 radio transmission of the 'Screaming Man' of the Australian Outback, where a lone traveler's panicked SOS cut through the static before his vehicle was found locked and abandoned in the desert.",
     "published_at": "2026-10-02",
-    "scored": false,
+    "scored": true,
     "privacy_status": "private",
     "passed_quality_gate": false,
     "quality_gate_reasons": [
