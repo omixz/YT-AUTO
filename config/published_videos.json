@@ -634,5 +634,20 @@
       "only 2160 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
       "rendered video is only 826s (13.8 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
     ]
+  },
+  {
+    "video_id": "Yotho8k5aJI",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Corpse That Stood Trial: The Darkest Night in Papal History",
+    "topic": "The Corpse That Went on Trial: How the Catholic Church dug up the rotting body of Pope Formosus, dressed it in papal robes, placed it in a courtroom chair to stand trial for heresy, and threw it into the Tiber River.",
+    "published_at": "2026-10-09",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1932 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 735s (12.3 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
