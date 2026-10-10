@@ -351,6 +351,14 @@ def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
 
 
 _LENGTH_RETRIES = 5
+_EXTEND_PASSES = 4
+EMIT_EXTRA_SCENES = "emit_extra_scenes"
+# Same scene shape as the full script, just without title/description/tags.
+EXTEND_SCHEMA = {
+    "type": "object",
+    "properties": {"scenes": SCRIPT_SCHEMA["properties"]["scenes"]},
+    "required": ["scenes"],
+}
 
 
 def _draft_text(data: dict) -> str:
@@ -377,6 +385,59 @@ def _repair_roles(data: dict) -> dict:
     if last.get("role") != "insight" and len(last["narration"].split()) >= _MIN_ROLE_REPAIR_WORDS:
         logger.warning("Last scene was tagged role=%r; relabeling as 'insight'.", last.get("role"))
         last["role"] = "insight"
+    return data
+
+
+def _extend_to_length(data: dict, topic: str, min_words: int, config: PipelineConfig, max_output_tokens: int) -> dict:
+    """Last resort when re-asking for a full, longer script still undershoots:
+    rewriting the whole thing in one go keeps coming back ~25% short (the model
+    stops when the story "feels" complete), so instead ask for ONLY the missing
+    material - extra build scenes with new specifics - and splice them in before
+    the final insight scene. Each pass adds roughly the shortfall, so a few
+    passes reliably reach the same length bar the quality gate enforces. The
+    gate's thresholds are unchanged; this just makes generation meet them."""
+    for n in range(1, _EXTEND_PASSES + 1):
+        words = sum(len(sc["narration"].split()) for sc in data["scenes"])
+        if words >= min_words:
+            break
+        need = min_words - words + 120
+        prompt = f"""You are extending a documentary-style narration about: {topic}
+Title: {data["title"]}
+
+The script below is {words} words but needs at least {min_words}. Write NEW build scenes totalling about
+{need} words (roughly {max(2, need // 180)} scenes of 120-220 words each) that add material the script does NOT
+already cover: more specific people, dates, numbers, decisions, near-misses, consequences and aftermath.
+They will be inserted just before the final insight scene, so keep the same voice and tense, make them
+flow from the existing build, and do not repeat or restate anything already written. No markdown.
+
+EXISTING NARRATION:
+---
+{_draft_text(data)}
+---"""
+        try:
+            extra = _call_gemini(prompt, EMIT_EXTRA_SCENES, EXTEND_SCHEMA, config, max_output_tokens)
+        except Exception as exc:  # noqa: BLE001 - never lose a good script over a failed top-up
+            logger.warning("Length extension pass %d failed (%s); keeping the script as-is.", n, exc)
+            break
+        existing = {" ".join(sc["narration"].lower().split()).rstrip(".!?") for sc in data["scenes"]}
+        new_scenes = []
+        for sc in extra.get("scenes", []):
+            text = sc.get("narration", "").strip()
+            key = " ".join(text.lower().split()).rstrip(".!?")
+            if len(text.split()) < 25 or key in existing:
+                continue
+            existing.add(key)
+            new_scenes.append({
+                "role": "build", "narration": text,
+                "visual_keywords": list(sc.get("visual_keywords") or [topic])[:6],
+                "on_screen_text": sc.get("on_screen_text", "") or "",
+            })
+        if not new_scenes:
+            logger.warning("Length extension pass %d returned nothing usable.", n)
+            break
+        data["scenes"] = data["scenes"][:-1] + new_scenes + data["scenes"][-1:]
+        logger.info("Length extension pass %d added %d scenes (%d words).", n, len(new_scenes),
+                    sum(len(sc["narration"].split()) for sc in new_scenes))
     return data
 
 
@@ -532,6 +593,7 @@ already here.
                 "keeping the best attempt; quality_check.py will catch it if it's still too short.",
                 best_word_count, attempt + 1,
             )
+            data = _extend_to_length(data, topic, min_acceptable_words, config, max_output_tokens)
 
     data = _repair_roles(data)
 
