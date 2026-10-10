@@ -166,6 +166,62 @@ def _escape_for_filter(path: Path) -> str:
     return str(path).replace("\\", "\\\\").replace(":", "\\:")
 
 
+_OUT_SAMPLE_RATE = 48000
+_OUT_AUDIO_BITRATE = "192k"
+# Every layer is converted to this before mixing. Edge-TTS narration is 24 kHz
+# mono while the music/SFX beds are 44.1 kHz stereo; amix adopts the FIRST
+# input's format, so the old mix came out 24 kHz mono (~67 kbps): muffled, no
+# top end, and the stereo beds folded down to mono.
+_NORM = f"aresample={_OUT_SAMPLE_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo"
+
+
+def _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path):
+    inputs = ["-i", str(burned), "-i", str(narration_path)]
+    parts = []
+    idx = 2
+    beds = []  # (kind, input index)
+    if background_music and background_music.exists():
+        inputs += ["-stream_loop", "-1", "-i", str(background_music)]
+        beds.append(("music", idx)); idx += 1
+    if ambience_path and ambience_path.exists():
+        inputs += ["-i", str(ambience_path)]
+        beds.append(("amb", idx)); idx += 1
+    if transitions_path and transitions_path.exists():
+        inputs += ["-i", str(transitions_path)]
+        beds.append(("trans", idx)); idx += 1
+
+    if not beds:
+        return ["ffmpeg", "-y", *inputs, "-map", "0:v", "-map", "1:a",
+                "-af", _NORM, "-c:v", "copy", "-c:a", "aac", "-b:a", _OUT_AUDIO_BITRATE,
+                "-ar", str(_OUT_SAMPLE_RATE), "-shortest", str(out_path)]
+
+    n_side = sum(1 for k, _ in beds if k in ("music", "amb"))
+    # Narration feeds the final mix plus one sidechain per ducked bed.
+    outs = ["[nmix]"] + [f"[nsc{i}]" for i in range(n_side)]
+    parts.append(f"[1:a]{_NORM},asplit={len(outs)}{''.join(outs)}")
+    labels = ["[nmix]"]
+    side = 0
+    for kind, i in beds:
+        if kind == "music":
+            # threshold -24dB, ratio 4:1, 10ms attack, 200ms release
+            parts.append(f"[{i}:a]{_NORM}[m{i}]")
+            parts.append(f"[m{i}][nsc{side}]sidechaincompress=threshold=-24dB:ratio=4:attack=10:release=200:makeup=1[music]")
+            labels.append("[music]"); side += 1
+        elif kind == "amb":
+            parts.append(f"[{i}:a]{_NORM}[a{i}]")
+            parts.append(f"[a{i}][nsc{side}]sidechaincompress=threshold=-30dB:ratio=6:attack=5:release=300:makeup=1[amb]")
+            labels.append("[amb]"); side += 1
+        else:
+            parts.append(f"[{i}:a]{_NORM},volume=-12dB[trans]")
+            labels.append("[trans]")
+    # normalize=0: otherwise amix divides every input (narration included) by
+    # the layer count and buries the beds.
+    parts.append("".join(labels) + f"amix=inputs={len(labels)}:duration=first:dropout_transition=2:normalize=0[aout]")
+    return ["ffmpeg", "-y", *inputs, "-filter_complex", ";".join(parts),
+            "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac",
+            "-b:a", _OUT_AUDIO_BITRATE, "-ar", str(_OUT_SAMPLE_RATE), "-shortest", str(out_path)]
+
+
 def build_video(
     visuals: List[VisualAsset],
     scene_audio: List[SceneAudio],
@@ -228,62 +284,6 @@ def build_video(
     # Sidechain compression: duck music/ambience when narration is present.
     # This uses ffmpeg's sidechaincompress filter - the narration (input 1)
     # acts as the control signal to compress the music/ambience beds.
-    inputs = ["-i", str(burned), "-i", str(narration_path)]
-    filter_parts = []
-    audio_labels = ["[1:a]"]  # narration stays at full volume, no processing
-    next_input_idx = 2
-
-    if background_music and background_music.exists():
-        inputs += ["-stream_loop", "-1", "-i", str(background_music)]
-        # Sidechain compress music with narration as control
-        # threshold: -24dB - start compressing when narration exceeds this
-        # ratio: 4:1 - moderate compression
-        # attack: 10ms - fast attack for speech transients
-        # release: 200ms - smooth release
-        filter_parts.append(
-            f"[{next_input_idx}:a][1:a]sidechaincompress="
-            f"threshold=-24dB:ratio=4:attack=10:release=200:makeup=1[music]"
-        )
-        audio_labels.append("[music]")
-        next_input_idx += 1
-
-    if ambience_path and ambience_path.exists():
-        inputs += ["-i", str(ambience_path)]
-        # Sidechain compress ambience more aggressively (it's quieter texture)
-        filter_parts.append(
-            f"[{next_input_idx}:a][1:a]sidechaincompress="
-            f"threshold=-30dB:ratio=6:attack=5:release=300:makeup=1[amb]"
-        )
-        audio_labels.append("[amb]")
-        next_input_idx += 1
-
-    if transitions_path and transitions_path.exists():
-        inputs += ["-i", str(transitions_path)]
-        # Transitions are brief effects - no sidechain needed, just mix at low level
-        filter_parts.append(f"[{next_input_idx}:a]volume=-12dB[trans]")
-        audio_labels.append("[trans]")
-        next_input_idx += 1
-
-    if len(audio_labels) > 1:
-        # normalize=0 is essential: amix's default (normalize=1) divides every
-        # input - including the narration - by the number of layers, so adding
-        # a music + SFX bed would drag the whole mix ~9dB quieter and bury the
-        # beds. With normalize off, narration stays at full and the beds sit at
-        # exactly the dB offset set by their volume filters above.
-        mix_filter = "".join(audio_labels) + f"amix=inputs={len(audio_labels)}:duration=first:dropout_transition=2:normalize=0[aout]"
-        filter_complex = ";".join(filter_parts + [mix_filter])
-        cmd = [
-            "ffmpeg", "-y", *inputs,
-            "-filter_complex", filter_complex,
-            "-map", "0:v", "-map", "[aout]",
-            "-c:v", "copy", "-c:a", "aac", "-shortest", str(out_path),
-        ]
-    else:
-        cmd = [
-            "ffmpeg", "-y", *inputs,
-            "-map", "0:v", "-map", "1:a",
-            "-c:v", "copy", "-c:a", "aac", "-shortest", str(out_path),
-        ]
-
+    cmd = _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path)
     run_ffmpeg(cmd)
     return out_path
