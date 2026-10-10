@@ -649,5 +649,17 @@
       "only 1932 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
       "rendered video is only 735s (12.3 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
     ]
+  },
+  {
+    "video_id": "vFh-IigoFMU",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Fatal Apple: How One Golden Fruit Burned an Empire to Ash",
+    "topic": "The Fatal Apple of Discord: How a single golden fruit thrown by the goddess of strife at a wedding party sparked a divine beauty contest, a bribe of Helen of Sparta, and a ten-year war that burned a civilization to ash.",
+    "published_at": "2026-10-10",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": []
   }
 ]
