@@ -33,6 +33,24 @@ _PROGRESSION = [
 ]
 _CHORD_SECONDS = 6.0
 
+# One fixed 4-chord loop repeated for 15-20 minutes is the "same 24 seconds
+# over and over" the listener hears. Build the bed from several equally gentle
+# progressions in varying chord lengths instead, seeded by the video length so
+# each video differs.
+_CHORDS = {
+    "Am": (220.00, 261.63, 329.63), "F": (174.61, 220.00, 261.63),
+    "C": (261.63, 329.63, 392.00), "G": (196.00, 246.94, 293.66),
+    "Dm": (146.83, 174.61, 220.00), "Em": (164.81, 196.00, 246.94),
+}
+_PROGRESSIONS = [
+    list(_PROGRESSION),
+    [_CHORDS[c] for c in ("C", "G", "Am", "F")],
+    [_CHORDS[c] for c in ("Am", "Dm", "F", "G")],
+    [_CHORDS[c] for c in ("F", "C", "Dm", "Am")],
+    [_CHORDS[c] for c in ("Am", "Em", "F", "G")],
+    [_CHORDS[c] for c in ("C", "Am", "F", "G")],
+]
+
 
 def _chord_pad(freqs, duration: float) -> np.ndarray:
     n = max(1, int(duration * SAMPLE_RATE))
@@ -100,15 +118,25 @@ def build_music_bed(
     """Renders a background-music WAV at least `duration` seconds long."""
     segments = []
     filled = 0.0
-    i = 0
+    rng = np.random.default_rng(int(duration))
+    prog, k, last = _PROGRESSIONS[0], 0, -1
     while filled < duration:
-        chord = _PROGRESSION[i % len(_PROGRESSION)]
-        seg_dur = min(_CHORD_SECONDS, duration - filled)
+        if k >= len(prog):  # pick a different progression each time round
+            choices = [j for j in range(len(_PROGRESSIONS)) if j != last]
+            last = int(rng.choice(choices))
+            prog, k = _PROGRESSIONS[last], 0
+        chord = prog[k]
+        k += 1
+        seg_dur = min(float(rng.uniform(5.0, 9.0)) if filled else _CHORD_SECONDS, duration - filled)
         segments.append(_chord_pad(chord, max(seg_dur, 0.05)))
         filled += seg_dur
-        i += 1
 
     bed = np.concatenate(segments) if segments else np.zeros(1)
+    # Random chord lengths aren't whole samples, so the per-chord int() rounding
+    # can leave the bed a few samples short of `duration`; always cover it fully.
+    need = int(np.ceil(duration * SAMPLE_RATE))
+    if len(bed) < need:
+        bed = np.concatenate([bed, np.full(need - len(bed), bed[-1] if len(bed) else 0.0)])
 
     # Slow global tremolo for a little life, then normalise well below clipping.
     t = np.linspace(0, len(bed) / SAMPLE_RATE, len(bed), endpoint=False)

@@ -24,6 +24,18 @@ from .tts import SceneAudio
 SAMPLE_RATE = 44100
 
 
+# Every synth used to call np.random.default_rng(<fixed number>), so each scene
+# that matched the same sound (fire, horses, battle...) got the *identical*
+# waveform - the same crackle/hoofbeat pattern repeating scene after scene.
+# The scene index is mixed into the seed so each scene differs, while a given
+# scene is still reproducible.
+_SCENE_SEED = [0]
+
+
+def _rng(base: int):
+    return np.random.default_rng(base + 7919 * _SCENE_SEED[0])
+
+
 def _white_noise(duration: float, seed: Optional[int] = None) -> np.ndarray:
     n = max(1, int(duration * SAMPLE_RATE))
     rng = np.random.default_rng(seed)
@@ -69,7 +81,7 @@ def _synth_wind(duration: float) -> np.ndarray:
 def _synth_fire(duration: float) -> np.ndarray:
     base = _lowpass(_white_noise(duration), 40) * 0.35
     n = len(base)
-    rng = np.random.default_rng(1)
+    rng = _rng(1)
     crackle = np.zeros(n)
     for _ in range(int(duration * 6)):
         pop_len = int(rng.integers(20, 120))
@@ -89,7 +101,7 @@ def _synth_ocean(duration: float) -> np.ndarray:
 def _synth_horse(duration: float) -> np.ndarray:
     n = max(1, int(duration * SAMPLE_RATE))
     out = np.zeros(n)
-    rng = np.random.default_rng(2)
+    rng = _rng(2)
     t = 0.0
     while t < duration:
         pos = int(t * SAMPLE_RATE)
@@ -104,7 +116,7 @@ def _synth_horse(duration: float) -> np.ndarray:
 def _synth_birds(duration: float) -> np.ndarray:
     n = max(1, int(duration * SAMPLE_RATE))
     out = np.zeros(n)
-    rng = np.random.default_rng(3)
+    rng = _rng(3)
     t = 0.0
     while t < duration:
         pos = int(t * SAMPLE_RATE)
@@ -120,7 +132,7 @@ def _synth_birds(duration: float) -> np.ndarray:
 def _synth_thunder(duration: float) -> np.ndarray:
     out = _lowpass(_white_noise(duration), 300) * 0.2
     n = len(out)
-    rng = np.random.default_rng(4)
+    rng = _rng(4)
     for _ in range(max(1, int(duration / 4))):
         # Clamped to the clip length - on a very short scene an unclamped
         # burst could run past the end of `out`, and a += between mismatched
@@ -135,7 +147,7 @@ def _synth_thunder(duration: float) -> np.ndarray:
 def _synth_battle(duration: float) -> np.ndarray:
     base = _lowpass(_white_noise(duration), 250) * 0.25
     n = len(base)
-    rng = np.random.default_rng(5)
+    rng = _rng(5)
     booms = np.zeros(n)
     for _ in range(max(1, int(duration / 3))):
         boom_len = min(int(rng.uniform(0.3, 0.6) * SAMPLE_RATE), max(1, n - 1))
@@ -153,7 +165,7 @@ def _synth_clash(duration: float) -> np.ndarray:
     scuffle rather than one clean isolated hit."""
     base = _lowpass(_white_noise(duration), 300) * 0.12
     n = len(base)
-    rng = np.random.default_rng(6)
+    rng = _rng(6)
     out = base.copy()
     t = 0.0
     while t < duration:
@@ -181,7 +193,7 @@ def _synth_crowd(duration: float) -> np.ndarray:
     chatter bed without needing real recorded voices."""
     n = max(1, int(duration * SAMPLE_RATE))
     out = np.zeros(n)
-    rng = np.random.default_rng(7)
+    rng = _rng(7)
     t = np.linspace(0, duration, n)
     for i in range(6):
         voice = _lowpass(_white_noise(duration, seed=100 + i), int(rng.integers(15, 35)))
@@ -222,7 +234,7 @@ def _synth_tension(duration: float) -> np.ndarray:
     drone = np.sin(2 * np.pi * 55 * t) * 0.25 + np.sin(2 * np.pi * 82.5 * t) * 0.12
     swell = 0.6 + 0.4 * np.sin(2 * np.pi * 0.08 * t)
     out = drone * swell
-    rng = np.random.default_rng(8)
+    rng = _rng(8)
     if duration > 2.0 and rng.random() < 0.6:
         sting_len = min(int(0.5 * SAMPLE_RATE), max(1, n - 1))
         pos = int(rng.uniform(0.3, 0.8) * n)
@@ -240,7 +252,7 @@ def _synth_celebration(duration: float) -> np.ndarray:
     court scene."""
     n = max(1, int(duration * SAMPLE_RATE))
     out = np.zeros(n)
-    rng = np.random.default_rng(9)
+    rng = _rng(9)
     t = np.linspace(0, duration, n)
     for i in range(8):
         voice = _lowpass(_white_noise(duration, seed=200 + i), int(rng.integers(6, 16)))
@@ -261,7 +273,7 @@ def _synth_dungeon_echo(duration: float) -> np.ndarray:
     resonant water drip - for prison/captivity scenes."""
     base = _lowpass(_white_noise(duration), 350) * 0.22
     n = len(base)
-    rng = np.random.default_rng(10)
+    rng = _rng(10)
     out = base.copy()
     t = 0.0
     while t < duration:
@@ -282,7 +294,7 @@ def _synth_radio(duration: float) -> np.ndarray:
     hiss = noise - _lowpass(noise, 30)  # crude high-pass via subtracting a low-pass copy
     out = np.clip(hiss * 0.3, -1, 1)
     n = len(out)
-    rng = np.random.default_rng(11)
+    rng = _rng(11)
     t = 0.0
     while t < duration:
         pos = int(t * SAMPLE_RATE)
@@ -300,7 +312,7 @@ def _synth_war_ambience(duration: float) -> np.ndarray:
     metal clanking, distant explosions. Low volume texture."""
     n = max(1, int(duration * SAMPLE_RATE))
     out = np.zeros(n)
-    rng = np.random.default_rng(8)
+    rng = _rng(8)
     t = np.linspace(0, duration, n)
     
     # Low-frequency rumble base
@@ -378,7 +390,7 @@ def _synth_scared_men(duration: float) -> np.ndarray:
     Low, intimate, human. Volume very low."""
     n = max(1, int(duration * SAMPLE_RATE))
     out = np.zeros(n)
-    rng = np.random.default_rng(9)
+    rng = _rng(9)
     t = np.linspace(0, duration, n)
     
     # Layer of quiet breaths
@@ -505,16 +517,19 @@ def _write_wav(samples: np.ndarray, path: Path) -> None:
         f.writeframes(pcm.tobytes())
 
 
-def _synth_transition_whoosh(duration: float = 0.6) -> np.ndarray:
-    """A quick rising whoosh for scene transitions - sells the cut."""
+def _synth_transition_whoosh(duration: float = 0.6, seed: Optional[int] = None) -> np.ndarray:
+    """A quick rising whoosh for scene transitions - sells the cut. `seed`
+    varies the pitch sweep and the breath noise so consecutive whooshes are
+    not the same sound over and over."""
     n = max(1, int(duration * SAMPLE_RATE))
     t = np.linspace(0, duration, n)
+    vr = np.random.default_rng(seed)
     # Rising pitch + amplitude
-    freq = np.linspace(80, 2000, n)
+    freq = np.linspace(vr.uniform(60, 120), vr.uniform(1500, 2400), n)
     phase = np.cumsum(2 * np.pi * freq / SAMPLE_RATE)
     sig = np.sin(phase) * np.hanning(n) * t / duration
     # Add breathy noise
-    noise = _lowpass(_white_noise(duration), 50) * 0.3
+    noise = _lowpass(_white_noise(duration, seed), 50) * 0.3
     return np.clip(sig + noise, -1, 1) * 0.4
 
 
@@ -576,14 +591,20 @@ def build_transition_sfx(
         next_role = scene_roles[i + 1]
         sfx_name = _get_transition_sfx(prev_role, next_role)
         
+        # Back-to-back build->build cuts were all marked with the same whoosh
+        # (20+ per video); mark only every third so it stays an accent.
+        if (prev_role, next_role) == ("build", "build") and i % 3 != 0:
+            offset += scene_durations[i]
+            continue
+
         if sfx_name == "whoosh":
-            sfx = _synth_transition_whoosh(0.6)
+            sfx = _synth_transition_whoosh(0.6, seed=i)
         elif sfx_name == "thud":
             sfx = _synth_impact_thud(0.4)
         elif sfx_name == "shimmer":
             sfx = _synth_magic_shimmer(0.5)
         else:
-            sfx = _synth_transition_whoosh(0.6)
+            sfx = _synth_transition_whoosh(0.6, seed=i)
         
         # Place SFX so it ends exactly at the scene boundary
         start_sample = int((offset + scene_durations[i] - len(sfx) / SAMPLE_RATE) * SAMPLE_RATE)
@@ -614,19 +635,23 @@ def build_ambience_track(
     matched_any = False
 
     offset = intro_duration
-    for scene, audio in zip(scenes, content_scene_audio):
+    xf = 0.35  # scene beds overlap by this much so they crossfade instead of dipping to silence
+    for idx, (scene, audio) in enumerate(zip(scenes, content_scene_audio)):
+        _SCENE_SEED[0] = idx + 1
         # A scene with no specific atmosphere still gets the neutral air bed,
         # so every video has an ambient layer (guaranteed, never silent) -
         # matched scenes just layer their specific SFX on top of that.
         name = sfx_for_scene(scene)
         if name:
             matched_any = True
-        samples = _fade(_SFX_SYNTH[name or "air"](audio.duration))
-        start = int(offset * SAMPLE_RATE)
+        lead = min(xf, offset)
+        samples = _fade(_SFX_SYNTH[name or "air"](audio.duration + lead + xf), xf)
+        start = int((offset - lead) * SAMPLE_RATE)
         end = min(len(track), start + len(samples))
         track[start:end] += samples[: end - start]
         offset += audio.duration
 
+    _SCENE_SEED[0] = 0
     out_path = work_dir / "ambience.wav"
     _write_wav(track, out_path)
     return out_path
