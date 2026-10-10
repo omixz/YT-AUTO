@@ -570,7 +570,7 @@
     "title": "The 15-Megaton Mistake That Turned the Pacific Ocean Into a Radioactive Trap",
     "topic": "The 1954 Castle Bravo nuclear test, where a catastrophic scientific miscalculation doubled the expected yield and turned a Bikini Atoll lagoon into a lethal radioactive storm trapping a doomed Japanese tuna boat crew.",
     "published_at": "2026-10-03",
-    "scored": false,
+    "scored": true,
     "privacy_status": "private",
     "passed_quality_gate": false,
     "quality_gate_reasons": [

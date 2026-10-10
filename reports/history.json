@@ -1135,5 +1135,23 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "oyeJcJBd8v8",
+    "published_at": "2026-10-03",
+    "niche": "modern_history",
+    "format": "longform",
+    "title": "The 15-Megaton Mistake That Turned the Pacific Ocean Into a Radioactive Trap",
+    "stats": {
+      "views": 0,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {}
+    }
   }
 ]
