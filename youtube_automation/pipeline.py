@@ -154,7 +154,8 @@ def run(
     logger.info("Generating thumbnail...")
     if content_visuals:
         thumb_path = thumbnail.generate(
-            script.title, content_visuals[0], work_dir, work_dir / "thumbnail.jpg"
+            script.title, content_visuals[0], work_dir, work_dir / "thumbnail.jpg",
+            candidates=content_visuals[1:8],
         )
     else:
         thumb_path = work_dir / "thumbnail.jpg"
