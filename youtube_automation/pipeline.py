@@ -15,7 +15,7 @@ from typing import List, Optional
 
 from . import (
     assembler, branding, buffer_publisher, growth_ledger, media_host, music, niche_selector,
-    procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
+    cinematic, procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
     visuals, youtube_uploader,
 )
 from .config import ROOT, PipelineConfig
@@ -56,6 +56,10 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
         # as a video segment (kind="video").
         durations = [a.duration for a in content_scene_audio]
         paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir, title=script.title)
+        if config.animation.cinematic:
+            w, h = config.video.resolution
+            paths = cinematic.grade_all(paths, script.scenes, w, h, config.video.fps, work_dir,
+                                        budget_seconds=config.animation.cinematic_budget_seconds)
         return [VisualAsset(kind="video", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
 
