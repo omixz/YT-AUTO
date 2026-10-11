@@ -1153,5 +1153,23 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "GfOH7lxB4yQ",
+    "published_at": "2026-10-04",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Blinding of Samson: How a Broken Vow Led to Mass Slaughter",
+    "stats": {
+      "views": 0,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {}
+    }
   }
 ]
