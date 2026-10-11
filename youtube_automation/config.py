@@ -86,6 +86,9 @@ class AnimationConfig:
     stock footage/photos for longform."""
     fps: int = 24
     accent_color: tuple = (255, 255, 255)
+    # Cinematic finishing pass (colour grade, bloom, vignette, grain, particles) over every scene clip.
+    cinematic: bool = True
+    cinematic_budget_seconds: int = 1500  # stop grading (leave the rest as-is) past this, so a render can never run away
 
 
 @dataclass
