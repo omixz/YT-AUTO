@@ -661,5 +661,20 @@
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": []
+  },
+  {
+    "video_id": "28YHXUri2qU",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "Why Rome Buried Its Most Sacred Priestess Alive",
+    "topic": "The Execution of the Vestal Virgin Cornelia: How a sacred Roman priestess, accused of breaking her vow of chastity, was buried alive in an underground chamber with only a crust of bread and a single cup of water while the city watched in silence.",
+    "published_at": "2026-10-11",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 2265 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 856s (14.3 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
