@@ -1189,5 +1189,23 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "2-blbe00uGo",
+    "published_at": "2026-10-07",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Bizarre 1980 Case of Zigmund Adamski: The Coal Miner Found on a 10-Foot Coal Pile",
+    "stats": {
+      "views": 0,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {}
+    }
   }
 ]
