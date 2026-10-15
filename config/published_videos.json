@@ -702,5 +702,20 @@
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": []
+  },
+  {
+    "video_id": "-act65XY1nc",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Terrifying Truth Behind Elisa Lam\u2019s Final 4 Minutes in the Cecil Hotel Elevator",
+    "topic": "The 1961 disappearance of Elisa Lam at the Cecil Hotel, but focused entirely on the terrifying final 4 minutes captured on the elevator security camera where she interacts with an unseen entity and presses every floor button",
+    "published_at": "2026-10-15",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 2301 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 872s (14.5 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ]
   }
 ]
