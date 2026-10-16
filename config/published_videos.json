@@ -642,7 +642,7 @@
     "title": "The Corpse That Stood Trial: The Darkest Night in Papal History",
     "topic": "The Corpse That Went on Trial: How the Catholic Church dug up the rotting body of Pope Formosus, dressed it in papal robes, placed it in a courtroom chair to stand trial for heresy, and threw it into the Tiber River.",
     "published_at": "2026-10-09",
-    "scored": false,
+    "scored": true,
     "privacy_status": "private",
     "passed_quality_gate": false,
     "quality_gate_reasons": [

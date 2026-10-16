@@ -1225,5 +1225,23 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "Yotho8k5aJI",
+    "published_at": "2026-10-09",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Corpse That Stood Trial: The Darkest Night in Papal History",
+    "stats": {
+      "views": 0,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {}
+    }
   }
 ]
