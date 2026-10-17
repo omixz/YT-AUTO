@@ -168,9 +168,9 @@
     }
   },
   "mythology:longform": {
-    "samples": 11,
-    "total_score": 146.7,
-    "avg_score": 13.336363636363636,
+    "samples": 12,
+    "total_score": 162.2,
+    "avg_score": 13.516666666666666,
     "history": [
       {
         "date": "2026-10-08",
@@ -215,14 +215,18 @@
       {
         "date": "2026-10-16",
         "score": 0.0
+      },
+      {
+        "date": "2026-10-17",
+        "score": 15.5
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 0.0
+        "avg_score": 3.1
       },
       "30d": {
-        "avg_score": 13.336363636363636
+        "avg_score": 13.516666666666666
       }
     }
   },

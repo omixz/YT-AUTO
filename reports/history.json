@@ -1243,5 +1243,27 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "vFh-IigoFMU",
+    "published_at": "2026-10-10",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Fatal Apple: How One Golden Fruit Burned an Empire to Ash",
+    "stats": {
+      "views": 15,
+      "minutes_watched": 7.0,
+      "avg_view_duration_s": 46.0,
+      "avg_view_percentage": 4.39,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 10,
+        "SUBSCRIBER": 4,
+        "YT_SEARCH": 1
+      }
+    }
   }
 ]
