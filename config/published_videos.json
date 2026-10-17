@@ -732,5 +732,17 @@
       "only 2289 words of narration, well under this 1200s video's own target of ~3300 words (expected at least 2475) - the model undershot the requested length rather than a hard generation failure",
       "rendered video is only 880s (14.7 min), well under this video's own target of 1200s (20 min) (expected at least 900s / 15.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
     ]
+  },
+  {
+    "video_id": "-ze8vjiASQY",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "Why 5 Soviet Hikers Fled Their Warm Cabin Barefoot Into a Blizzard",
+    "topic": "The bizarre 1978 Dyatlov Pass-style mystery of the five boys who abandoned their warm cabin in the remote Soviet Ural mountains during a blizzard, fleeing barefoot into freezing snowdrifts without their boots or coats for reasons that remain entirely unexplained",
+    "published_at": "2026-10-17",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": []
   }
 ]
