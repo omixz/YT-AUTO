@@ -89,6 +89,11 @@ class AnimationConfig:
     # Cinematic finishing pass (colour grade, bloom, vignette, grain, particles) over every scene clip.
     cinematic: bool = True
     cinematic_budget_seconds: int = 1500  # stop grading (leave the rest as-is) past this, so a render can never run away
+    # "toon" = rigged cartoon characters + parallax sets (youtube_automation/toon, skia-python);
+    # "legacy" = the original static-sprite renderer. toon falls back to legacy per scene on any failure.
+    engine: str = "legacy"
+    toon_workers: int = 0              # 0 = auto (cores - 1, max 3)
+    toon_budget_seconds: int = 2400    # past this, remaining scenes use the (fast) legacy renderer
 
 
 @dataclass

@@ -84,6 +84,7 @@ visuals:
 animation:
   fps: 24                        # longform's procedural overlay runs at a lower fps than stock video - plenty smooth for simple shapes, much faster to render
   accent_color: [255, 255, 255]  # white stick figure / icon, composited via colorkey onto real footage
+  engine: toon                   # toon = animated cartoon characters (falls back to legacy per scene on any failure) | legacy
 
 upload:
   privacy_status: public       # private | unlisted | public - "public" is required for true set-and-forget;
