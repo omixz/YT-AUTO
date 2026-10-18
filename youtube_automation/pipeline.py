@@ -56,12 +56,14 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
         # as a video segment (kind="video").
         durations = [a.duration for a in content_scene_audio]
         paths = None
+        _engine_used[0] = "legacy"
         if config.animation.engine == "toon":
             try:
                 from .toon import render as toon_render
                 # The toon engine does its own finishing (vignette, time-of-day tint), so no cinematic pass.
                 paths = toon_render.generate_all_clips(script.scenes, durations, config, work_dir,
                                                        title=script.title, scene_audio=content_scene_audio)
+                _engine_used[0] = "toon"
             except Exception:
                 logger.exception("Toon engine failed outright; falling back to the legacy renderer for this video.")
         if paths is None:
@@ -72,6 +74,9 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
                                             budget_seconds=config.animation.cinematic_budget_seconds)
         return [VisualAsset(kind="video", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
+
+
+_engine_used = ["legacy"]   # which renderer actually produced the visuals (set in _build_content_visuals)
 
 
 class QualityGateFailed(RuntimeError):
@@ -183,6 +188,8 @@ def run(
         thumb_path = work_dir / "thumbnail.jpg"
 
     manifest = {
+        "voice": dict(tts.LAST_STATS),
+        "animation": {"engine": _engine_used[0], **__import__("youtube_automation.toon.render", fromlist=["LAST_STATS"]).LAST_STATS},
         "run_id": run_id,
         "niche": niche_key,
         "format": format_name,

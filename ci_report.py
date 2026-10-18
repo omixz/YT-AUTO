@@ -43,6 +43,13 @@ def build_summary(m: dict) -> str:
             lines.append(f"- **Scheduled for:** {m['publish_at']}")
     else:
         lines.append("- **Upload:** none (dry run or failed before upload)")
+    v, a = m.get("voice") or {}, m.get("animation") or {}
+    if v:
+        lines.append(f"- **Voice:** {v.get('used')} (requested {v.get('requested')}, fell back: {v.get('fell_back')}) - "
+                     f"{v.get('seconds')}s to synthesize {v.get('audio_seconds')}s of audio")
+    if a:
+        lines.append(f"- **Animation:** {a.get('engine')}" + (f" - {a.get('scenes', 0) - a.get('fallback_scenes', 0)}/{a.get('scenes')} scenes rendered by toon, "
+                     f"{a.get('fallback_scenes')} fell back to legacy, {a.get('seconds')}s on {a.get('workers')} workers" if a.get("scenes") else ""))
     reasons = m.get("quality_gate_reasons") or []
     if reasons:
         lines += ["", "### Quality gate reasons", *[f"- {r}" for r in reasons]]
@@ -77,6 +84,7 @@ def main() -> int:
         return 0
     summary = build_summary(manifest)
     print(summary)
+    (ROOT / "run_report.md").write_text(summary, encoding="utf-8")
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as fh:

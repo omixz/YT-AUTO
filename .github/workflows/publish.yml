@@ -160,6 +160,14 @@ jobs:
             --title "Review needed: $VIDEO_TITLE" \
             --body-file issue_body.md
 
+      - name: Post dry-run report (so results are readable without opening logs)
+        if: ${{ always() && github.event.inputs.dry_run == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f run_report.md ] || echo "No manifest was produced - the run failed before finishing." > run_report.md
+          gh issue create --title "Dry-run report (run ${{ github.run_id }})" --body-file run_report.md || true
+
       - name: Remove OAuth credential files before committing
         if: always()
         run: rm -f client_secret.json token.json

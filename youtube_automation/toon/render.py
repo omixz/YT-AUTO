@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List, Optional
 
 logger = logging.getLogger(__name__)
+LAST_STATS: dict = {}   # read by pipeline.py into the run manifest / report
 
 
 def _render_job(args) -> str:
@@ -95,6 +96,8 @@ def generate_all_clips(scenes, durations: List[float], config, work_dir: Path, t
             paths.append(_legacy_clip(scenes, i, config, work_dir, durations, title))
         else:
             paths.append(outs[i])
+    LAST_STATS.clear()
+    LAST_STATS.update(scenes=len(scenes), fallback_scenes=len(failed), seconds=round(time.monotonic() - start, 1), workers=workers)
     logger.info("toon: %d/%d scenes rendered in %.0fs (%d workers)", len(scenes) - len(failed), len(scenes),
                 time.monotonic() - start, workers)
     return paths

@@ -292,14 +292,31 @@ def concat_audio(paths: List[Path], out_path: Path) -> Path:
 def synthesize_script(
     script: Script, voice: VoiceConfig, work_dir: Path, google_api_key: Optional[str] = None,
 ) -> Tuple[List[SceneAudio], Path]:
+    started = time.monotonic()
+    requested, fell_back = voice.provider, False
     if voice.provider == "kokoro":
         try:
-            return _synthesize_script_core(script, voice, work_dir, google_api_key)
+            result = _synthesize_script_core(script, voice, work_dir, google_api_key)
+            _record_stats(requested, voice.provider, False, started, result[0])
+            return result
         except Exception as exc:  # install/model-download/synthesis failure: never break the run
             logger.warning("Kokoro failed (%s: %s); re-synthesizing the WHOLE video with edge-tts so the voice stays consistent.",
                            type(exc).__name__, exc)
             voice = replace(voice, provider="edge-tts", name=_EDGE_TTS_FALLBACK_VOICE)
-    return _synthesize_script_core(script, voice, work_dir, google_api_key)
+            fell_back = True
+    result = _synthesize_script_core(script, voice, work_dir, google_api_key)
+    _record_stats(requested, voice.provider, fell_back, started, result[0])
+    return result
+
+
+LAST_STATS: dict = {}   # read by pipeline.py into the run manifest / report
+
+
+def _record_stats(requested, used, fell_back, started, scene_audio) -> None:
+    LAST_STATS.clear()
+    LAST_STATS.update(requested=requested, used=used, fell_back=fell_back,
+                      seconds=round(time.monotonic() - started, 1),
+                      audio_seconds=round(sum(a.duration for a in scene_audio), 1))
 
 
 def _synthesize_script_core(
