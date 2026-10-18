@@ -1265,5 +1265,23 @@
         "YT_SEARCH": 1
       }
     }
+  },
+  {
+    "video_id": "28YHXUri2qU",
+    "published_at": "2026-10-11",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "Why Rome Buried Its Most Sacred Priestess Alive",
+    "stats": {
+      "views": 0,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {}
+    }
   }
 ]
