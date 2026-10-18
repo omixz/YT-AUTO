@@ -2,11 +2,10 @@ name: Publish automated YouTube video
 
 on:
   schedule:
-    # Daily at 13:00 UTC, with a build-time buffer (typically ~10-40min,
-    # occasionally more) before the actual scheduled go-live time
-    # pipeline.run() picks (12-3pm ET / 17:00 UTC - see scheduling.py). The
-    # build finishing early or late doesn't matter: publishAt decouples the
-    # two, so this trigger time just needs enough headroom before 17:00 UTC.
+    # Daily at 13:00 UTC. Scheduled (cron) runs publish IMMEDIATELY - see the
+    # `--publish-now` fallback in the "Run pipeline" step - so go-live is
+    # 13:00 UTC plus build time. scheduling.py's optimal-slot logic only
+    # applies to a manual dispatch with publish_now unchecked.
     - cron: "0 13 * * *"
   workflow_dispatch:
     inputs:
@@ -41,16 +40,26 @@ on:
 
 permissions:
   contents: write
+  issues: write   # lets the report step open a review issue when the quality gate trips
+
+# Publish and analytics-sync both commit state back to main. Sharing one
+# group serializes them, so two runs can never double-publish or race on
+# `git push`. Queued runs wait instead of being cancelled mid-upload.
+concurrency:
+  group: repo-state
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 120   # a 20-min longform render is slow, but a hung run shouldn't burn minutes forever
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install ffmpeg
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
@@ -65,7 +74,9 @@ jobs:
 
       - name: Unschedule video (admin)
         if: ${{ github.event.inputs.unschedule_video_id != '' }}
-        run: python publish_now.py "${{ github.event.inputs.unschedule_video_id }}" --private
+        env:
+          UNSCHEDULE_VIDEO_ID: ${{ github.event.inputs.unschedule_video_id }}
+        run: python publish_now.py "$UNSCHEDULE_VIDEO_ID" --private
 
       - name: Run pipeline
         if: ${{ github.event.inputs.unschedule_video_id == '' }}
@@ -73,8 +84,8 @@ jobs:
           # Right-hand side matches this repo's actual secret names
           # (GEMINI_API / PEXELSAPI) - left-hand side stays GEMINI_API_KEY /
           # PEXELS_API_KEY since that's what the Python code reads via os.getenv.
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API }}
-          PEXELS_API_KEY: ${{ secrets.PEXELSAPI }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GEMINI_API }}  # legacy secret name still works
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY || secrets.PEXELSAPI }}  # legacy secret name still works
           # Optional - tts.py falls back to edge-tts automatically if unset.
           GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
           # Buffer fallback publish path (buffer_publisher.py/media_host.py)
@@ -89,19 +100,27 @@ jobs:
           MEDIA_HOST_ENDPOINT_URL: ${{ secrets.MEDIA_HOST_ENDPOINT_URL }}
           MEDIA_HOST_REGION: ${{ secrets.MEDIA_HOST_REGION }}
           MEDIA_HOST_PUBLIC_BASE_URL: ${{ secrets.MEDIA_HOST_PUBLIC_BASE_URL }}
+          # Manual-dispatch inputs go through env vars, NOT inline ${{ }} in the
+          # script below: inline interpolation lets a crafted `topic` value
+          # (quotes, $(...), backticks) execute as shell code on the runner.
+          IN_TOPIC: ${{ github.event.inputs.topic }}
+          IN_FORMAT: ${{ github.event.inputs.format }}
+          IN_DRY_RUN: ${{ github.event.inputs.dry_run }}
+          IN_PUBLISH_AT: ${{ github.event.inputs.publish_at }}
+          IN_PUBLISH_NOW: ${{ github.event.inputs.publish_now }}
         run: |
           ARGS=()
-          if [ -n "${{ github.event.inputs.topic }}" ]; then
-            ARGS+=(--topic "${{ github.event.inputs.topic }}")
+          if [ -n "$IN_TOPIC" ]; then
+            ARGS+=(--topic "$IN_TOPIC")
           fi
-          if [ -n "${{ github.event.inputs.format }}" ]; then
-            ARGS+=(--format "${{ github.event.inputs.format }}")
+          if [ -n "$IN_FORMAT" ]; then
+            ARGS+=(--format "$IN_FORMAT")
           fi
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          if [ "$IN_DRY_RUN" = "true" ]; then
             ARGS+=(--dry-run)
           fi
-          if [ -n "${{ github.event.inputs.publish_at }}" ]; then
-            ARGS+=(--publish-at "${{ github.event.inputs.publish_at }}")
+          if [ -n "$IN_PUBLISH_AT" ]; then
+            ARGS+=(--publish-at "$IN_PUBLISH_AT")
           else
             # github.event.inputs is entirely absent on `schedule` (cron)
             # triggers - workflow_dispatch's `default:` only applies when
@@ -111,12 +130,27 @@ jobs:
             # publish-now (post as public immediately) unless a specific
             # publish_at was given, or the box was explicitly unchecked on a
             # manual dispatch.
-            PUBLISH_NOW="${{ github.event.inputs.publish_now }}"
-            if [ "${PUBLISH_NOW:-true}" != "false" ]; then
+            if [ "${IN_PUBLISH_NOW:-true}" != "false" ]; then
               ARGS+=(--publish-now)
             fi
           fi
           python run_pipeline.py "${ARGS[@]}"
+
+      - name: Report run (job summary + review issue if the quality gate tripped)
+        id: report
+        if: ${{ always() && github.event.inputs.unschedule_video_id == '' }}
+        run: python ci_report.py
+
+      - name: Open review issue for gate-failed video
+        if: ${{ steps.report.outputs.needs_review == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # LLM-generated title: env var, never inline-interpolated into the script.
+          VIDEO_TITLE: ${{ steps.report.outputs.title }}
+        run: |
+          gh issue create \
+            --title "Review needed: $VIDEO_TITLE" \
+            --body-file issue_body.md
 
       - name: Remove OAuth credential files before committing
         if: always()

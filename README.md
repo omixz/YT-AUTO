@@ -26,9 +26,9 @@ future output toward whatever's actually performing:
    generic mascot standing near unrelated scenery. Each scene is a short animated clip, not a
    still - the focal subject drifts/bobs (and aquatic subjects additionally get tentacle-sway/fin-
    wiggle and rising bubbles) over the static background via an ffmpeg overlay.
-7. **Branding** — a consistent intro card (channel name) and outro card (subscribe CTA) get
-   stitched onto every video (`branding.py`), sharing the same bundled font and color palette as
-   the longform renderer.
+7. **Branding** — a consistent outro card (subscribe CTA) gets stitched onto every video
+   (`branding.py`), sharing the same bundled font and color palette as the longform renderer.
+   The video opens directly on content (no intro card) so the hook lands in the first second.
 8. **Ambient sound** — `sound_effects.py` matches each scene's visual keywords against a small set
    of procedurally synthesized ambience beds (rain, fire, horses, farm/countryside, ocean, crowds,
    battle, thunder, wind) and layers whichever ones fit quietly under the narration - no SFX
@@ -105,15 +105,15 @@ Output for each run lands in `output/<timestamp>/`: `final.mp4`, `thumbnail.jpg`
 
 Two workflows:
 
-- **`.github/workflows/publish.yml`** — makes and uploads a video daily by default, or on demand via `workflow_dispatch` (accepts `topic`, `format`, `dry_run`, `publish_at`, and `publish_now` inputs).
+- **`.github/workflows/publish.yml`** — makes and uploads a video daily at 13:00 UTC by default (cron runs publish immediately; only a manual dispatch with `publish_now` unchecked uses the optimal-slot scheduling in `scheduling.py`), or on demand via `workflow_dispatch` (accepts `topic`, `format`, `dry_run`, `publish_at`, and `publish_now` inputs).
 - **`.github/workflows/sync_analytics.yml`** — daily; rolls matured videos' real performance into the growth bandit.
 
 Repo secrets both need:
 
 | Secret | Value |
 |---|---|
-| `GEMINI_API_KEY` | same as `.env` |
-| `PEXELS_API_KEY` | same as `.env` |
+| `GEMINI_API_KEY` | same as `.env` (the legacy name `GEMINI_API` is still accepted) |
+| `PEXELS_API_KEY` | same as `.env` (the legacy name `PEXELSAPI` is still accepted) |
 | `YOUTUBE_CLIENT_SECRET_B64` | `base64 -w0 client_secret.json` |
 | `YOUTUBE_TOKEN_B64` | `base64 -w0 token.json` (generate this once by running the pipeline locally through the OAuth flow first) |
 
@@ -138,7 +138,7 @@ YouTube Partner Program (YPP) eligibility has two independent gates, and this pi
 **Gate 2: the "reused/duplicative content" policy.** This is the one that specifically targets what a naive version of this pipeline would produce — mass-produced, formulaic slideshows of TTS-over-stock-footage with no added value. This build takes concrete steps against that:
 
 - **Narrative structure, not a fact-list.** The script prompt requires a `hook` scene, connected `build` scenes with actual transitions ("but here's the twist..."), and a closing `insight` scene that synthesizes *why it matters* — real analysis, not one more trivia item.
-- **Consistent channel branding.** Every video opens and closes with the same intro/outro cards (`branding.py`), a concrete "this is a produced show" signal, not a generic template.
+- **Consistent channel branding.** Every video closes with the same outro card (`branding.py`) and shares one font and palette, a concrete "this is a produced show" signal, not a generic template.
 - **A quality gate (`quality_check.py`)** runs before every upload: minimum word count, minimum scene count, and the hook/insight structure. A script that fails gets uploaded as `private` (configurable via `quality.fallback_privacy_status`) instead of published live, so a weak episode doesn't go out on autopilot — it waits for you to look at it.
 
 None of this is a guarantee. Whether a specific channel passes YPP review is a human judgment call on YouTube's end, and policy details change. What this pipeline gives you is content that's built to the shape of channels that *do* get monetized, plus a safety valve so bad output doesn't publish itself — not certainty.
@@ -175,11 +175,12 @@ After this, the refresh token is long-lived (effectively indefinite until you re
 - Each niche's topic queue self-refills via Gemini brainstorming — it never runs dry.
 - A failed run (bad API key, transient network error, quota hit) just skips that cycle's video; it doesn't corrupt state or require intervention. State only advances/commits on a fully successful run.
 - The quality gate catches thin/malformed scripts and holds them at `private` instead of publishing them live — see "Monetization" above.
+- When the quality gate trips on a real upload, the workflow opens a **"Review needed"** GitHub issue with the reasons and writes a job summary for every run (`ci_report.py`).
 - GitHub notifies you by email when a scheduled workflow run fails (default GitHub behavior for repos you watch) — that's your safety net for noticing real problems (expired key, quota exhausted, etc.) without watching it actively.
 
 ### What's still on you, even unattended
 
-- YouTube's ~10,000 unit/day API quota (≈6 uploads/day) caps how often you can realistically schedule this — 3x/week (the workflow default) is comfortably inside it.
+- YouTube's ~10,000 unit/day API quota (≈6 uploads/day) caps how often you can realistically schedule this — 1 upload/day (the workflow default) is comfortably inside it.
 - Nothing here fact-checks scripts or guarantees YPP monetization eligibility (see above) — "unattended" means it won't need your hands, not that its output is risk-free to run forever with zero spot-checks.
 - Worth periodically skimming a `private`-fallback video in `output/` when the quality gate does trip, both to fix whatever made it fail and to catch anything the gate itself can't judge (factual accuracy, tone).
 
@@ -208,7 +209,7 @@ youtube_automation/
   illustration.py                       legacy AI-image-gen visuals (Pollinations), unused - kept for reference
   animation.py                          legacy stick-figure/real-footage overlay, unused - kept for reference
   music.py                               procedurally synthesized ambient background-music bed
-  branding.py                           intro/outro channel-identity cards
+  branding.py                           outro card (subscribe CTA)
   fonts.py                               shared font lookup (bundled Outfit + system fallback)
   sound_effects.py                        procedurally synthesized scene-matched ambience
   assembler.py                            ffmpeg scene assembly + captions + audio mix
@@ -224,3 +225,7 @@ youtube_automation/
   sync_analytics.yml              scheduled analytics -> growth bandit sync
 tests/                           unit tests (config, topic queues, bandit, growth ledger)
 ```
+
+## CI
+
+`.github/workflows/ci.yml` runs ruff (syntax/undefined-name rules) and the full pytest suite on every push and PR. `publish.yml` and `sync_analytics.yml` share a `repo-state` concurrency group so they never overlap, and manual-dispatch inputs are passed to the shell via env vars (never inline `${{ }}`) to prevent script injection.
