@@ -71,8 +71,8 @@ voice:
   # this covers daily use with room to spare). Requires GOOGLE_TTS_API_KEY;
   # tts.py automatically falls back to edge-tts if that secret isn't set,
   # so this is safe to leave here even before the key is configured.
-  provider: google
-  name: en-US-Neural2-D   # a deep, natural male voice - good fit for documentary narration
+  provider: kokoro        # free open-source Kokoro-82M on CPU, no key or billing; falls back to edge-tts for the whole video on any failure
+  name: am_michael        # warm US male narrator (try bm_george for British documentary). Google/edge-tts: set provider + a Neural2/edge voice name
   rate: "+0%"
   pitch: "+0Hz"
 
@@ -97,7 +97,9 @@ quality:
   min_words: 90                # below this, a script reads as too thin to be "produced content" (shorts baseline; longform naturally clears this)
   min_scenes: 6
   require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
-  fallback_privacy_status: private # what to publish as when a script fails the gate, instead of skipping the run
+  fallback_privacy_status: private # used only when on_gate_failure is "private"
+  max_script_attempts: 3           # a script that fails the text gate is regenerated up to this many times
+  on_gate_failure: skip            # skip = never upload a failed video, no human needed (topic is kept for the next run) | private = upload privately for manual review
 
 topics:
   queue_file: "config/topics/{niche}.yaml"

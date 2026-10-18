@@ -62,10 +62,18 @@ jobs:
           cache: pip
 
       - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg libegl1 libgl1 libfontconfig1
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng libegl1 libgl1 libfontconfig1
+
+      - name: Cache Kokoro model weights
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: kokoro-82m-v1
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt -r requirements-kokoro.txt
 
       - name: Restore YouTube OAuth credentials
         run: |
@@ -151,6 +159,14 @@ jobs:
           gh issue create \
             --title "Review needed: $VIDEO_TITLE" \
             --body-file issue_body.md
+
+      - name: Post dry-run report (so results are readable without opening logs)
+        if: ${{ always() && github.event.inputs.dry_run == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f run_report.md ] || echo "No manifest was produced - the run failed before finishing." > run_report.md
+          gh issue create --title "Dry-run report (run ${{ github.run_id }})" --body-file run_report.md || true
 
       - name: Remove OAuth credential files before committing
         if: always()

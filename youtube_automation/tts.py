@@ -27,7 +27,7 @@ from typing import List, Optional, Tuple
 
 import edge_tts
 
-from . import google_tts
+from . import google_tts, kokoro_tts
 from .config import VoiceConfig
 from .script_writer import Script
 
@@ -247,6 +247,8 @@ def _resolve_synthesizer(voice: VoiceConfig, google_api_key: Optional[str]):
     """Picks which provider actually synthesizes each scene. Falls back to
     edge-tts (never hard-fails a run) if voice.provider == "google" but no
     key is configured yet - see config.py's Secrets.google_tts_api_key."""
+    if voice.provider == "kokoro":
+        return lambda text, out_path, role="build": [WordCue(text=w, start=a, end=b) for w, a, b in kokoro_tts.synthesize_one(text, voice, out_path, role)]
     if voice.provider == "google":
         if google_api_key:
             return lambda text, out_path, role="build": _synthesize_one_google_with_retry(text, voice, google_api_key, out_path)
@@ -288,6 +290,36 @@ def concat_audio(paths: List[Path], out_path: Path) -> Path:
 
 
 def synthesize_script(
+    script: Script, voice: VoiceConfig, work_dir: Path, google_api_key: Optional[str] = None,
+) -> Tuple[List[SceneAudio], Path]:
+    started = time.monotonic()
+    requested, fell_back = voice.provider, False
+    if voice.provider == "kokoro":
+        try:
+            result = _synthesize_script_core(script, voice, work_dir, google_api_key)
+            _record_stats(requested, voice.provider, False, started, result[0])
+            return result
+        except Exception as exc:  # install/model-download/synthesis failure: never break the run
+            logger.warning("Kokoro failed (%s: %s); re-synthesizing the WHOLE video with edge-tts so the voice stays consistent.",
+                           type(exc).__name__, exc)
+            voice = replace(voice, provider="edge-tts", name=_EDGE_TTS_FALLBACK_VOICE)
+            fell_back = True
+    result = _synthesize_script_core(script, voice, work_dir, google_api_key)
+    _record_stats(requested, voice.provider, fell_back, started, result[0])
+    return result
+
+
+LAST_STATS: dict = {}   # read by pipeline.py into the run manifest / report
+
+
+def _record_stats(requested, used, fell_back, started, scene_audio) -> None:
+    LAST_STATS.clear()
+    LAST_STATS.update(requested=requested, used=used, fell_back=fell_back,
+                      seconds=round(time.monotonic() - started, 1),
+                      audio_seconds=round(sum(a.duration for a in scene_audio), 1))
+
+
+def _synthesize_script_core(
     script: Script, voice: VoiceConfig, work_dir: Path, google_api_key: Optional[str] = None,
 ) -> Tuple[List[SceneAudio], Path]:
     """Synthesize every scene's narration, returning per-scene audio and a

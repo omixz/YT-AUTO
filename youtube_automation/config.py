@@ -111,6 +111,8 @@ class QualityConfig:
     require_hook_and_insight: bool = True
     require_strong_hook: bool = True
     fallback_privacy_status: str = "private"
+    max_script_attempts: int = 3        # regenerate a script that fails the text gate before giving up
+    on_gate_failure: str = "private"    # "skip" = never upload a failed video (run exits non-zero, topic is kept); "private" = upload privately for review
 
 
 @dataclass
