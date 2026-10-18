@@ -74,6 +74,10 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
     return visuals.fetch_all(script.scenes, config, work_dir)
 
 
+class QualityGateFailed(RuntimeError):
+    """Raised when a video fails the gate and quality.on_gate_failure == 'skip'."""
+
+
 def run(
     config: PipelineConfig,
     topic_override: Optional[str] = None,
@@ -94,17 +98,17 @@ def run(
     topic = topic_store.next_topic(config, niche_key, override=topic_override)
     logger.info("Topic: %s", topic)
 
-    logger.info("Writing script...")
-    script = generate_script(topic, config)
-    logger.info("Title: %s (%d scenes)", script.title, len(script.scenes))
-
-    # Script-level checks run now (cheap, and useful to see in the logs
-    # before spending render time); media-level checks (below, after the
-    # video is actually built) get combined into the same final verdict -
-    # see quality_check.py's module docstring for why the two are split.
-    text_passed, text_reasons = quality_check.check(script, config)
-    if not text_passed:
-        logger.warning("Script quality gate failed: %s", "; ".join(text_reasons))
+    max_attempts = max(1, int(config.quality.max_script_attempts))
+    for attempt in range(1, max_attempts + 1):
+        logger.info("Writing script (attempt %d/%d)...", attempt, max_attempts)
+        script = generate_script(topic, config)
+        logger.info("Title: %s (%d scenes)", script.title, len(script.scenes))
+        # Script-level checks run now (cheap, before spending render time); media-level checks
+        # (below, after the video is built) join the same final verdict - see quality_check.py.
+        text_passed, text_reasons = quality_check.check(script, config)
+        if text_passed:
+            break
+        logger.warning("Script quality gate failed (attempt %d/%d): %s", attempt, max_attempts, "; ".join(text_reasons))
 
     logger.info("Synthesizing narration...")
     content_scene_audio, content_narration_path = tts.synthesize_script(
@@ -164,6 +168,10 @@ def run(
     quality_reasons = text_reasons + media_reasons
     if not passed_quality_gate:
         logger.warning("Quality gate failed: %s", "; ".join(quality_reasons))
+        if config.quality.on_gate_failure == "skip" and not dry_run:
+            # Raising (not returning) keeps the workflow's "commit topic state" step from running,
+            # so the topic is retried on the next scheduled run. No human needed.
+            raise QualityGateFailed("Quality gate failed after %d script attempt(s); skipping upload: %s" % (max_attempts, "; ".join(quality_reasons)))
 
     logger.info("Generating thumbnail...")
     if content_visuals:

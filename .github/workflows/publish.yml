@@ -62,10 +62,18 @@ jobs:
           cache: pip
 
       - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg libegl1 libgl1 libfontconfig1
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng libegl1 libgl1 libfontconfig1
+
+      - name: Cache Kokoro model weights
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: kokoro-82m-v1
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt -r requirements-kokoro.txt
 
       - name: Restore YouTube OAuth credentials
         run: |
