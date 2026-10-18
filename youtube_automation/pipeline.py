@@ -55,11 +55,21 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
         # is sized to its scene's narration length and handed to assembler.py
         # as a video segment (kind="video").
         durations = [a.duration for a in content_scene_audio]
-        paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir, title=script.title)
-        if config.animation.cinematic:
-            w, h = config.video.resolution
-            paths = cinematic.grade_all(paths, script.scenes, w, h, config.video.fps, work_dir,
-                                        budget_seconds=config.animation.cinematic_budget_seconds)
+        paths = None
+        if config.animation.engine == "toon":
+            try:
+                from .toon import render as toon_render
+                # The toon engine does its own finishing (vignette, time-of-day tint), so no cinematic pass.
+                paths = toon_render.generate_all_clips(script.scenes, durations, config, work_dir,
+                                                       title=script.title, scene_audio=content_scene_audio)
+            except Exception:
+                logger.exception("Toon engine failed outright; falling back to the legacy renderer for this video.")
+        if paths is None:
+            paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir, title=script.title)
+            if config.animation.cinematic:
+                w, h = config.video.resolution
+                paths = cinematic.grade_all(paths, script.scenes, w, h, config.video.fps, work_dir,
+                                            budget_seconds=config.animation.cinematic_budget_seconds)
         return [VisualAsset(kind="video", path=p) for p in paths]
     return visuals.fetch_all(script.scenes, config, work_dir)
 

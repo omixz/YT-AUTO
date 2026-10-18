@@ -32,6 +32,7 @@ def main() -> None:
     parser.add_argument("--publish-at", default=None, help="RFC3339 timestamp to schedule the YouTube release.")
     parser.add_argument("--publish-now", action="store_true", help="Release immediately instead of scheduling the next optimal slot.")
     parser.add_argument("--keep-work-dir", action="store_true", help="Keep per-scene scratch files after the run.")
+    parser.add_argument("--animation-engine", choices=["toon", "legacy"], default=None, help="Override animation.engine from the config for this run.")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -41,6 +42,8 @@ def main() -> None:
     )
 
     config = PipelineConfig.load(args.config)
+    if args.animation_engine:
+        config.animation.engine = args.animation_engine
     try:
         manifest = run(
             config,

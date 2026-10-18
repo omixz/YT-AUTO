@@ -1,0 +1,27 @@
+name: Toon preview
+
+# Manual, secret-free: renders a short demo reel of the cartoon engine so you
+# can watch the new look before it runs on a real upload.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg libegl1 libgl1 libfontconfig1
+      - run: pip install -r requirements.txt
+      - run: time python -m youtube_automation.toon.sample --out toon_sample --width 1280
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toon-demo-reel
+          path: toon_sample/toon_demo_reel.mp4

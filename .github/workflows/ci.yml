@@ -25,7 +25,7 @@ jobs:
           cache: pip
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libegl1 libgl1 libfontconfig1
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt pytest ruff
