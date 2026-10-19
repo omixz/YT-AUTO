@@ -756,5 +756,17 @@
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": []
+  },
+  {
+    "video_id": "fy6vgodLKZw",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Chilling Disappearance of Amy Lynn Bradley From a Cruise Ship And The Sighting Years Later That Proves She Was Trafficked",
+    "topic": "The tragic 1999 disappearance of Amy Lynn Bradley from a Royal Caribbean cruise ship, leaving behind only her cigarettes and lighter before multiple passengers allegedly spotted her years later being sold into human trafficking in Cura\u00e7ao",
+    "published_at": "2026-10-19",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": []
   }
 ]
