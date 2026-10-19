@@ -184,7 +184,7 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
             for bt_ in blinks:
                 if 0 <= t - bt_ < 0.16:
                     blink = 1 - abs((t - bt_) / 0.08 - 1)
-            face = C.Face(mood=d.mood, mouth=mouth_v, blink=blink, look_x=0.5 * -side)
+            face = C.Face(mood=d.mood, mouth=0.0, blink=blink, look_x=0.5 * -side)   # story characters act, they don't recite the voiceover
             hx = hero_x
             if d.action == "walk":
                 pose = C.pose_walk(t)
@@ -205,10 +205,10 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                     exs = ex * w - cam_x * 0.9
                     es = scale * (0.42 + 0.35 * (ey - 0.62) / 0.18)
                     ep = C.pose_idle(t * 1.6 + ph, ph)
-                    ep.sh_r = 20 + 130 * max(0.0, math.sin(t * 3 + ph)) if (d.mood != "serious") else ep.sh_r
-                    ep.sh_l = 20 + 130 * max(0.0, math.sin(t * 3.4 + ph * 1.3)) if (d.mood != "serious") else ep.sh_l
+                    ep.sh_r = 20 + 60 * max(0.0, math.sin(t * 2 + ph)) if (d.mood == "shocked") else ep.sh_r
+                    ep.sh_l = 20 + 60 * max(0.0, math.sin(t * 2.4 + ph * 1.3)) if (d.mood == "shocked") else ep.sh_l
                     C.draw_shadow(canvas, exs, ey * h + 40 * u, es)
-                    C.draw_character(canvas, elook, ep, C.Face(mood="neutral", mouth=0.5 * max(0, math.sin(t * 6 + ph))), exs, ey * h + 40 * u, es, 1 if exs < w / 2 else -1)
+                    C.draw_character(canvas, elook, ep, C.Face(mood="neutral", mouth=0.0), exs, ey * h + 40 * u, es, 1 if exs < w / 2 else -1)
             C.draw_shadow(canvas, hx - cam_x * 0.0, gy, scale)
             C.draw_character(canvas, look, pose, face, hx, gy, scale, facing)
             head_x = hx
@@ -217,7 +217,7 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                 rival_pose = C.pose_fight(t, 0.55)
                 rx_ = w * 0.665
                 C.draw_shadow(canvas, rx_, gy, scale)
-                C.draw_character(canvas, rival_look, rival_pose, C.Face(mood="serious", mouth=0.3 * abs(math.sin(t * 8))), rx_, gy, scale, -1)
+                C.draw_character(canvas, rival_look, rival_pose, C.Face(mood="serious", mouth=0.0), rx_, gy, scale, -1)
                 cyc = (t % 1.1)
                 hit = cyc - 0.55
                 fx.draw_burst(canvas, (hx + rx_) / 2, gy - 62 * scale, u * 1.2, hit)
@@ -246,14 +246,14 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                 fx.draw_speed_lines(canvas, w, h, t - 0.1)
             if d.role == "hook":
                 fx.draw_speed_lines(canvas, w, h, t, 0.45, 110)
-            if d.mascot and t > 0.4:
-                mk = fx.pop_scale(t - 0.4)
+            if d.mascot and t > 0.2:
+                mk = fx.pop_scale(t - 0.2)
                 mx = w * (0.86 if side == -1 else 0.14)
                 canvas.save()
                 canvas.translate(mx, h * 0.2)
                 canvas.scale(mk, mk)
                 m_mood = "shocked" if (d.mood == "shocked" and t < 3.0) else "neutral"
-                fx.draw_mascot(canvas, 0, 0, 2.3 * u, t, m_mood, -side * 0.8, mouth=mouth_v * 0.5,
+                fx.draw_mascot(canvas, 0, 0, 2.5 * u, t, m_mood, -side * 0.8, mouth=mouth_v,
                                blink=1.0 if any(0 <= t - b < 0.14 for b in blinks[::-1]) else 0.0)
                 canvas.restore()
                 if d.role == "insight":

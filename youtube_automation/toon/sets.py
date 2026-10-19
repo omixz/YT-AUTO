@@ -50,6 +50,7 @@ _SKY = {
     "snow": ((165, 192, 222), (238, 244, 250)), "desert": ((238, 188, 118), (252, 228, 172)),
     "ruins": ((128, 112, 112), (226, 160, 118)), "mythic": ((160, 132, 226), (255, 216, 192)),
     "ancient": ((150, 200, 240), (252, 232, 190)), "dungeon": ((20, 20, 30), (40, 40, 52)),
+    "battlefield": ((108, 100, 98), (208, 170, 130)),
 }
 _DEFAULT_SKY = ((104, 182, 238), (224, 242, 252))
 _DUSK_SKY = ((70, 58, 130), (252, 156, 92))
@@ -190,6 +191,63 @@ def crates(c, x, gy, s, o):
         c.drawLine(x + dx * s, gy + (dy - w) * s, x + (dx + w) * s, gy + dy * s, stroke(shade((176, 130, 84), -0.3), o * 0.7))
 
 
+
+def sandbags(c, x, gy, s, o):
+    for row in range(3):
+        for k in range(5 - row):
+            inked_oval(c, x + (k + row * 0.5) * 30 * s - 60 * s, gy - row * 16 * s - 8 * s, 15 * s, 8 * s, (176, 160, 118), o)
+
+
+def wire(c, x, gy, s, o):
+    for dx in (-62, -20, 22, 64):
+        c.drawLine(x + dx * s, gy, x + dx * s, gy - 48 * s, stroke(INK, o * 1.3))
+    for yy in (24, 40):
+        pth = skia.Path()
+        pth.moveTo(x - 70 * s, gy - yy * s)
+        for k in range(15):
+            pth.lineTo(x - 70 * s + k * 10 * s, gy - (yy + (7 if k % 2 else -7)) * s)
+        c.drawPath(pth, stroke(INK, o * 0.6))
+
+
+def deadtree(c, x, gy, s, o, col=(74, 60, 50)):
+    inked(c, poly_path([(x - 7 * s, gy), (x - 4 * s, gy - 90 * s), (x + 4 * s, gy - 90 * s), (x + 8 * s, gy)]), col, o)
+    for bx, by, ex, ey in ((0, 70, -30, 104), (0, 56, 28, 92), (-2, 82, -12, 118), (2, 40, 22, 62)):
+        c.drawLine(x + bx * s, gy - by * s, x + ex * s, gy - ey * s, stroke(INK, o * 1.6))
+        c.drawLine(x + bx * s, gy - by * s, x + ex * s, gy - ey * s, stroke(col, o * 0.7))
+
+
+def smoke(c, x, gy, s):
+    for i in range(6):
+        c.drawCircle(x + math.sin(i) * 14 * s, gy - (30 + i * 34) * s, (16 + i * 7) * s, fill((90, 86, 88), 150 - i * 12))
+
+
+def liner(c, x, gy, s, o):
+    inked(c, poly_path([(x - 150 * s, gy - 30 * s), (x + 150 * s, gy - 30 * s), (x + 120 * s, gy + 8 * s), (x - 120 * s, gy + 8 * s)]), (40, 52, 90), o)
+    for k, (w, h) in enumerate(((128, 26), (104, 26), (78, 24))):
+        top = gy - 30 * s - (k + 1) * 26 * s
+        inked(c, poly_path([(x - w * s, top + 26 * s), (x - w * s, top), (x + w * s, top), (x + w * s, top + 26 * s)]), (246, 246, 248), o * 0.9)
+        for wx in range(-int(w) + 10, int(w) - 6, 16):
+            c.drawRect(skia.Rect(x + wx * s, top + 8 * s, x + (wx + 8) * s, top + 16 * s), fill((86, 130, 182)))
+    inked(c, poly_path([(x - 12 * s, gy - 134 * s), (x - 12 * s, gy - 176 * s), (x + 12 * s, gy - 176 * s), (x + 12 * s, gy - 134 * s)]), (210, 60, 52), o)
+    c.drawRect(skia.Rect(x - 12 * s, gy - 160 * s, x + 12 * s, gy - 150 * s), fill((250, 220, 90)))
+
+
+def palm(c, x, gy, s, o):
+    pth = skia.Path()
+    pth.moveTo(x, gy)
+    pth.quadTo(x + 26 * s, gy - 50 * s, x + 10 * s, gy - 112 * s)
+    c.drawPath(pth, stroke(INK, 11 * s + o))
+    c.drawPath(pth, stroke((138, 100, 64), 8 * s))
+    for ang in (-150, -110, -70, -30, 10):
+        a = math.radians(ang)
+        ex, ey = x + 10 * s + math.cos(a) * 58 * s, gy - 112 * s + math.sin(a) * 38 * s + 14 * s
+        fr = skia.Path()
+        fr.moveTo(x + 10 * s, gy - 112 * s)
+        fr.quadTo((x + 10 * s + ex) / 2, gy - 150 * s, ex, ey)
+        c.drawPath(fr, stroke(INK, 9 * s + o))
+        c.drawPath(fr, stroke((70, 150, 84), 6 * s))
+
+
 # ---- layer builders ----------------------------------------------------------------------------
 
 _EXTERIOR_PROPS = {  # setting -> (far prop list, mid prop list)
@@ -200,8 +258,11 @@ _EXTERIOR_PROPS = {  # setting -> (far prop list, mid prop list)
     "palace": (["hills"], [castle]), "ancient": (["dunes"], [temple, pyramid]),
     "city": (["skyline"], [building, building, building]), "government": (["skyline"], [capitol]),
     "mythic": (["clouds"], [temple]), "default2": (["hills"], [tree]),
+    "battlefield": (["smokehills"], [deadtree, sandbags, wire, sandbags]), "shipdeck": (["horizon_wide"], [liner]),
+    "island": (["horizon_wide"], [palm, palm, crates]),
 }
-INTERIOR = {"indoor", "dungeon", "courtroom"}
+INTERIOR = {"indoor", "dungeon", "courtroom", "warroom"}
+_EXTRA_GROUND = {"battlefield": (96, 82, 62), "warroom": (104, 76, 52), "shipdeck": (156, 120, 84), "island": (232, 214, 160)}
 
 
 def _hills(sf: _Surf, gy: float, base: Color, amp: float, seed: int, o=0):
@@ -224,11 +285,12 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
     gy = h * (0.74 if interior else 0.78)
     s = h / 1080
     from ..procedural_illustration import GROUND_COLORS  # shared palette keys with the legacy renderer
-    ground = tint(GROUND_COLORS.get(setting, GROUND_COLORS["default"]), tod)
+    ground = tint({**GROUND_COLORS, **_EXTRA_GROUND}.get(setting, GROUND_COLORS["default"]), tod)
     layers: List[Layer] = []
     lights: List[Tuple[float, float, Color, float]] = []
     particles = {"snow": "snow", "ruins": "embers", "desert": "dust", "mythic": "sparkles", "water": "birds",
-                 "harbor": "birds", "dungeon": "dust", "courtroom": "dust", "indoor": "dust"}.get(setting, "motes")
+                 "harbor": "birds", "dungeon": "dust", "courtroom": "dust", "indoor": "dust",
+                 "battlefield": "embers", "shipdeck": "birds", "island": "birds", "warroom": "dust"}.get(setting, "motes")
     if tod == "night" and not interior:
         particles = "fireflies"
 
@@ -279,13 +341,22 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
                 x += bw
         elif kind == "horizon":
             far.c.drawRect(skia.Rect(0, gy - 28 * s, LW, h), fill(tint((96, 166, 214), tod)))
+        elif kind == "horizon_wide":
+            far.c.drawRect(skia.Rect(0, gy - 96 * s, LW, h), fill(tint((72, 150, 206), tod)))
+            for _ in range(40):
+                wx, wy = rng.uniform(0, LW), rng.uniform(gy - 90 * s, gy - 6 * s)
+                far.c.drawLine(wx, wy, wx + rng.uniform(14, 34) * s, wy, stroke(tint((150, 205, 240), tod), 2.4))
+        elif kind == "smokehills":
+            _hills(far, gy, tint((92, 84, 70), tod), 120 * s, rng.randint(0, 9))
+            for i in range(5):
+                smoke(far.c, (i + rng.uniform(0.2, 0.8)) * LW / 5, gy - 40 * s, s * 1.3)
         elif kind == "clouds":
             for _ in range(10):
                 cloud(far.c, rng.uniform(0, LW), gy - rng.uniform(0, 80) * s, rng.uniform(1.6, 3.0) * s)
         layers.append(Layer(far.image(), 0.22))
         # mid props
         mid = _Surf(LW, h)
-        n = 6 if setting not in {"palace", "government", "ancient", "water", "mythic"} else 3
+        n = 6 if setting not in {"palace", "government", "ancient", "water", "mythic", "shipdeck", "island"} else 3
         leaf = tint({"snow": (62, 118, 96), "forest": (66, 140, 78), "ruins": (110, 120, 76), "mountain": (74, 128, 88)}.get(setting, (92, 168, 96)), tod)
         wall = tint((238, 222, 190), tod)
         stone = tint((226, 214, 192), tod)
@@ -316,6 +387,16 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
                 mid.rep(lambda xx: ship(mid.c, xx, gy + 2, sc, 3.5), x)
             elif fn is crates:
                 mid.rep(lambda xx: crates(mid.c, xx, gy - 4, sc, 3.5), x)
+            elif fn is sandbags:
+                mid.rep(lambda xx: sandbags(mid.c, xx, gy - 4, sc, 3.5), x)
+            elif fn is wire:
+                mid.rep(lambda xx: wire(mid.c, xx, gy - 4, sc, 3.5), x)
+            elif fn is deadtree:
+                mid.rep(lambda xx: deadtree(mid.c, xx, gy - 6, sc, 3.5), x)
+            elif fn is liner:
+                mid.rep(lambda xx: liner(mid.c, xx, gy - 10, sc * 0.9, 3.5), x)
+            elif fn is palm:
+                mid.rep(lambda xx: palm(mid.c, xx, gy - 6, sc, 3.5), x)
         layers.append(Layer(mid.image(), 0.55))
         if tod != "day":
             lights += [(w * f, gy - 90 * s, (255, 214, 120), 70 * s) for f in (0.15, 0.55, 0.85)] if tod == "night" and setting in {"city", "harbor", "government", "default"} else []
@@ -331,7 +412,16 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
     layers.append(Layer(g.image(), 1.0))
 
     # foreground silhouettes in front of the characters (depth!)
-    if not interior:
+    if setting == "shipdeck":   # railing in front of the hero = instant 'on a ship' read and depth
+        fr = _Surf(LW, h)
+        for ry in (h * 0.86, h * 0.93):
+            fr.c.drawLine(0, ry, LW, ry, stroke(INK, 11))
+            fr.c.drawLine(0, ry, LW, ry, stroke((236, 236, 240), 6))
+        for px in range(0, LW, int(110 * s) or 110):
+            fr.c.drawLine(px, h * 0.84, px, h + 4, stroke(INK, 11))
+            fr.c.drawLine(px, h * 0.84, px, h + 4, stroke((236, 236, 240), 6))
+        layers.append(Layer(fr.image(), 1.3, front=True))
+    elif not interior:
         fr = _Surf(LW, h)
         dark = tint(shade(ground, -0.55), tod)
         for _ in range(9):
@@ -342,7 +432,7 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
 
 
 def _build_interior(setting, tod, LW, h, gy, s, ground, layers, lights, rng):
-    wall_c = {"dungeon": (78, 80, 92), "courtroom": (150, 112, 74), "indoor": (214, 196, 168)}[setting]
+    wall_c = {"dungeon": (78, 80, 92), "courtroom": (150, 112, 74), "indoor": (214, 196, 168), "warroom": (122, 98, 72)}[setting]
     wall_c = tint(wall_c, "night" if tod == "night" else "day")
     wl = _Surf(LW, h)
     wl.c.drawRect(skia.Rect(0, 0, LW, gy), skia.Paint(Shader=vgradient(shade(wall_c, 0.1), shade(wall_c, -0.15), 0, gy)))
@@ -366,6 +456,21 @@ def _build_interior(setting, tod, LW, h, gy, s, ground, layers, lights, rng):
             column(wl.c, px, gy * 0.62, gy * 0.5, 34 * s, 3.5, shade(wall_c, 0.25))
         wl.c.drawRect(skia.Rect(LW * 0.4, gy * 0.18, LW * 0.6, gy * 0.42), fill((210, 190, 120)))
         inked_circle(wl.c, LW * 0.5, gy * 0.3, 48 * s, (230, 214, 150), 4)
+    elif setting == "warroom":
+        wl.c.drawRect(skia.Rect(0, gy * 0.72, LW, gy), fill(shade(wall_c, -0.2)))
+        for k in range(2):   # big wall maps with routes and pins
+            mx = (k + 0.5) * LW / 2
+            inked(wl.c, poly_path([(mx - 170 * s, gy * 0.14), (mx + 170 * s, gy * 0.14), (mx + 170 * s, gy * 0.62), (mx - 170 * s, gy * 0.62)]), (226, 208, 160), 5)
+            for j in range(5):
+                wl.c.drawLine(mx - 150 * s + j * 70 * s, gy * 0.2, mx - 120 * s + j * 62 * s, gy * 0.56, stroke((150, 120, 80), 2))
+            pth = skia.Path()
+            pth.moveTo(mx - 140 * s, gy * 0.5)
+            for j in range(1, 6):
+                pth.lineTo(mx - 140 * s + j * 56 * s, gy * (0.5 - 0.08 * (j % 3)))
+            wl.c.drawPath(pth, stroke((190, 50, 50), 5))
+            for j in range(4):
+                inked_circle(wl.c, mx - 100 * s + j * 66 * s, gy * (0.28 + 0.06 * (j % 2)), 7 * s, (210, 60, 52), 2.5)
+            lights.append((mx % LW, gy * 0.08, (255, 214, 130), 120 * s))
     else:
         for i in range(4):
             bx = (i + 0.5) * LW / 4

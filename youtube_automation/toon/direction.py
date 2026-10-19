@@ -16,6 +16,14 @@ _WALK = ("march", "walked", "walk ", "journey", "travel", "fled", "escape", "sai
 _QUESTION = ("?", "mystery", "mysterious", "unknown", "unexplained", "strange", "why ", "how did", "nobody knows", "no one knows", "puzzle", "vanish", "disappear")
 _FEAR = ("fear", "afraid", "terror", "horrif", "panic", "dread", "scream", "flee", "danger", "trap", "doomed", "ambush")
 _JOY = ("treasure", "gold", "discover", "triumph", "victory", "glory", "won ", "celebrat", "crowned", "found ")
+VALID_SETTINGS = ['ancient', 'battlefield', 'city', 'courtroom', 'default', 'desert', 'dungeon', 'forest', 'government', 'harbor', 'indoor', 'island', 'mountain', 'mythic', 'palace', 'ruins', 'shipdeck', 'snow', 'warroom', 'water']
+VALID_ACTIONS = {"talk", "walk", "fight", "crowd", "shock"}
+_SETTING_HINTS = (  # fallback only, for scenes the model did not direct; checked before the legacy resolver
+    ("battlefield", ("trench", "battlefield", "no man's land", "frontline", "front line", "shelling", "bombardment", "artillery", "offensive", "stormed")),
+    ("warroom", ("headquarters", "general staff", "war room", "map table", "command post", "briefing", "war council", "supreme command")),
+    ("shipdeck", ("cruise", "ocean liner", "aboard", "passenger", "on deck", "ship's deck", "stateroom")),
+    ("island", ("island", "beach", "castaway", "shipwreck", "shoreline")),
+)
 _RIVALS = ["pirate", "knight", "viking", "samurai", "gladiator", "general", "assassin", "roman"]
 
 
@@ -49,14 +57,23 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
         text = f"{scene.narration} {' '.join(scene.visual_keywords)}".lower() + " "
         rng = random.Random(1000 + i)
         archetype = P._resolve_character_archetype(scene)
+        directed_setting = getattr(scene, "setting", "") if getattr(scene, "setting", "") in VALID_SETTINGS else ""
+        hinted = next((k for k, words in _SETTING_HINTS if _has(text, words)), "")
         rival = rng.choice([r for r in _RIVALS if r != archetype])
         shocked = (P._match(scene, P._KEYWORD_TO_MOOD) == "shocked") if hasattr(P, "_match") else False
-        fight = P._is_fight_scene(scene)
-        crowd = P._is_crowd_scene(scene)
         walk = _has(text, _WALK)
-        action = "fight" if fight else "crowd" if crowd else "walk" if walk else "talk"
-        mood = "serious" if (fight or _has(text, _FEAR)) else "shocked" if shocked else "neutral"
-        tod = "night" if _has(text, _NIGHT) else "dusk" if _has(text, _DUSK) else "day"
+        said = getattr(scene, "action", "")
+        # The model's direction wins. Without it, never guess fight/crowd from keywords - ordinary war
+        # vocabulary ("fought", "soldiers", "clash") made every scene a brawl. Fallback = talk or walk.
+        action = said if said in VALID_ACTIONS else ("walk" if walk else "talk")
+        if action in {"fight", "crowd"} and out and out[-1].action in {"fight", "crowd"}:
+            action = "talk"   # never two busy scenes in a row
+        said_mood = getattr(scene, "mood", "")
+        mood = said_mood if said_mood in {"neutral", "serious", "shocked"} else (
+            "serious" if (action == "fight" or _has(text, _FEAR)) else "shocked" if shocked else "neutral")
+        said_tod = getattr(scene, "time_of_day", "")
+        tod = said_tod if said_tod in {"day", "dusk", "night"} else (
+            "night" if _has(text, _NIGHT) else "dusk" if _has(text, _DUSK) else "day")
         role = getattr(scene, "role", "build")
         camera = {"hook": "push_in", "insight": "pull_out"}.get(role)
         if camera is None:
@@ -67,6 +84,7 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
             emotes.append((0.25, "!"))
         if _has(text, _QUESTION):
             emotes.append((1.1 if not shocked else 2.3, "?"))
+        fight = action == "fight"
         if _has(text, _FEAR) and not fight:
             emotes.append((0.9, "sweat"))
         if fight:
@@ -75,7 +93,7 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
             emotes.append((0.9, "sparkle"))
         if role == "insight":
             emotes.append((min(1.2, durations[i] * 0.3), "bulb"))
-        out.append(SceneDirection(index=i, setting=settings[i], archetype=archetype, rival=rival, mood=mood,
+        out.append(SceneDirection(index=i, setting=(directed_setting or hinted or settings[i]), archetype=archetype, rival=rival, mood=mood,
                                   action=action, camera=camera, tod=tod, role=role, seed=i, emotes=emotes,
-                                  mascot=(role in {"hook", "insight"} or i % 3 == 1)))
+                                  mascot=True))   # Pip is the narrator: present in every scene
     return out

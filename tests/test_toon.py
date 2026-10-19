@@ -16,7 +16,7 @@ def _sc(text, kw, role="build"):
 
 def test_direction_maps_scene_meaning():
     scenes = [_sc("Nobody knows why the ship vanished at midnight?", ["ship"], "hook"),
-              _sc("The viking raiders fought a bloody duel.", ["viking", "fight"]),
+              Scene("The viking raiders fought a bloody duel.", ["viking", "fight"], "build", action="fight"),  # fights now come from the model's direction, not keywords
               _sc("And that is the lesson.", ["city"], "insight")]
     d = direction.direct(scenes, [4.0, 4.0, 4.0])
     assert d[0].camera == "push_in" and d[0].tod == "night" and any(k == "?" for _, k in d[0].emotes)
