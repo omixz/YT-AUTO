@@ -117,6 +117,16 @@ _VAGUE_TITLE_PATTERNS = (
 )
 
 
+# Titles that state an unproven claim as established fact ("...Proves She Was Trafficked"). On a real
+# person or an unsolved case that is a defamation / misinformation risk, so it fails the gate (the video
+# then uploads privately) rather than going public - the script prompt also forbids it up front.
+_CERTAINTY_TITLE = re.compile(r"\b(proves?|proof|proven|confirmed|exposed|undeniable|the (real|hidden|shocking) truth)\b", re.I)
+
+
+def has_unproven_certainty(title: str) -> bool:
+    return bool(_CERTAINTY_TITLE.search(title or ""))
+
+
 def _is_vague_listicle_title(title: str) -> bool:
     return any(p.search(title) for p in _VAGUE_TITLE_PATTERNS)
 
@@ -177,6 +187,10 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
 
     if not script.title.strip():
         reasons.append("title is empty")
+    if has_unproven_certainty(script.title):
+        reasons.append(f"title states an unproven claim as fact ({script.title!r}) - rewrite with 'alleged'/'claims'/'question' framing")
+    if False:
+        pass
     elif q.require_strong_hook and _is_vague_listicle_title(script.title):
         reasons.append(
             "title reads like a vague listicle or bare topic label (e.g. \"N Facts About X\", "
