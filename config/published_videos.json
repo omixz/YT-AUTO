@@ -768,5 +768,33 @@
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": []
+  },
+  {
+    "video_id": "kWhYLvfH1MQ",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1970 Flight Attendant Hijacking That Paralyzed Aviation Security Forever",
+    "topic": "The terrifying 1970 hijacking of flight attendant Lynda MacCausland aboard a commercial airliner by a desperate man demanding millions in ransom, culminating in a daring mid-air parachute jump into the freezing, pitch-black wilderness of the Pacific Northwest.",
+    "published_at": "2026-10-19",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 468.4,
+        "audio_seconds": 935.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 80,
+        "fallback_scenes": 0,
+        "seconds": 778.8,
+        "workers": 3
+      }
+    }
   }
 ]
