@@ -282,8 +282,9 @@ def _hills(sf: _Surf, gy: float, base: Color, amp: float, seed: int, o=0):
 def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> SceneSet:
     LW = int(w * OVERSCAN)
     interior = setting in INTERIOR
-    gy = h * (0.74 if interior else 0.78)
-    s = h / 1080
+    portrait = h > w
+    gy = h * (0.66 if portrait else (0.74 if interior else 0.78))
+    s = min(w, h) / 1080
     from ..procedural_illustration import GROUND_COLORS  # shared palette keys with the legacy renderer
     ground = tint({**GROUND_COLORS, **_EXTRA_GROUND}.get(setting, GROUND_COLORS["default"]), tod)
     layers: List[Layer] = []

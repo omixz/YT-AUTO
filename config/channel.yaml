@@ -49,9 +49,9 @@ video:
   resolution_longform: [1920, 1080]
   formats:
     shorts:
-      enabled: false            # longform only, per explicit direction - re-enable by flipping this
-      target_seconds: 60
-      weight: 0.0
+      enabled: true             # built with the same toon cartoon engine as longform; scheduled by its own cron in publish.yml
+      target_seconds: 55
+      weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts cron forces --format shorts
     longform:
       enabled: true
       # 1200s = 20 min. Was previously running successfully in production

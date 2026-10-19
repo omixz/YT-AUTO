@@ -356,7 +356,7 @@ def _script_length_params(target_seconds: int, wpm: int = 165) -> Tuple[int, int
     # -lite variant this is now pinned to - same ceiling on both) - 8000
     # was never actually close to that limit, it was just an unrelated
     # conservative guess.
-    suggested_scenes = max(6, min(160, round(target_words / 25)))
+    suggested_scenes = max(6, min(160, round(target_words / (12 if target_seconds <= 90 else 25))))   # Shorts: ~4s scenes keep the visuals moving
     max_output_tokens = min(32000, max(2000, round(target_words * 4) + 500))
     return target_words, suggested_scenes, max_output_tokens
 

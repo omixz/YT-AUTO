@@ -36,6 +36,15 @@ class Look:
     prop: Optional[str] = None
     beard: bool = False
     hood: bool = False
+    horned: bool = False
+    # --- variety: body, hair, face, clothing style
+    build: float = 1.0          # torso/limb width multiplier (slim .85 .. stocky 1.25)
+    height: float = 1.0         # overall size multiplier
+    hair_style: str = "short"   # short | bald | long | bun | curly
+    facial: str = ""            # "" | mustache | goatee | beard
+    glasses: bool = False
+    style: str = "shirt"        # shirt | coat | dress | robe | armor | uniform
+    female: bool = False
 
     @classmethod
     def from_archetype(cls, name: str, table: dict, rng: random.Random) -> "Look":
@@ -45,7 +54,8 @@ class Look:
             skin=rng.choice(SKIN_TONES), hair=rng.choice(HAIR_COLORS),
             outfit=tuple(outfit), trousers=shade(tuple(outfit), -0.35),
             headwear=headwear, prop=prop,
-            beard=name in _BEARDED, hood=(name in {"assassin"}),
+            beard=name in _BEARDED, hood=(name in {"assassin"}), horned=(name in {"viking", "norse", "thor"}),
+            style="armor" if name in {"knight", "templar", "gladiator", "samurai"} else "robe" if name in {"pharaoh", "priest", "scholar"} else "shirt",
         )
 
 
@@ -145,9 +155,11 @@ def draw_shadow(canvas, x, y, scale, w=1.0, a=70):
 
 def draw_character(canvas, look: Look, pose: Pose, face: Face, x: float, y: float, scale: float,
                    facing: int = 1) -> None:
-    u = scale
+    u = scale * look.height
     f = facing
     o = max(2.0, 2.6 * u)  # outline width in px
+    bd = look.build
+    tw_s, tw_h = 15 * bd, 11 * bd
 
     def X(px):  # local x (forward +) -> screen x
         return x + f * px * u
@@ -162,18 +174,32 @@ def draw_character(canvas, look: Look, pose: Pose, face: Face, x: float, y: floa
 
     # --- legs
     for side, hp, kn in ((-1, pose.hip_l, pose.kn_l), (1, pose.hip_r, pose.kn_r)):
-        hx = side * 8
+        hx = side * 8 * bd
         dx, dy = _dir(hp)
         kx, ky = hx + 17 * dx, hip_y + 17 * dy
         dx2, dy2 = _dir(hp - kn)
         ax, ay = kx + 17 * dx2, ky + 17 * dy2
-        limb(canvas, [(X(hx), Y(hip_y)), (X(kx), Y(ky)), (X(ax), Y(ay))], 9 * u, look.trousers, o)
+        limb(canvas, [(X(hx), Y(hip_y)), (X(kx), Y(ky)), (X(ax), Y(ay))], 9 * u * bd, look.trousers, o)
+        if look.style == "uniform":   # tall boots
+            limb(canvas, [(X(kx), Y(ky)), (X(ax), Y(ay))], 9.6 * u * bd, (46, 36, 30), o)
         shoe = skia.Rect(min(X(ax) - 6 * u, X(ax + 9) ), Y(ay) - 4 * u, max(X(ax) + 6 * u, X(ax + 9)), Y(ay) + 3 * u)
         canvas.drawRRect(skia.RRect.MakeRectXY(shoe, 3 * u, 3 * u), fill((50, 38, 34)))
         canvas.drawRRect(skia.RRect.MakeRectXY(shoe, 3 * u, 3 * u), stroke(INK, o))
 
+    # --- lower garments drawn over the legs (dress / robe / coat tails)
+    if look.style in {"dress", "robe", "coat"}:
+        hem = {"dress": -13, "robe": -5, "coat": -17}[look.style]
+        flare = {"dress": 21, "robe": 19, "coat": 16}[look.style] * bd
+        skirt = skia.Path()
+        skirt.moveTo(X(-tw_h), Y(hip_y - 2))
+        skirt.lineTo(X(tw_h), Y(hip_y - 2))
+        skirt.quadTo(X(flare * 0.9), Y((hip_y + hem) / 2), X(flare), Y(hem))
+        skirt.quadTo(X(0), Y(hem + 3), X(-flare), Y(hem))
+        skirt.quadTo(X(-flare * 0.9), Y((hip_y + hem) / 2), X(-tw_h), Y(hip_y - 2))
+        skirt.close()
+        inked(canvas, skirt, look.outfit if look.style != "coat" else shade(look.outfit, -0.12), o)
+
     # --- torso
-    tw_s, tw_h = 15, 11
     ux, uy = math.cos(lean), math.sin(lean)  # shoulder-line direction
     s_l = (sx - tw_s * ux, sy - tw_s * uy * 0.3)
     s_r = (sx + tw_s * ux, sy + tw_s * uy * 0.3)
@@ -184,6 +210,15 @@ def draw_character(canvas, look: Look, pose: Pose, face: Face, x: float, y: floa
     torso.quadTo(X(0), Y(hip_y + 7), X(-tw_h), Y(hip_y + 3))
     torso.close()
     inked(canvas, torso, look.outfit, o)
+    if look.style == "armor":   # pauldrons + chest plate line
+        for sd in (-1, 1):
+            inked_circle(canvas, X(sx + sd * tw_s), Y(sy + 1), 7.5 * u, shade(look.outfit, 0.08), o)
+        canvas.drawLine(X(sx), Y(sy + 4), X(sx), Y(hip_y + 2), stroke(shade(look.outfit, -0.4), 2.2 * u))
+    elif look.style == "uniform":   # buttons + breast pockets
+        for k in range(3):
+            canvas.drawCircle(X(sx), Y(sy + 6 + k * 7), 1.3 * u, fill((226, 196, 90)))
+        for sd in (-1, 1):
+            canvas.drawRect(skia.Rect(X(sx + sd * 9) - 2.6 * u, Y(sy + 6), X(sx + sd * 9) + 2.6 * u, Y(sy + 12)), stroke(shade(look.outfit, -0.4), 1.2 * u))
     # belt + collar detail
     canvas.drawLine(X(-tw_h + 1), Y(hip_y + 1), X(tw_h - 1), Y(hip_y + 1), stroke(shade(look.outfit, -0.5), 3.2 * u))
     canvas.drawPath(poly_path([(X(sx - 5), Y(sy - 1)), (X(sx), Y(sy + 7)), (X(sx + 5), Y(sy - 1))], close=False),
@@ -198,7 +233,7 @@ def draw_character(canvas, look: Look, pose: Pose, face: Face, x: float, y: floa
         ex, ey = bx + side * 17 * d1[0], by + 17 * d1[1]
         d2 = _dir(sh + el)
         hx, hy = ex + side * 15 * d2[0], ey + 15 * d2[1]
-        limb(canvas, [(X(bx), Y(by)), (X(ex), Y(ey))], 7.5 * u, look.outfit, o)
+        limb(canvas, [(X(bx), Y(by)), (X(ex), Y(ey))], 7.5 * u * bd, look.outfit, o)
         limb(canvas, [(X(ex), Y(ey)), (X(hx), Y(hy))], 6.2 * u, look.skin, o)
         inked_circle(canvas, X(hx), Y(hy), 4.4 * u, look.skin, o)
         hands[side] = (hx, hy, side * d2[0], d2[1])
@@ -225,7 +260,7 @@ def draw_character(canvas, look: Look, pose: Pose, face: Face, x: float, y: floa
         inked_circle(canvas, cx + sd * r * 0.98, cy + 1.5 * u, 3.6 * u, look.skin, o * 0.8)
     if not look.hood:
         _draw_hair(canvas, look, cx, cy, r, o)
-    if look.beard:
+    if look.beard or look.facial == "beard":
         b = skia.Path()
         b.moveTo(cx - r * 0.97, cy + r * 0.28)
         b.quadTo(cx - r * 1.0, cy + r * 1.28, cx, cy + r * 1.42)
@@ -234,19 +269,50 @@ def draw_character(canvas, look: Look, pose: Pose, face: Face, x: float, y: floa
         b.quadTo(cx - r * 0.7, cy + r * 0.86, cx - r * 0.97, cy + r * 0.28)
         inked(canvas, b, look.hair, o * 0.9)
     _draw_face(canvas, face, look, cx, cy, r, u, o, f)
+    if look.facial == "mustache":
+        for sd in (-1, 1):
+            m = skia.Path()
+            m.moveTo(cx, cy + r * 0.44)
+            m.quadTo(cx + sd * r * 0.28, cy + r * 0.36, cx + sd * r * 0.5, cy + r * 0.5)
+            m.quadTo(cx + sd * r * 0.28, cy + r * 0.52, cx, cy + r * 0.5)
+            inked(canvas, m, look.hair, o * 0.5)
+    elif look.facial == "goatee":
+        inked(canvas, poly_path([(cx - 5 * u, cy + r * 0.78), (cx + 5 * u, cy + r * 0.78), (cx, cy + r * 1.12)]), look.hair, o * 0.6)
+    if look.glasses:
+        for sd in (-1, 1):
+            canvas.drawCircle(cx + sd * r * 0.38, cy + r * 0.02, 7.6 * u, stroke(INK, 2.0 * u))
+        canvas.drawLine(cx - r * 0.38 + 7.6 * u, cy + r * 0.02, cx + r * 0.38 - 7.6 * u, cy + r * 0.02, stroke(INK, 2.0 * u))
     _draw_headwear(canvas, look, cx, cy, r, u, o)
     canvas.restore()
 
 
+_HAIR_HIDING = {"helmet", "hat", "cap", "kepi", "brodie", "stahlhelm", "pickelhaube", "adrian", "peaked", "beret",
+                "flatcap", "tophat", "tricorn", "turban"}
+
+
 def _draw_hair(canvas, look, cx, cy, r, o):
-    if look.headwear in {"helmet", "crown", "hat", "cap"}:
+    if look.headwear in _HAIR_HIDING or look.hair_style == "bald":
         return
+    if look.hair_style == "long" or look.female:
+        for sd in (-1, 1):
+            cur = skia.Path()
+            cur.moveTo(cx + sd * r * 0.9, cy - r * 0.3)
+            cur.cubicTo(cx + sd * r * 1.3, cy + r * 0.2, cx + sd * r * 1.25, cy + r * 1.1, cx + sd * r * 0.9, cy + r * 1.55)
+            cur.lineTo(cx + sd * r * 0.6, cy + r * 1.4)
+            cur.cubicTo(cx + sd * r * 0.8, cy + r * 0.8, cx + sd * r * 0.8, cy + r * 0.2, cx + sd * r * 0.7, cy - r * 0.2)
+            cur.close()
+            inked(canvas, cur, look.hair, o * 0.9)
     p = skia.Path()
     p.moveTo(cx - r * 1.0, cy - r * 0.05)
     p.cubicTo(cx - r * 1.15, cy - r * 1.25, cx + r * 1.15, cy - r * 1.25, cx + r * 1.0, cy - r * 0.05)
     p.quadTo(cx + r * 0.55, cy - r * 0.62, cx, cy - r * 0.55)
     p.quadTo(cx - r * 0.55, cy - r * 0.62, cx - r * 1.0, cy - r * 0.05)
     inked(canvas, p, look.hair, o * 0.9)
+    if look.hair_style == "bun":
+        inked_circle(canvas, cx, cy - r * 1.18, r * 0.34, look.hair, o * 0.9)
+    elif look.hair_style == "curly":
+        for k in range(-3, 4):
+            inked_circle(canvas, cx + k * r * 0.3, cy - r * (0.95 - 0.07 * abs(k)), r * 0.3, look.hair, o * 0.8)
 
 
 def _draw_face(canvas, face: Face, look: Look, cx, cy, r, u, o, f):
@@ -277,6 +343,9 @@ def _draw_face(canvas, face: Face, look: Look, cx, cy, r, u, o, f):
             if sd > 0:
                 a, b = b, a
         canvas.drawLine(px - 5.6 * u, a, px + 5.6 * u, b, stroke(look.hair if look.hair else INK, 2.4 * u))
+    if look.female:
+        for sd in (-1, 1):
+            canvas.drawLine(cx + sd * ex + sd * 4.6 * u, ey - 3.6 * u, cx + sd * ex + sd * 7.6 * u, ey - 6.0 * u, stroke(INK, 1.8 * u))
     # nose
     canvas.drawPath(poly_path([(cx, cy + r * 0.08), (cx - 2.4 * u, cy + r * 0.34), (cx + 2.4 * u, cy + r * 0.34)], close=False),
                     stroke(shade(look.skin, -0.28), 1.8 * u))
@@ -317,7 +386,7 @@ def _draw_headwear(canvas, look: Look, cx, cy, r, u, o):
         inked(canvas, dome, (150, 156, 168), o)
         canvas.drawLine(cx - r * 1.1, cy - r * 0.1, cx + r * 1.1, cy - r * 0.1, stroke(INK, o * 1.3))
         canvas.drawRect(skia.Rect(cx - 2 * u, cy - r * 0.1, cx + 2 * u, cy + r * 0.45), fill((130, 136, 148)))
-        for sd in (-1, 1):  # little horns read as "viking/norse" on every helmet - cheap personality
+        for sd in ((-1, 1) if look.horned else ()):
             hornp = skia.Path()
             hornp.moveTo(cx + sd * r * 0.95, cy - r * 0.55)
             hornp.quadTo(cx + sd * r * 1.55, cy - r * 0.75, cx + sd * r * 1.35, cy - r * 1.35)
@@ -328,6 +397,39 @@ def _draw_headwear(canvas, look: Look, cx, cy, r, u, o):
         pts = [(cx - r * 0.78, cy - r * 0.6), (cx - r * 0.6, cy - r * 1.35), (cx + r * 0.6, cy - r * 1.35), (cx + r * 0.78, cy - r * 0.6)]
         inked(canvas, poly_path(pts), (96, 74, 56), o)
         canvas.drawLine(cx - r * 0.76, cy - r * 0.78, cx + r * 0.76, cy - r * 0.78, stroke((40, 30, 28), 3.2 * u))
+    elif hw in {"kepi", "peaked"}:
+        col_ = look.outfit if hw == "kepi" else shade(look.outfit, -0.15)
+        inked(canvas, poly_path([(cx - r * 0.95, cy - r * 0.34), (cx - r * 0.85, cy - r * 1.18), (cx + r * 0.85, cy - r * 1.18), (cx + r * 0.95, cy - r * 0.34)]), col_, o)
+        canvas.drawRect(skia.Rect(cx - r * 0.95, cy - r * 0.5, cx + r * 0.95, cy - r * 0.36), fill((236, 220, 130) if hw == "peaked" else shade(col_, -0.35)))
+        canvas.drawRRect(skia.RRect.MakeRectXY(skia.Rect(cx - r * 0.2, cy - r * 0.38, cx + r * 1.2, cy - r * 0.22), 3 * u, 3 * u), fill((40, 34, 30)))
+    elif hw in {"brodie", "stahlhelm", "adrian", "pickelhaube"}:
+        tin = {"brodie": (112, 118, 92), "stahlhelm": (86, 92, 90), "adrian": (96, 120, 160), "pickelhaube": (176, 160, 110)}[hw]
+        dome = skia.Path()
+        dome.moveTo(cx - r * 1.12, cy - r * 0.18)
+        dome.cubicTo(cx - r * 1.1, cy - r * 1.4, cx + r * 1.1, cy - r * 1.4, cx + r * 1.12, cy - r * 0.18)
+        if hw == "stahlhelm":
+            dome.lineTo(cx + r * 1.0, cy + r * 0.3)
+            dome.lineTo(cx - r * 1.0, cy + r * 0.3)
+        dome.close()
+        inked(canvas, dome, tin, o)
+        if hw == "adrian":
+            canvas.drawLine(cx, cy - r * 1.28, cx, cy - r * 0.45, stroke(shade(tin, -0.3), 3 * u))
+        if hw == "pickelhaube":
+            inked(canvas, poly_path([(cx - 2.5 * u, cy - r * 1.18), (cx, cy - r * 1.55), (cx + 2.5 * u, cy - r * 1.18)]), (230, 210, 120), o * 0.6)
+    elif hw == "beret":
+        inked_oval(canvas, cx + r * 0.1, cy - r * 0.78, r * 1.05, r * 0.38, look.outfit, o)
+    elif hw in {"flatcap", "tophat", "tricorn"}:
+        if hw == "tophat":
+            inked(canvas, poly_path([(cx - r * 0.62, cy - r * 0.6), (cx - r * 0.55, cy - r * 1.75), (cx + r * 0.55, cy - r * 1.75), (cx + r * 0.62, cy - r * 0.6)]), (34, 32, 40), o)
+            inked_oval(canvas, cx, cy - r * 0.58, r * 1.2, r * 0.2, (34, 32, 40), o)
+        elif hw == "tricorn":
+            inked(canvas, poly_path([(cx - r * 1.35, cy - r * 0.5), (cx, cy - r * 1.35), (cx + r * 1.35, cy - r * 0.5), (cx, cy - r * 0.35)]), (44, 40, 52), o)
+        else:
+            inked_oval(canvas, cx, cy - r * 0.7, r * 1.05, r * 0.42, shade(look.outfit, -0.2), o)
+            canvas.drawRRect(skia.RRect.MakeRectXY(skia.Rect(cx + r * 0.1, cy - r * 0.55, cx + r * 1.25, cy - r * 0.4), 3 * u, 3 * u), fill(shade(look.outfit, -0.45)))
+    elif hw == "turban":
+        inked_oval(canvas, cx, cy - r * 0.78, r * 1.12, r * 0.62, (236, 226, 206), o)
+        canvas.drawArc(skia.Rect(cx - r * 0.8, cy - r * 1.2, cx + r * 0.8, cy - r * 0.4), 200, 120, False, stroke(shade((236, 226, 206), -0.25), 2.2 * u))
     elif hw == "cap":
         dome = skia.Path()
         dome.moveTo(cx - r * 1.0, cy - r * 0.32)

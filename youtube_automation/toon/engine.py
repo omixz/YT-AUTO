@@ -111,8 +111,10 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
     n = max(2, int(round(duration * fps)))
     d = direction
     rng = random.Random(d.seed * 7919 + 13)
-    u = h / 1080.0
-    scale = 4.75 * u  # figure ~480px tall at 1080p, leaving headroom for emotes
+    portrait = h > w
+    u = min(w, h) / 1080.0   # portrait Shorts scale by width so props/characters keep their proportions
+    # Shot size: characters used to fill ~45% of the frame height; now wide/medium/close vary the framing.
+    scale = {"wide": 2.7, "medium": 3.4, "close": 4.4}.get(d.shot, 3.4) * u * (1.3 if portrait else 1.0)
     env = envelope(audio_path, fps, n, seed=d.seed)
     beats = sentence_beats(env, fps)
     scene_set = build_set(d.setting, d.tod, w, h, rng)
@@ -120,16 +122,17 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
     finish = _Finish(w, h, d.seed)
 
     from .. import procedural_illustration as P
-    look = C.Look.from_archetype(d.archetype, P._CHARACTER_ARCHETYPES, rng)
-    rival_look = C.Look.from_archetype(d.rival, P._CHARACTER_ARCHETYPES, rng)
+    look = d.hero if d.hero is not None else C.Look.from_archetype(d.archetype, P._CHARACTER_ARCHETYPES, rng)
+    rival_look = d.rival_look if d.rival_look is not None else C.Look.from_archetype(d.rival, P._CHARACTER_ARCHETYPES, rng)
     extras = []
     if d.action == "crowd":
         for k in range(7):
-            extras.append((C.Look.from_archetype(rng.choice(list(P._CHARACTER_ARCHETYPES)), P._CHARACTER_ARCHETYPES, rng),
-                           rng.uniform(0.04, 0.96), rng.uniform(0.62, 0.8), rng.uniform(0, 6.28)))
+            from . import casting
+            extras.append((casting.random_look(d.era, rng, military=(d.mood == "serious")),
+                           rng.uniform(0.04, 0.96), rng.uniform(0.60, 0.72), rng.uniform(0, 6.28)))
         extras.sort(key=lambda e: e[2])
     side = -1 if d.index % 2 == 0 else 1   # alternate which side the hero stands on
-    hero_x = w * (0.5 + side * 0.17)
+    hero_x = w * (0.5 + side * (0.10 if portrait else 0.17))
     facing = -side if d.action != "fight" else 1
     blinks = []
     bt = rng.uniform(0.8, 2.0)
@@ -169,7 +172,7 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
             sx_ = wobble(t * 9, 1.0) * shake
             sy_ = wobble(t * 9, 4.0) * shake
             canvas.save()
-            fxp, fyp = hero_x, gy - 230 * u
+            fxp, fyp = hero_x, gy - 70 * scale
             canvas.translate(fxp + sx_, fyp + sy_)
             canvas.scale(zoom, zoom)
             canvas.translate(-fxp, -fyp)
@@ -194,7 +197,7 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                 pose = C.pose_shock(t, t - 0.12)
             elif d.action == "fight":
                 pose = C.pose_fight(t, 0.0)
-                hx = w * 0.335
+                hx = w * (0.30 if portrait else 0.335)
             else:
                 pose = C.pose_talk(t + beat_k * 0.0, mouth_v, d.seed)
                 # new sentence -> restart the gesture phase so arm motion lands on the words
@@ -203,7 +206,7 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
             if d.action == "crowd":
                 for (elook, ex, ey, ph) in extras:
                     exs = ex * w - cam_x * 0.9
-                    es = scale * (0.42 + 0.35 * (ey - 0.62) / 0.18)
+                    es = scale * (0.55 + 0.25 * (ey - 0.60) / 0.12)
                     ep = C.pose_idle(t * 1.6 + ph, ph)
                     ep.sh_r = 20 + 60 * max(0.0, math.sin(t * 2 + ph)) if (d.mood == "shocked") else ep.sh_r
                     ep.sh_l = 20 + 60 * max(0.0, math.sin(t * 2.4 + ph * 1.3)) if (d.mood == "shocked") else ep.sh_l
@@ -215,7 +218,7 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
             head_y = gy - 112 * scale
             if d.action == "fight":
                 rival_pose = C.pose_fight(t, 0.55)
-                rx_ = w * 0.665
+                rx_ = w * (0.70 if portrait else 0.665)
                 C.draw_shadow(canvas, rx_, gy, scale)
                 C.draw_character(canvas, rival_look, rival_pose, C.Face(mood="serious", mouth=0.0), rx_, gy, scale, -1)
                 cyc = (t % 1.1)

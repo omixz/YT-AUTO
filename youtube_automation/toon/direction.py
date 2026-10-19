@@ -41,6 +41,10 @@ class SceneDirection:
     seed: int
     emotes: List[Tuple[float, str]] = field(default_factory=list)
     mascot: bool = False
+    era: str = "modern"
+    shot: str = "medium"                 # wide | medium | close
+    hero: Optional[object] = None        # toon.character.Look for the on-screen character
+    rival_look: Optional[object] = None
 
 
 def _has(text: str, words) -> bool:
@@ -48,8 +52,17 @@ def _has(text: str, words) -> bool:
 
 
 def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirection]:
+    import zlib
     from .. import procedural_illustration as P
+    from . import casting
+    from .character import Look
 
+    era = casting.detect_era(scenes, title)
+    mil_share = sum(casting.is_military(sc.narration) for sc in scenes) / max(1, len(scenes))
+    crng = random.Random(zlib.crc32((title or scenes[0].narration).encode()))
+    cast = casting.build_cast(era, crng, mil_share)
+    last_hero = -1
+    _THEMED = ("pharaoh", "viking", "pirate", "samurai", "gladiator", "caesar", "knight")
     settings = P._resolve_settings_for_video(scenes)
     out: List[SceneDirection] = []
     prev_camera = ""
@@ -93,7 +106,18 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
             emotes.append((0.9, "sparkle"))
         if role == "insight":
             emotes.append((min(1.2, durations[i] * 0.3), "bulb"))
+        # --- who is on screen: a recurring cast member (protagonist most often), never the same twice in a row
+        hero_idx = 0 if rng.random() < 0.38 else rng.randrange(len(cast))
+        if hero_idx == last_hero:
+            hero_idx = (hero_idx + 1) % len(cast)
+        last_hero = hero_idx
+        hero = cast[hero_idx]
+        themed = next((w for w in _THEMED if w in text), "")
+        if themed and era in {"ancient", "medieval"}:
+            hero = Look.from_archetype(P._resolve_character_archetype(scene), P._CHARACTER_ARCHETYPES, rng)
+        rival_look = casting.random_look(era, random.Random(2000 + i), military=True, female=False)
+        shot = "close" if (role == "hook" or mood == "shocked") else "wide" if action == "walk" else "medium" if action in {"fight", "crowd"} else ["medium", "wide", "medium", "close"][i % 4]
         out.append(SceneDirection(index=i, setting=(directed_setting or hinted or settings[i]), archetype=archetype, rival=rival, mood=mood,
                                   action=action, camera=camera, tod=tod, role=role, seed=i, emotes=emotes,
-                                  mascot=True))   # Pip is the narrator: present in every scene
+                                  mascot=True, era=era, shot=shot, hero=hero, rival_look=rival_look))   # Pip is the narrator: present in every scene
     return out
