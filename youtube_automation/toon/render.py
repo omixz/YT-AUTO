@@ -87,7 +87,7 @@ def generate_all_clips(scenes, durations: List[float], config, work_dir: Path, t
                 except Exception:
                     logger.exception("toon render failed for scene %d", i)
                     failed.append(i)
-        failed += [i for i, f in futures.items() if f.cancelled() and i not in failed]
+        failed += [i for f, i in futures.items() if f.cancelled() and i not in failed]
 
     paths: List[Path] = []
     for i in range(len(scenes)):

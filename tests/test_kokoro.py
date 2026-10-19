@@ -72,4 +72,11 @@ def test_kokoro_failure_falls_back_to_edge_for_whole_video(tmp_path, monkeypatch
 def test_config_defaults_are_backward_compatible():
     from youtube_automation.config import QualityConfig
     q = QualityConfig()
-    assert q.max_script_attempts == 3 and q.on_gate_failure == "private"
+    assert q.max_script_attempts == 1 and q.on_gate_failure == "private"
+
+
+def test_script_length_targets_follow_the_voice_pace():
+    from youtube_automation.script_writer import _script_length_params
+    slow, _, _ = _script_length_params(1200, 140)
+    fast, _, _ = _script_length_params(1200, 165)
+    assert slow == 2800 and fast == 3300

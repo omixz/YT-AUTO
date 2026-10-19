@@ -307,7 +307,7 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
     raise RuntimeError(f"Gemini did not call {function_name}: {data}")
 
 
-def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
+def _script_length_params(target_seconds: int, wpm: int = 165) -> Tuple[int, int, int]:
     """Returns (target_words, suggested_scenes, max_output_tokens) for a
     given target duration. Pulled out of generate_script so the actual
     numbers a given target_seconds produces are directly testable, without
@@ -326,7 +326,7 @@ def _script_length_params(target_seconds: int) -> Tuple[int, int, int]:
     # matching it exactly) so target_words - and everything derived from it,
     # including the retry threshold - reflects real achieved pace rather
     # than reproducing the same gap the retry mechanism exists to catch.
-    target_words = max(60, round(target_seconds * 165 / 60))
+    target_words = max(60, round(target_seconds * wpm / 60))
     # ~25 words per scene keeps each one a genuine "1-2 sentences a few seconds
     # long" beat rather than a paragraph - matters a lot once target_words
     # gets into longform territory (a fixed "6-9 scenes" would otherwise force
@@ -443,7 +443,7 @@ EXISTING NARRATION:
 
 def generate_script(topic: str, config: PipelineConfig) -> Script:
     """Ask Gemini to write a full scene-by-scene script for one video."""
-    target_words, suggested_scenes, max_output_tokens = _script_length_params(config.video.target_seconds)
+    target_words, suggested_scenes, max_output_tokens = _script_length_params(config.video.target_seconds, config.voice.words_per_minute)
 
     # Shorts use these directly for Pexels stock-footage search; longform
     # uses them too, for procedural_illustration.py's setting/outfit/headwear/

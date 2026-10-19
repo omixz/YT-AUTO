@@ -60,3 +60,13 @@ def test_failed_scene_falls_back_to_legacy(tmp_path, monkeypatch):
     monkeypatch.setattr(render, "_legacy_clip", lambda *a: used.append(a[1]) or tmp_path / "legacy.mp4")
     paths = render.generate_all_clips([_sc("x", ["castle"]), _sc("y", ["ship"])], [1.0, 1.0], cfg, tmp_path, workers=1)
     assert used == [0, 1] and len(paths) == 2
+
+
+def test_multi_worker_pool_path_renders_every_scene(tmp_path):
+    """Regression: the process-pool branch crashed after rendering (swapped future/index), which made
+    the pipeline silently discard all toon clips. Exercise it for real with 2 spawn workers."""
+    cfg = SimpleNamespace(video=SimpleNamespace(resolution=(320, 180)), animation=SimpleNamespace(fps=12, toon_workers=2, toon_budget_seconds=120))
+    scenes = [_sc(f"A knight marches {i}.", ["knight"]) for i in range(3)]
+    paths = render.generate_all_clips(scenes, [1.0] * 3, cfg, tmp_path, workers=2)
+    assert [p.name for p in paths] == [f"toon_scene_{i:02d}.mp4" for i in range(3)]
+    assert render.LAST_STATS["fallback_scenes"] == 0 and render.LAST_STATS["scenes"] == 3

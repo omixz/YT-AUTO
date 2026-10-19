@@ -129,7 +129,7 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
     if word_count < q.min_words:
         reasons.append(f"only {word_count} words of narration (min {q.min_words})")
 
-    target_words, _, _ = _script_length_params(config.video.target_seconds)
+    target_words, _, _ = _script_length_params(config.video.target_seconds, config.voice.words_per_minute)
     min_acceptable_words = round(target_words * MIN_PUBLISH_DURATION_FRACTION)
     if word_count >= q.min_words and word_count < min_acceptable_words:
         reasons.append(

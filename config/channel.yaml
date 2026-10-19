@@ -73,7 +73,8 @@ voice:
   # so this is safe to leave here even before the key is configured.
   provider: kokoro        # free open-source Kokoro-82M on CPU, no key or billing; falls back to edge-tts for the whole video on any failure
   name: am_michael        # warm US male narrator (try bm_george for British documentary). Google/edge-tts: set provider + a Neural2/edge voice name
-  rate: "+0%"
+  rate: "+12%"            # Kokoro at +0% reads ~126 wpm; +12% gives a documentary ~140 wpm
+  words_per_minute: 140   # measured pace of this voice - script length targets and the length gate use it (edge/Google voices run ~165)
   pitch: "+0Hz"
 
 visuals:
@@ -98,8 +99,8 @@ quality:
   min_scenes: 6
   require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
   fallback_privacy_status: private # used only when on_gate_failure is "private"
-  max_script_attempts: 3           # a script that fails the text gate is regenerated up to this many times
-  on_gate_failure: skip            # skip = never upload a failed video, no human needed (topic is kept for the next run) | private = upload privately for manual review
+  max_script_attempts: 1           # extra whole-script regenerations on a text-gate failure (generate_script already retries length internally; Gemini free tier is ~20 calls/day)
+  on_gate_failure: private         # private = upload privately for review (safe default) | skip = never upload a failed video, no human needed (topic kept) - switch to skip once real runs pass the gate
 
 topics:
   queue_file: "config/topics/{niche}.yaml"
