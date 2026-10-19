@@ -71,6 +71,7 @@ class VoiceConfig:
     name: str = "en-US-GuyNeural"
     rate: str = "+0%"
     pitch: str = "+0Hz"
+    words_per_minute: int = 165   # actual spoken pace of this voice; script length targets and the length gate are derived from it
 
 
 @dataclass
@@ -111,7 +112,7 @@ class QualityConfig:
     require_hook_and_insight: bool = True
     require_strong_hook: bool = True
     fallback_privacy_status: str = "private"
-    max_script_attempts: int = 3        # regenerate a script that fails the text gate before giving up
+    max_script_attempts: int = 1        # extra whole-script regenerations on a text-gate failure. generate_script() already retries length internally (up to 4 calls), and Gemini's free tier is ~20 calls/day, so keep this at 1 unless you have headroom
     on_gate_failure: str = "private"    # "skip" = never upload a failed video (run exits non-zero, topic is kept); "private" = upload privately for review
 
 

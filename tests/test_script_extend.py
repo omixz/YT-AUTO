@@ -9,7 +9,7 @@ def _scene(role, words):
 def test_short_script_is_topped_up_to_the_unchanged_length_bar(monkeypatch):
     cfg = PipelineConfig.load()
     cfg.video.target_seconds = 1200
-    target_words, _, _ = sw._script_length_params(1200)
+    target_words, _, _ = sw._script_length_params(1200, cfg.voice.words_per_minute)
     bar = round(target_words * sw.MIN_TARGET_LENGTH_FRACTION)
     calls = {"full": 0, "extra": 0}
 
