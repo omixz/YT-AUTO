@@ -509,6 +509,12 @@ RETENTION ENGINEERING - DO NOT SKIP THESE:
    that reframes everything the viewer just watched. "This wasn't really about [topic]. It was
    about [deeper truth]." That's what earns the share, the subscribe, the algorithm boost.
 
+FACTUAL INTEGRITY (non-negotiable): when the story involves real people, unsolved cases, or disputed
+events, never state an unproven claim as established fact - in the TITLE, the hook, or the narration.
+Attribute it ("witnesses claimed", "investigators believed", "allegedly") and frame open questions as
+questions. Titles must not use "proves", "proof", "confirmed", "exposed" or "the real truth" for anything
+that is not settled fact.
+
 Write a script of roughly {target_words} words of total narration ({config.video.target_seconds}
 seconds at a natural speaking pace), split into roughly {suggested_scenes} short scenes with
 this shape:

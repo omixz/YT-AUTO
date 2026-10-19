@@ -34,6 +34,7 @@ def record_published(
     title: str = "", topic: str = "",
     privacy_status: str = "", passed_quality_gate: "bool | None" = None,
     quality_gate_reasons: "List[str] | None" = None,
+    render: "dict | None" = None,
 ) -> None:
     # Title/topic are captured here because the analytics token's scopes
     # can't read video metadata back from the Data API later - reporting.py
@@ -61,6 +62,8 @@ def record_published(
         "privacy_status": privacy_status,
         "passed_quality_gate": passed_quality_gate,
         "quality_gate_reasons": quality_gate_reasons or [],
+        # which voice/animation engine really produced this video (and any fallbacks) - readable from the repo
+        "render": render or {},
     })
     _save(path, records)
 
