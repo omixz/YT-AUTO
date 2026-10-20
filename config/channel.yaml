@@ -49,9 +49,9 @@ video:
   resolution_longform: [1920, 1080]
   formats:
     shorts:
-      enabled: false            # longform only, per explicit direction - re-enable by flipping this
-      target_seconds: 60
-      weight: 0.0
+      enabled: true             # built with the same toon cartoon engine as longform; scheduled by its own cron in publish.yml
+      target_seconds: 55
+      weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts cron forces --format shorts
     longform:
       enabled: true
       # 1200s = 20 min. Was previously running successfully in production
@@ -74,7 +74,7 @@ voice:
   provider: kokoro        # free open-source Kokoro-82M on CPU, no key or billing; falls back to edge-tts for the whole video on any failure
   name: am_michael        # warm US male narrator (try bm_george for British documentary). Google/edge-tts: set provider + a Neural2/edge voice name
   rate: "+12%"            # Kokoro at +0% reads ~126 wpm; +12% gives a documentary ~140 wpm
-  words_per_minute: 140   # measured pace of this voice - script length targets and the length gate use it (edge/Google voices run ~165)
+  words_per_minute: 155   # measured pace of this voice (dry-run: 896s vs 900s needed at 140) - script targets and the length gate use it; edge/Google voices run ~165
   pitch: "+0Hz"
 
 visuals:

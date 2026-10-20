@@ -48,32 +48,31 @@ def _select_niche_and_format(config: PipelineConfig, format_override: Optional[s
 
 
 def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config: PipelineConfig, work_dir: Path) -> List[VisualAsset]:
-    if config.video.format == "longform":
-        # One animated flat-vector-clipart clip per scene: the scene's setting
-        # drawn directly, with the focal subject (the thing being narrated)
-        # floating/bobbing over it - see procedural_illustration.py. Each clip
-        # is sized to its scene's narration length and handed to assembler.py
-        # as a video segment (kind="video").
-        durations = [a.duration for a in content_scene_audio]
-        paths = None
-        _engine_used[0] = "legacy"
-        if config.animation.engine == "toon":
-            try:
-                from .toon import render as toon_render
-                # The toon engine does its own finishing (vignette, time-of-day tint), so no cinematic pass.
-                paths = toon_render.generate_all_clips(script.scenes, durations, config, work_dir,
-                                                       title=script.title, scene_audio=content_scene_audio)
-                _engine_used[0] = "toon"
-            except Exception:
-                logger.exception("Toon engine failed outright; falling back to the legacy renderer for this video.")
-        if paths is None:
-            paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir, title=script.title)
-            if config.animation.cinematic:
-                w, h = config.video.resolution
-                paths = cinematic.grade_all(paths, script.scenes, w, h, config.video.fps, work_dir,
-                                            budget_seconds=config.animation.cinematic_budget_seconds)
+    durations = [a.duration for a in content_scene_audio]
+    paths = None
+    _engine_used[0] = "legacy"
+    if config.animation.engine == "toon":
+        try:
+            from .toon import render as toon_render
+            # The toon engine does its own finishing (vignette, time-of-day tint), so no cinematic pass.
+            # It renders any frame size, so longform (16:9) and Shorts (9:16) share one engine.
+            paths = toon_render.generate_all_clips(script.scenes, durations, config, work_dir,
+                                                   title=script.title, scene_audio=content_scene_audio)
+            _engine_used[0] = "toon"
+        except Exception:
+            logger.exception("Toon engine failed outright; falling back for this video.")
+    if paths is not None:
         return [VisualAsset(kind="video", path=p) for p in paths]
-    return visuals.fetch_all(script.scenes, config, work_dir)
+    if config.video.format == "longform":
+        # Legacy: one animated flat-vector-clipart clip per scene (procedural_illustration.py), each sized to
+        # its scene's narration length and handed to assembler.py as a video segment.
+        paths = procedural_illustration.generate_all_clips(script.scenes, durations, config, work_dir, title=script.title)
+        if config.animation.cinematic:
+            w, h = config.video.resolution
+            paths = cinematic.grade_all(paths, script.scenes, w, h, config.video.fps, work_dir,
+                                        budget_seconds=config.animation.cinematic_budget_seconds)
+        return [VisualAsset(kind="video", path=p) for p in paths]
+    return visuals.fetch_all(script.scenes, config, work_dir)   # Shorts fallback: real stock footage
 
 
 _engine_used = ["legacy"]   # which renderer actually produced the visuals (set in _build_content_visuals)

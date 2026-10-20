@@ -7,6 +7,8 @@ on:
     # 13:00 UTC plus build time. scheduling.py's optimal-slot logic only
     # applies to a manual dispatch with publish_now unchecked.
     - cron: "0 13 * * *"
+    # A Short every evening (forced via the schedule string below; the longform bandit never picks shorts)
+    - cron: "0 22 * * *"
   workflow_dispatch:
     inputs:
       topic:
@@ -111,6 +113,7 @@ jobs:
           # Manual-dispatch inputs go through env vars, NOT inline ${{ }} in the
           # script below: inline interpolation lets a crafted `topic` value
           # (quotes, $(...), backticks) execute as shell code on the runner.
+          SCHEDULE_CRON: ${{ github.event.schedule }}
           IN_TOPIC: ${{ github.event.inputs.topic }}
           IN_FORMAT: ${{ github.event.inputs.format }}
           IN_DRY_RUN: ${{ github.event.inputs.dry_run }}
@@ -123,6 +126,8 @@ jobs:
           fi
           if [ -n "$IN_FORMAT" ]; then
             ARGS+=(--format "$IN_FORMAT")
+          elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 22 * * *" ]; then
+            ARGS+=(--format shorts)
           fi
           if [ "$IN_DRY_RUN" = "true" ]; then
             ARGS+=(--dry-run)
