@@ -19,9 +19,9 @@
     }
   },
   "modern_history:longform": {
-    "samples": 10,
+    "samples": 9,
     "total_score": 109.6,
-    "avg_score": 10.959999999999999,
+    "avg_score": 12.177777777777777,
     "history": [
       {
         "date": "2026-10-08",
@@ -45,10 +45,6 @@
       },
       {
         "date": "2026-10-08",
-        "score": 0.1
-      },
-      {
-        "date": "2026-10-08",
         "score": 0.0
       },
       {
@@ -65,23 +61,18 @@
       }
     ],
     "windows": {
-      "7d": {
-        "avg_score": 10.959999999999999
-      },
+      "7d": {},
       "30d": {
-        "avg_score": 10.959999999999999
+        "avg_score": 12.166666666666666
       }
-    }
+    },
+    "repaired_private_zeros": 1
   },
   "dark_history:longform": {
-    "samples": 8,
+    "samples": 7,
     "total_score": 141.4,
-    "avg_score": 17.675,
+    "avg_score": 20.2,
     "history": [
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
       {
         "date": "2026-10-08",
         "score": 0.2
@@ -112,13 +103,12 @@
       }
     ],
     "windows": {
-      "7d": {
-        "avg_score": 17.675
-      },
+      "7d": {},
       "30d": {
-        "avg_score": 17.675
+        "avg_score": 20.2
       }
-    }
+    },
+    "repaired_private_zeros": 1
   },
   "ancient_civilizations:longform": {
     "samples": 8,
@@ -168,17 +158,13 @@
     }
   },
   "mythology:longform": {
-    "samples": 13,
+    "samples": 5,
     "total_score": 162.2,
-    "avg_score": 12.476923076923075,
+    "avg_score": 32.44,
     "history": [
       {
         "date": "2026-10-08",
         "score": 51.4
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.1
       },
       {
         "date": "2026-10-08",
@@ -187,34 +173,6 @@
       {
         "date": "2026-10-08",
         "score": 80.5
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-11",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-13",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-15",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-16",
-        "score": 0.0
       },
       {
         "date": "2026-10-17",
@@ -227,17 +185,18 @@
     ],
     "windows": {
       "7d": {
-        "avg_score": 2.5833333333333335
+        "avg_score": 7.75
       },
       "30d": {
-        "avg_score": 12.476923076923075
+        "avg_score": 32.42
       }
-    }
+    },
+    "repaired_private_zeros": 8
   },
   "unsolved_mysteries:longform": {
-    "samples": 13,
+    "samples": 11,
     "total_score": 207.90000000000006,
-    "avg_score": 15.992307692307698,
+    "avg_score": 18.900000000000006,
     "history": [
       {
         "date": "2026-10-08",
@@ -250,10 +209,6 @@
       {
         "date": "2026-10-08",
         "score": 20.4
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.2
       },
       {
         "date": "2026-10-08",
@@ -277,10 +232,6 @@
       },
       {
         "date": "2026-10-08",
-        "score": 0.30000000000000004
-      },
-      {
-        "date": "2026-10-08",
         "score": 11.4
       },
       {
@@ -294,25 +245,22 @@
     ],
     "windows": {
       "7d": {
-        "avg_score": 15.992307692307698
+        "avg_score": 0.0
       },
       "30d": {
-        "avg_score": 15.992307692307698
+        "avg_score": 18.854545454545455
       }
-    }
+    },
+    "repaired_private_zeros": 2
   },
   "world_wars:longform": {
-    "samples": 9,
+    "samples": 7,
     "total_score": 67.99999999999999,
-    "avg_score": 7.555555555555554,
+    "avg_score": 9.714285714285712,
     "history": [
       {
         "date": "2026-10-08",
         "score": 13.6
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.1
       },
       {
         "date": "2026-10-08",
@@ -328,10 +276,6 @@
       },
       {
         "date": "2026-10-08",
-        "score": 0.1
-      },
-      {
-        "date": "2026-10-08",
         "score": 0.0
       },
       {
@@ -344,12 +288,11 @@
       }
     ],
     "windows": {
-      "7d": {
-        "avg_score": 7.555555555555554
-      },
+      "7d": {},
       "30d": {
-        "avg_score": 7.555555555555554
+        "avg_score": 9.685714285714285
       }
-    }
+    },
+    "repaired_private_zeros": 2
   }
 }
