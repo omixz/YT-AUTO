@@ -796,5 +796,39 @@
         "workers": 3
       }
     }
+  },
+  {
+    "video_id": "QfLU_lvu8VQ",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Gruesome Truth Behind the Bronze Bull of Phalaris",
+    "topic": "The Bronze Bull of Phalaris: The gruesome invention of the Sicilian tyrant who locked his victims inside a hollow metal beast over a roaring fire, turning their dying screams into the chilling, musical roar of a mechanical bull.",
+    "published_at": "2026-10-20",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 2320 words of narration, well under this 1200s video's own target of ~3100 words (expected at least 2325) - the model undershot the requested length rather than a hard generation failure"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 220.0,
+        "audio_seconds": 1024.7
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 93,
+        "fallback_scenes": 0,
+        "seconds": 508.9,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE SINGING BRONZE BULL"
+      }
+    }
   }
 ]
