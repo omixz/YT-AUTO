@@ -170,6 +170,13 @@ def choose(config: PipelineConfig, format_override: "str | None" = None) -> Tupl
                 f"format_override={format_override!r} doesn't match any enabled "
                 "(niche, format) combination."
             )
+        if sum(w for _n, _f, w in combos) <= 0:
+            # A weight-0 format is 'never picked by the bandit' but can still be FORCED (the Shorts cron does
+            # exactly that); treat the forced candidates as equally likely instead of failing on zero total weight.
+            combos = [(n, f, 1.0) for (n, f, _w) in combos]
+    else:
+        # Weight 0 means 'not part of the daily bandit' - never let a trusted/high-scoring weight-0 format win the exploit branch.
+        combos = [c for c in combos if c[2] > 0] or combos
 
     stats = _load_stats(ROOT / config.growth.stats_file)
     current_month = datetime.now().month
