@@ -68,12 +68,19 @@ def record_published(
     _save(path, records)
 
 
+def is_scorable(record: dict) -> bool:
+    """A video the public could actually watch. Gate-failed uploads go up as PRIVATE and get zero views,
+    so scoring them would teach the bandit that the *niche* is bad when only the pipeline failed (mythology
+    had 8 of 13 scored videos private, which made its average look 3x worse than its public videos)."""
+    return record.get("privacy_status") != "private" and record.get("passed_quality_gate") is not False
+
+
 def unscored_mature_records(config: PipelineConfig) -> List[dict]:
     records = _load(ROOT / LEDGER_PATH)
     today = dt.date.today()
     mature = []
     for r in records:
-        if r.get("scored"):
+        if r.get("scored") or not is_scorable(r):
             continue
         published = dt.date.fromisoformat(r["published_at"])
         if (today - published).days >= config.growth.maturity_days:
@@ -122,3 +129,38 @@ def apply_score(config: PipelineConfig, niche_key: str, format_name: str, score:
     stats[key] = entry
     stats_path.parent.mkdir(parents=True, exist_ok=True)
     stats_path.write_text(json.dumps(stats, indent=2), encoding="utf-8")
+
+
+def repair_stats(stats: dict, records: List[dict], today: "dt.date | None" = None) -> dict:
+    """One-time cleanup: drop the zero-score entries that came from private (gate-failed) videos that were
+    scored before is_scorable() existed. Removes exactly as many zero entries per niche as there were
+    scored-but-private ledger records, then recomputes samples/avg/windows."""
+    today = today or dt.date.today()
+    owed: dict = {}
+    for r in records:
+        if r.get("scored") and not is_scorable(r):
+            key = stats_key(r["niche"], r["format"])
+            owed[key] = owed.get(key, 0) + 1
+    for key, n in owed.items():
+        entry = stats.get(key)
+        if not entry:
+            continue
+        removed = 0
+        kept = []
+        for h in entry["history"]:
+            if removed < n and h["score"] < 0.5:
+                removed += 1
+                continue
+            kept.append(h)
+        entry["history"] = kept
+        entry["samples"] = max(0, entry["samples"] - removed)
+        entry["avg_score"] = entry["total_score"] / entry["samples"] if entry["samples"] else 0.0
+
+        def _window(days: int) -> dict:
+            cutoff = today - dt.timedelta(days=days)
+            scores = [h["score"] for h in kept if dt.date.fromisoformat(h["date"]) >= cutoff]
+            return {"avg_score": sum(scores) / len(scores)} if scores else {}
+
+        entry["windows"] = {"7d": _window(7), "30d": _window(30)}
+        entry["repaired_private_zeros"] = removed
+    return stats
