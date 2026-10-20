@@ -99,6 +99,12 @@ SCRIPT_SCHEMA = {
                         "type": "string",
                         "description": "Short on-screen caption/emphasis text. Empty string if none.",
                     },
+                    "setting": {"type": "string", "enum": ['default', 'city', 'courtroom', 'desert', 'dungeon', 'forest', 'government', 'harbor', 'indoor', 'mountain', 'mythic', 'palace', 'ruins', 'snow', 'water', 'ancient', 'battlefield', 'warroom', 'shipdeck', 'island'],
+                                "description": "The place this scene physically happens - pick the closest match to the narration."},
+                    "action": {"type": "string", "enum": ['talk', 'walk', 'fight', 'crowd', 'shock'],
+                               "description": "What the on-screen character does. talk = stands/thinks/explains (use for most scenes); walk = travelling; fight = ONLY actual hand-to-hand combat; crowd = ONLY a large group is the point; shock = a startled reveal."},
+                    "mood": {"type": "string", "enum": ["neutral", "serious", "shocked"]},
+                    "time_of_day": {"type": "string", "enum": ["day", "dusk", "night"]},
                 },
                 "required": ["role", "narration", "visual_keywords"],
             },
@@ -180,6 +186,11 @@ class Scene:
     visual_keywords: List[str]
     role: str = "build"
     on_screen_text: str = ""
+    # Per-scene direction chosen by the script model (all optional; the toon renderer falls back to keywords)
+    setting: str = ""       # where the scene physically takes place
+    action: str = ""        # what the hero is doing
+    mood: str = ""          # neutral | serious | shocked
+    time_of_day: str = ""   # day | dusk | night
 
 
 @dataclass
@@ -509,6 +520,12 @@ RETENTION ENGINEERING - DO NOT SKIP THESE:
    that reframes everything the viewer just watched. "This wasn't really about [topic]. It was
    about [deeper truth]." That's what earns the share, the subscribe, the algorithm boost.
 
+SCENE DIRECTION: for EVERY scene fill in setting, action, mood and time_of_day. The setting must match
+where that scene's narration physically takes place (a trench scene is battlefield, a general's briefing is
+warroom, a cruise-ship scene is shipdeck). Use action=talk for most scenes; reserve fight and crowd for the
+few scenes where combat or a large crowd is genuinely the subject, and never use the same non-talk action
+in back-to-back scenes.
+
 FACTUAL INTEGRITY (non-negotiable): when the story involves real people, unsolved cases, or disputed
 events, never state an unproven claim as established fact - in the TITLE, the hook, or the narration.
 Attribute it ("witnesses claimed", "investigators believed", "allegedly") and frame open questions as
@@ -609,6 +626,8 @@ already here.
             visual_keywords=list(s["visual_keywords"]),
             role=s.get("role", "build"),
             on_screen_text=s.get("on_screen_text", "") or "",
+            setting=s.get("setting", "") or "", action=s.get("action", "") or "",
+            mood=s.get("mood", "") or "", time_of_day=s.get("time_of_day", "") or "",
         )
         for s in data["scenes"]
     ]
