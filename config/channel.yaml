@@ -74,7 +74,7 @@ voice:
   provider: kokoro        # free open-source Kokoro-82M on CPU, no key or billing; falls back to edge-tts for the whole video on any failure
   name: am_michael        # warm US male narrator (try bm_george for British documentary). Google/edge-tts: set provider + a Neural2/edge voice name
   rate: "+12%"            # Kokoro at +0% reads ~126 wpm; +12% gives a documentary ~140 wpm
-  words_per_minute: 140   # measured pace of this voice - script length targets and the length gate use it (edge/Google voices run ~165)
+  words_per_minute: 155   # measured pace of this voice (dry-run: 896s vs 900s needed at 140) - script targets and the length gate use it; edge/Google voices run ~165
   pitch: "+0Hz"
 
 visuals:
