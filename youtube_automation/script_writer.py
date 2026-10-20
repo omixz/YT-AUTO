@@ -51,6 +51,7 @@ SCRIPT_SCHEMA = {
         "title": {"type": "string", "description": "YouTube title, under 100 chars, hook-forward. Makes one specific, curiosity-gap promise (not a vague topic label) - the hook scene's opening line must deliver on exactly this promise, since a title/thumbnail that overpromises what the video actually opens with kills retention and the algorithm's willingness to keep distributing it."},
         "description": {"type": "string", "description": "YouTube description, 2-4 sentences plus hashtags."},
         "tags": {"type": "array", "items": {"type": "string"}, "description": "8-15 relevant search tags."},
+        "thumbnail_text": {"type": "string", "description": "2-4 ALL-CAPS-friendly words for the thumbnail (e.g. \"THEY VANISHED?\", \"NO SURVIVORS\", \"THE LAST ORDER\"). Must add curiosity the title does not already give - never repeat the title, never state an unproven claim as fact."},
         "scenes": {
             "type": "array",
             "description": "Ordered scenes that make up the full narration.",
@@ -200,6 +201,7 @@ class Script:
     description: str
     tags: List[str]
     scenes: List[Scene] = field(default_factory=list)
+    thumbnail_text: str = ""   # 2-4 punchy words printed on the thumbnail (complements, never repeats, the title)
 
     @property
     def full_narration(self) -> str:
@@ -638,6 +640,7 @@ already here.
         description=data["description"].strip(),
         tags=[t.strip() for t in data["tags"]],
         scenes=scenes,
+        thumbnail_text=(data.get("thumbnail_text") or "").strip(),
     )
 
 

@@ -178,16 +178,27 @@ def run(
             raise QualityGateFailed("Quality gate failed after %d script attempt(s); skipping upload: %s" % (max_attempts, "; ".join(quality_reasons)))
 
     logger.info("Generating thumbnail...")
-    if content_visuals:
-        thumb_path = thumbnail.generate(
-            script.title, content_visuals[0], work_dir, work_dir / "thumbnail.jpg",
-            candidates=content_visuals[1:8],
-        )
-    else:
-        thumb_path = work_dir / "thumbnail.jpg"
+    thumb_path, thumb_style = None, "legacy"
+    if config.animation.engine == "toon":
+        try:
+            from .toon import thumbnail as toon_thumbnail
+            thumb_path = toon_thumbnail.render(script.scenes, [a.duration for a in content_scene_audio], script.title,
+                                               work_dir / "thumbnail.jpg", script.thumbnail_text)
+            thumb_style = "toon"
+        except Exception:
+            logger.exception("Toon thumbnail failed; falling back to the frame-based thumbnail.")
+    if thumb_path is None:
+        if content_visuals:
+            thumb_path = thumbnail.generate(
+                script.title, content_visuals[0], work_dir, work_dir / "thumbnail.jpg",
+                candidates=content_visuals[1:8],
+            )
+        else:
+            thumb_path = work_dir / "thumbnail.jpg"
 
     manifest = {
         "voice": dict(tts.LAST_STATS),
+        "thumbnail": {"style": thumb_style, "text": script.thumbnail_text},
         "animation": {"engine": _engine_used[0], **__import__("youtube_automation.toon.render", fromlist=["LAST_STATS"]).LAST_STATS},
         "run_id": run_id,
         "niche": niche_key,
@@ -288,7 +299,7 @@ def run(
                 niche_key, format_name, video_id, title=script.title, topic=topic,
                 privacy_status=effective_privacy, passed_quality_gate=passed_quality_gate,
                 quality_gate_reasons=quality_reasons,
-                render={"voice": manifest.get("voice"), "animation": manifest.get("animation")},
+                render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail")},
             )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
