@@ -12,6 +12,7 @@ tacked onto every publish run.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import logging
 import sys
 
@@ -56,7 +57,8 @@ def main() -> None:
             continue
 
         growth_ledger.apply_score(config, record["niche"], record["format"], stats.score)
-        growth_ledger.mark_scored(record["video_id"])
+        ctr_extra = analytics.fetch_ctr_metrics(record["video_id"], published, config, window_days=config.growth.maturity_days) or {}
+        growth_ledger.mark_scored(record["video_id"], {**ctr_extra, "ctr_checked": dt.date.today().isoformat()})
         logger.info(
             "Scored %s (%s/%s): score=%.1f (views=%d, minutes_watched=%.1f, subs_gained=%d)",
             record["video_id"], record["niche"], record["format"], stats.score,
@@ -71,6 +73,19 @@ def main() -> None:
         except Exception:
             logger.exception("Report generation failed for %s - continuing.", record["video_id"])
 
+
+    # CTR backfill + insights: look up impressions/CTR for already-scored public videos once, then publish a
+    # breakdown by what we control (niche, thumbnail style, title shape). Best-effort: never fails the sync.
+    try:
+        for rec in growth_ledger.needs_ctr(config):
+            m = analytics.fetch_ctr_metrics(rec["video_id"], dt.date.fromisoformat(rec["published_at"]), config,
+                                            window_days=config.growth.maturity_days)
+            growth_ledger.set_fields(rec["video_id"], {**(m or {}), "ctr_checked": dt.date.today().isoformat()})
+        insights = growth_ledger.ctr_insights(growth_ledger._load(growth_ledger.ROOT / growth_ledger.LEDGER_PATH))
+        (growth_ledger.ROOT / "config" / "ctr_insights.json").write_text(json.dumps(insights, indent=2), encoding="utf-8")
+        logger.info("CTR insights: %s", json.dumps({k: insights[k] for k in ("videos_with_ctr", "overall_ctr", "by_niche")}))
+    except Exception:
+        logger.exception("CTR backfill/insights failed - continuing.")
 
     if failures:
         for vid, why in failures:
