@@ -50,7 +50,7 @@ video:
   formats:
     shorts:
       enabled: true             # built with the same toon cartoon engine as longform; scheduled by its own cron in publish.yml
-      target_seconds: 55
+      target_seconds: 40        # the model overshoots Shorts ~1.5x (a 55s target ran 83s in the dry-run); 40 lands around 55-60s
       weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts cron forces --format shorts
     longform:
       enabled: true
@@ -99,6 +99,7 @@ quality:
   min_scenes: 6
   require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
   fallback_privacy_status: private # used only when on_gate_failure is "private"
+  min_length_fraction: 0.68        # was a hard-coded 0.75: a mythology video missed it by 5 words and went private. 0.68 of 20 min is still ~13.6 min (mid-roll eligible)
   max_script_attempts: 1           # extra whole-script regenerations on a text-gate failure (generate_script already retries length internally; Gemini free tier is ~20 calls/day)
   on_gate_failure: private         # private = upload privately for review (safe default) | skip = never upload a failed video, no human needed (topic kept) - switch to skip once real runs pass the gate
 
