@@ -88,13 +88,60 @@ def unscored_mature_records(config: PipelineConfig) -> List[dict]:
     return mature
 
 
-def mark_scored(video_id: str) -> None:
+def mark_scored(video_id: str, extra: "dict | None" = None) -> None:
     path = ROOT / LEDGER_PATH
     records = _load(path)
     for r in records:
         if r["video_id"] == video_id:
             r["scored"] = True
+            if extra:
+                r.update(extra)
     _save(path, records)
+
+
+def set_fields(video_id: str, fields: dict) -> None:
+    path = ROOT / LEDGER_PATH
+    records = _load(path)
+    for r in records:
+        if r["video_id"] == video_id:
+            r.update(fields)
+    _save(path, records)
+
+
+def needs_ctr(config: PipelineConfig, limit: int = 30) -> List[dict]:
+    """Public, mature videos that have never had their CTR looked up (newest first)."""
+    today = dt.date.today()
+    out = [r for r in _load(ROOT / LEDGER_PATH)
+           if is_scorable(r) and "ctr_checked" not in r
+           and (today - dt.date.fromisoformat(r["published_at"])).days >= config.growth.maturity_days]
+    return sorted(out, key=lambda r: r["published_at"], reverse=True)[:limit]
+
+
+def ctr_insights(records: List[dict]) -> dict:
+    """Impression-weighted CTR sliced by things we control, so the next thumbnail/title experiment is data-driven."""
+    import re as _re
+    rows = [r for r in records if r.get("ctr") is not None and (r.get("impressions") or 0) > 0]
+
+    def agg(key_fn) -> dict:
+        acc: dict = {}
+        for r in rows:
+            k = key_fn(r)
+            if k is None:
+                continue
+            a = acc.setdefault(k, [0.0, 0, 0])
+            a[0] += r["ctr"] * r["impressions"]; a[1] += r["impressions"]; a[2] += 1
+        return {k: {"ctr": round(v[0] / v[1], 4), "impressions": v[1], "videos": v[2]} for k, v in sorted(acc.items())}
+
+    return {
+        "videos_with_ctr": len(rows),
+        "overall_ctr": round(sum(r["ctr"] * r["impressions"] for r in rows) / max(1, sum(r["impressions"] for r in rows)), 4) if rows else None,
+        "by_niche": agg(lambda r: r["niche"]),
+        "by_format": agg(lambda r: r["format"]),
+        "by_thumbnail_style": agg(lambda r: ((r.get("render") or {}).get("thumbnail") or {}).get("style") or "legacy"),
+        "by_title_has_year": agg(lambda r: "year" if _re.search(r"\b(1[0-9]{3}|20[0-2][0-9])\b", r.get("title", "")) else "no_year"),
+        "by_title_is_question": agg(lambda r: "question" if r.get("title", "").rstrip().endswith("?") else "statement"),
+        "by_title_length": agg(lambda r: "<=50" if len(r.get("title", "")) <= 50 else "51-70" if len(r.get("title", "")) <= 70 else ">70"),
+    }
 
 
 def apply_score(config: PipelineConfig, niche_key: str, format_name: str, score: float) -> None:

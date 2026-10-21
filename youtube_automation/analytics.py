@@ -40,6 +40,28 @@ class VideoStats:
         )
 
 
+def fetch_ctr_metrics(video_id: str, published_at: dt.date, config: PipelineConfig, window_days: int = 7) -> Optional[dict]:
+    """Thumbnail impressions, click-through rate and average view percentage for the first window_days.
+    Optional by design: if the API rejects these metrics (scope/availability) this returns None and the
+    rest of the sync is unaffected."""
+    try:
+        creds = get_credentials(config)
+        api = build(API_SERVICE_NAME, API_VERSION, credentials=creds)
+        resp = api.reports().query(
+            ids="channel==MINE", startDate=published_at.isoformat(),
+            endDate=(published_at + dt.timedelta(days=window_days)).isoformat(),
+            metrics="videoThumbnailImpressions,videoThumbnailImpressionsClickRate,averageViewPercentage",
+            filters=f"video=={video_id}",
+        ).execute()
+    except Exception:  # noqa: BLE001
+        return None
+    rows = resp.get("rows")
+    if not rows:
+        return None
+    imp, ctr, pct = rows[0]
+    return {"impressions": int(imp), "ctr": round(float(ctr), 4), "avg_view_pct": round(float(pct), 1)}
+
+
 def fetch_video_stats(
     video_id: str, published_at: dt.date, config: PipelineConfig, window_days: int = 7,
 ) -> Optional[VideoStats]:
