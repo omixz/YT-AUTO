@@ -1283,5 +1283,26 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "ozaWtFVBT5I",
+    "published_at": "2026-10-14",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Greek Myth That Proved Godly Perfection Comes With a Price of Blood",
+    "stats": {
+      "views": 5,
+      "minutes_watched": 20.0,
+      "avg_view_duration_s": 620.0,
+      "avg_view_percentage": 50.17,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 4,
+        "YT_CHANNEL": 1
+      }
+    }
   }
 ]
