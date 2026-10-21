@@ -862,5 +862,40 @@
         "text": "THE COVER UP"
       }
     }
+  },
+  {
+    "video_id": "NmWcFK3sR2I",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Terrifying Myth of Persephone\u2019s Abduction Is Not What You Think",
+    "topic": "The Flayed Bride of Hades: The terrifying underworld abduction of Persephone not as a gentle romance, but as a violent cosmic hostage crisis that plunged the mortal world into an eternal, starving winter of ice and ash.",
+    "published_at": "2026-10-21",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1989 words of narration, well under this 1200s video's own target of ~3100 words (expected at least 2108) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 810s (13.5 min), well under this video's own target of 1200s (20 min) (expected at least 816s / 13.6 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 419.3,
+        "audio_seconds": 810.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 75,
+        "fallback_scenes": 0,
+        "seconds": 681.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SHE ATE THE SEED"
+      }
+    }
   }
 ]
