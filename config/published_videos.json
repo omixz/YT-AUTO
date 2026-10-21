@@ -830,5 +830,37 @@
         "text": "THE SINGING BRONZE BULL"
       }
     }
+  },
+  {
+    "video_id": "u7FTxQHujg0",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Dark Truth Behind Paul Bern\u2019s 1932 Hollywood Death",
+    "topic": "The haunting 1932 murder of Hollywood insider Paul Bern, who left behind a tragic suicide note that hinted at dark secrets before his bride, screen icon Jean Harlow, discovered his body\u2014initiating a studio cover-up that rewrote the truth of his final hours.",
+    "published_at": "2026-10-21",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 30.6,
+        "audio_seconds": 113.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 12,
+        "fallback_scenes": 0,
+        "seconds": 46.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE COVER UP"
+      }
+    }
   }
 ]
