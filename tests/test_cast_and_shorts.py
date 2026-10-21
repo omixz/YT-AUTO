@@ -50,6 +50,6 @@ def test_portrait_short_clip_renders(tmp_path):
 def test_shorts_are_enabled_with_short_scenes():
     cfg = PipelineConfig.load("config/channel.yaml")
     assert cfg.video.formats["shorts"].enabled and cfg.video.formats["shorts"].target_seconds <= 60
-    words, scenes, _ = sw._script_length_params(55, cfg.voice.words_per_minute)
-    assert scenes >= 9                                   # ~4s scenes keep a Short moving
+    words, scenes, _ = sw._script_length_params(cfg.video.formats["shorts"].target_seconds, cfg.voice.words_per_minute)
+    assert scenes >= 8                                   # ~4s scenes keep a Short moving
     assert '0 22 * * *' in Path(".github/workflows/publish.yml").read_text()

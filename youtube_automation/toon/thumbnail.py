@@ -22,7 +22,7 @@ W, H = 1280, 720
 _STOP = {"the", "a", "an", "of", "in", "on", "at", "to", "and", "that", "this", "how", "why", "what", "who", "where", "when", "with", "for", "was", "were", "is"}
 _PUNCH = ("vanish", "disappear", "murder", "secret", "lost", "last", "never", "dead", "death", "mystery", "hidden", "forbidden",
           "cursed", "final", "impossible", "terrif", "strange", "betray", "trap", "doomed", "survivor", "unsolved", "massacre", "plague", "curse")
-_CERTAIN = re.compile(r"\b(proves?|proof|proven|confirmed|exposed|the (real|hidden|shocking) truth)\b", re.I)
+from ..quality_check import _CERTAINTY_TITLE as _CERTAIN  # one shared list of unproven-claim phrases
 
 
 def pick_text(title: str, provided: str = "") -> str:

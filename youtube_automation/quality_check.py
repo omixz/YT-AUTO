@@ -120,7 +120,23 @@ _VAGUE_TITLE_PATTERNS = (
 # Titles that state an unproven claim as established fact ("...Proves She Was Trafficked"). On a real
 # person or an unsolved case that is a defamation / misinformation risk, so it fails the gate (the video
 # then uploads privately) rather than going public - the script prompt also forbids it up front.
-_CERTAINTY_TITLE = re.compile(r"\b(proves?|proof|proven|confirmed|exposed|undeniable|the (real|hidden|shocking) truth)\b", re.I)
+_CERTAINTY_TITLE = re.compile(r"\b(proves?|proof|proven|confirmed|exposed|undeniable|cover[- ]?ups?|(the )?(real|hidden|shocking|dark|gruesome|untold|terrifying|chilling) truth)\b", re.I)
+
+_SOFTEN = [  # deterministic rewrites so a loaded title is FIXED instead of failing the gate (and going private)
+    (re.compile(r"\b(the )?(real|hidden|shocking|dark|gruesome|untold|terrifying|chilling) truth (behind|about|of)\b", re.I), lambda m: ("The " if (m.group(1) or "")[:1].isupper() or m.start() == 0 else "the ") + "Mystery " + m.group(3)),
+    (re.compile(r"\bproves\b", re.I), "suggests"), (re.compile(r"\bproof\b", re.I), "evidence"), (re.compile(r"\bproven\b", re.I), "alleged"),
+    (re.compile(r"\bconfirmed\b", re.I), "reported"), (re.compile(r"\bexposed\b", re.I), "questioned"), (re.compile(r"\bundeniable\b", re.I), "disputed"),
+    (re.compile(r"\bcover[- ]?ups?\b", re.I), "controversy"),
+]
+
+
+def soften_title(title: str) -> str:
+    for pat, repl in _SOFTEN:
+        if isinstance(repl, str):   # plain word swaps keep the original capitalisation ("Proves" -> "Suggests")
+            word = repl
+            repl = lambda m, word=word: word.capitalize() if m.group(0)[:1].isupper() else word
+        title = pat.sub(repl, title)
+    return title
 
 
 def has_unproven_certainty(title: str) -> bool:
@@ -140,7 +156,7 @@ def check(script: Script, config: PipelineConfig) -> Tuple[bool, List[str]]:
         reasons.append(f"only {word_count} words of narration (min {q.min_words})")
 
     target_words, _, _ = _script_length_params(config.video.target_seconds, config.voice.words_per_minute)
-    min_acceptable_words = round(target_words * MIN_PUBLISH_DURATION_FRACTION)
+    min_acceptable_words = round(target_words * config.quality.min_length_fraction)
     if word_count >= q.min_words and word_count < min_acceptable_words:
         reasons.append(
             f"only {word_count} words of narration, well under this {config.video.target_seconds}s "
@@ -306,7 +322,7 @@ def check_media(
     # count estimated at script-generation time, before any TTS has run,
     # can only ever be a heuristic; actual_duration here is measured from
     # the real rendered file and can't be wrong the same way.
-    min_acceptable_duration = config.video.target_seconds * MIN_PUBLISH_DURATION_FRACTION
+    min_acceptable_duration = config.video.target_seconds * config.quality.min_length_fraction
     if actual_duration > 0 and actual_duration < min_acceptable_duration:
         reasons.append(
             f"rendered video is only {actual_duration:.0f}s ({actual_duration / 60:.1f} min), well under "
