@@ -112,7 +112,7 @@ def needs_ctr(config: PipelineConfig, limit: int = 30) -> List[dict]:
     """Public, mature videos that have never had their CTR looked up (newest first)."""
     today = dt.date.today()
     out = [r for r in _load(ROOT / LEDGER_PATH)
-           if is_scorable(r) and "ctr_checked" not in r
+           if is_scorable(r) and "ctr" not in r
            and (today - dt.date.fromisoformat(r["published_at"])).days >= config.growth.maturity_days]
     return sorted(out, key=lambda r: r["published_at"], reverse=True)[:limit]
 

@@ -26,10 +26,10 @@ def test_needs_ctr_only_returns_public_mature_unchecked(tmp_path, monkeypatch):
     from types import SimpleNamespace
     monkeypatch.setattr(gl, "ROOT", tmp_path)
     old = (dt.date.today() - dt.timedelta(days=30)).isoformat()
-    recs = [_rec(video_id="ok", published_at=old), _rec(video_id="private", published_at=old, privacy_status="private"),
-            _rec(video_id="checked", published_at=old, ctr_checked="2026-10-01"), _rec(video_id="young", published_at=dt.date.today().isoformat())]
+    recs = [{k: v for k, v in _rec(video_id="ok", published_at=old).items() if k != "ctr"}, _rec(video_id="private", published_at=old, privacy_status="private"),
+            _rec(video_id="has_ctr", published_at=old), _rec(video_id="young", published_at=dt.date.today().isoformat())]
     p = tmp_path / gl.LEDGER_PATH
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(recs))
     cfg = SimpleNamespace(growth=SimpleNamespace(maturity_days=7))
-    assert [r["video_id"] for r in gl.needs_ctr(cfg)] == ["ok"]
+    assert [r["video_id"] for r in gl.needs_ctr(cfg)] == ["ok"]   # failed lookups are retried; ones with real CTR are not
