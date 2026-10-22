@@ -1,0 +1,94 @@
+{
+  "videos": 22,
+  "overall": {
+    "avg_views": 7.3,
+    "avg_view_pct": 21.8
+  },
+  "by_niche": {
+    "ancient_civilizations": {
+      "avg_views": 6.0,
+      "avg_view_pct": 10.0,
+      "videos": 3
+    },
+    "dark_history": {
+      "avg_views": 4.2,
+      "avg_view_pct": 9.2,
+      "videos": 4
+    },
+    "modern_history": {
+      "avg_views": 9.6,
+      "avg_view_pct": 33.2,
+      "videos": 5
+    },
+    "mythology": {
+      "avg_views": 14.0,
+      "avg_view_pct": 32.3,
+      "videos": 1
+    },
+    "science_history": {
+      "avg_views": 12.0,
+      "avg_view_pct": 35.5,
+      "videos": 1
+    },
+    "unsolved_mysteries": {
+      "avg_views": 5.7,
+      "avg_view_pct": 27.0,
+      "videos": 6
+    },
+    "world_wars": {
+      "avg_views": 8.5,
+      "avg_view_pct": 7.8,
+      "videos": 2
+    }
+  },
+  "by_format": {
+    "longform": {
+      "avg_views": 7.3,
+      "avg_view_pct": 21.8,
+      "videos": 22
+    }
+  },
+  "by_thumbnail_style": {
+    "legacy": {
+      "avg_views": 7.3,
+      "avg_view_pct": 21.8,
+      "videos": 22
+    }
+  },
+  "by_title_has_year": {
+    "no_year": {
+      "avg_views": 8.0,
+      "avg_view_pct": 20.4,
+      "videos": 18
+    },
+    "year": {
+      "avg_views": 4.0,
+      "avg_view_pct": 27.7,
+      "videos": 4
+    }
+  },
+  "by_title_is_question": {
+    "statement": {
+      "avg_views": 7.3,
+      "avg_view_pct": 21.8,
+      "videos": 22
+    }
+  },
+  "by_title_length": {
+    "51-70": {
+      "avg_views": 8.3,
+      "avg_view_pct": 21.1,
+      "videos": 15
+    },
+    "<=50": {
+      "avg_views": 3.2,
+      "avg_view_pct": 12.5,
+      "videos": 4
+    },
+    ">70": {
+      "avg_views": 7.7,
+      "avg_view_pct": 37.2,
+      "videos": 3
+    }
+  }
+}
