@@ -927,5 +927,37 @@
         "text": "SHE ATE THE SEED"
       }
     }
+  },
+  {
+    "video_id": "2rmNlgtS8qA",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "The Moment America Almost Nuke-Bombed Itself",
+    "topic": "The 1961 B-52 crash over Goldsboro, North Carolina, where a dropping nuclear bomb had four safety switches and three failed instantly, leaving a single low-voltage toggle switch to prevent an accidental detonation over the American mainland.",
+    "published_at": "2026-10-22",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 42.8,
+        "audio_seconds": 63.5
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 58.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "ONE SWITCH AWAY"
+      }
+    }
   }
 ]
