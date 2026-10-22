@@ -108,33 +108,32 @@ def set_fields(video_id: str, fields: dict) -> None:
     _save(path, records)
 
 
-def needs_ctr(config: PipelineConfig, limit: int = 30) -> List[dict]:
-    """Public, mature videos that have never had their CTR looked up (newest first)."""
+def needs_audience(config: PipelineConfig, limit: int = 40) -> List[dict]:
+    """Public, mature videos whose views/retention were never looked up (newest first); failures are retried."""
     today = dt.date.today()
     out = [r for r in _load(ROOT / LEDGER_PATH)
-           if is_scorable(r) and "ctr" not in r
+           if is_scorable(r) and "avg_view_pct" not in r
            and (today - dt.date.fromisoformat(r["published_at"])).days >= config.growth.maturity_days]
     return sorted(out, key=lambda r: r["published_at"], reverse=True)[:limit]
 
 
-def ctr_insights(records: List[dict]) -> dict:
-    """Impression-weighted CTR sliced by things we control, so the next thumbnail/title experiment is data-driven."""
+def audience_insights(records: List[dict]) -> dict:
+    """Views and retention sliced by things we control (niche, format, thumbnail style, title shape).
+    avg_views is the closest measurable proxy for click-through (impressions x CTR), since CTR itself is Studio-only."""
     import re as _re
-    rows = [r for r in records if r.get("ctr") is not None and (r.get("impressions") or 0) > 0]
+    rows = [r for r in records if r.get("avg_view_pct") is not None and r.get("views") is not None]
 
     def agg(key_fn) -> dict:
         acc: dict = {}
         for r in rows:
             k = key_fn(r)
-            if k is None:
-                continue
-            a = acc.setdefault(k, [0.0, 0, 0])
-            a[0] += r["ctr"] * r["impressions"]; a[1] += r["impressions"]; a[2] += 1
-        return {k: {"ctr": round(v[0] / v[1], 4), "impressions": v[1], "videos": v[2]} for k, v in sorted(acc.items())}
+            a = acc.setdefault(k, [0, 0.0, 0])
+            a[0] += r["views"]; a[1] += r["avg_view_pct"]; a[2] += 1
+        return {k: {"avg_views": round(v[0] / v[2], 1), "avg_view_pct": round(v[1] / v[2], 1), "videos": v[2]} for k, v in sorted(acc.items())}
 
     return {
-        "videos_with_ctr": len(rows),
-        "overall_ctr": round(sum(r["ctr"] * r["impressions"] for r in rows) / max(1, sum(r["impressions"] for r in rows)), 4) if rows else None,
+        "videos": len(rows),
+        "overall": {"avg_views": round(sum(r["views"] for r in rows) / len(rows), 1), "avg_view_pct": round(sum(r["avg_view_pct"] for r in rows) / len(rows), 1)} if rows else None,
         "by_niche": agg(lambda r: r["niche"]),
         "by_format": agg(lambda r: r["format"]),
         "by_thumbnail_style": agg(lambda r: ((r.get("render") or {}).get("thumbnail") or {}).get("style") or "legacy"),

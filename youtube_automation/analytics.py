@@ -40,51 +40,30 @@ class VideoStats:
         )
 
 
-CTR_ERRORS: list = []   # filled by fetch_ctr_metrics so the sync can surface WHY lookups failed (as a readable annotation)
+LOOKUP_ERRORS: list = []   # filled by fetch_audience_metrics so the sync can surface WHY lookups failed (as a readable annotation)
 
 
-def _query(api, video_id, start, end, metrics, dimensions=None):
-    kw = dict(ids="channel==MINE", startDate=start, endDate=end, metrics=metrics, filters=f"video=={video_id}")
-    if dimensions:
-        kw["dimensions"] = dimensions
-    return api.reports().query(**kw).execute()
+def fetch_audience_metrics(video_id: str, published_at: dt.date, config: PipelineConfig, window_days: int = 7) -> Optional[dict]:
+    """Views and average view percentage (retention) for the first window_days.
 
-
-def fetch_ctr_metrics(video_id: str, published_at: dt.date, config: PipelineConfig, window_days: int = 7) -> Optional[dict]:
-    """Thumbnail impressions + click-through rate (+ average view percentage) for the first window_days.
-    Best-effort: tries the metric forms the API accepts, records every failure in CTR_ERRORS, returns None
-    (never raises) so the rest of the sync is unaffected."""
-    start, end = published_at.isoformat(), (published_at + dt.timedelta(days=window_days)).isoformat()
+    NOTE: thumbnail impressions / click-through rate are NOT available here - the YouTube Analytics API returned
+    HTTP 400 for videoThumbnailImpressions[ClickRate] in every form we tried, so CTR is Studio-only.
+    Best-effort: records failures in LOOKUP_ERRORS and returns None (never raises)."""
     try:
         api = build(API_SERVICE_NAME, API_VERSION, credentials=get_credentials(config))
+        resp = api.reports().query(
+            ids="channel==MINE", startDate=published_at.isoformat(),
+            endDate=(published_at + dt.timedelta(days=window_days)).isoformat(),
+            metrics="views,averageViewPercentage", filters=f"video=={video_id}",
+        ).execute()
     except Exception as exc:  # noqa: BLE001
-        CTR_ERRORS.append(f"auth/build: {type(exc).__name__}: {exc}"[:300])
+        LOOKUP_ERRORS.append(f"{type(exc).__name__}: {str(exc)[:240]}")
         return None
-    out: dict = {}
-    attempts = [("videoThumbnailImpressions,videoThumbnailImpressionsClickRate", "video"),
-                ("videoThumbnailImpressions,videoThumbnailImpressionsClickRate", None),
-                ("videoThumbnailImpressions,videoThumbnailImpressionsClickRate", "day")]
-    for metrics, dims in attempts:
-        try:
-            rows = _query(api, video_id, start, end, metrics, dims).get("rows") or []
-            if rows:
-                row = rows[0][1:] if dims == "video" else rows[0]
-                if dims == "day":   # one row per day: impression-weighted
-                    imp = sum(r[1] for r in rows)
-                    out = {"impressions": int(imp), "ctr": round(sum(r[1] * r[2] for r in rows) / imp, 4) if imp else 0.0}
-                else:
-                    out = {"impressions": int(row[0]), "ctr": round(float(row[1]), 4)}
-                break
-        except Exception as exc:  # noqa: BLE001
-            body = getattr(getattr(exc, "resp", None), "status", "") or ""
-            CTR_ERRORS.append(f"{metrics.split(',')[0]} dims={dims}: {type(exc).__name__} {body} {str(exc)[:200]}")
-    try:   # separate query: some metric groups can't be combined with impressions
-        rows = _query(api, video_id, start, end, "averageViewPercentage").get("rows") or []
-        if rows:
-            out["avg_view_pct"] = round(float(rows[0][0]), 1)
-    except Exception as exc:  # noqa: BLE001
-        CTR_ERRORS.append(f"averageViewPercentage: {type(exc).__name__} {str(exc)[:160]}")
-    return out or None
+    rows = resp.get("rows")
+    if not rows:
+        return None
+    views, pct = rows[0]
+    return {"views": int(views), "avg_view_pct": round(float(pct), 1)}
 
 
 def fetch_video_stats(

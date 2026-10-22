@@ -57,8 +57,7 @@ def main() -> None:
             continue
 
         growth_ledger.apply_score(config, record["niche"], record["format"], stats.score)
-        ctr_extra = analytics.fetch_ctr_metrics(record["video_id"], published, config, window_days=config.growth.maturity_days) or {}
-        growth_ledger.mark_scored(record["video_id"], {**ctr_extra, **({"ctr_checked": dt.date.today().isoformat()} if ctr_extra.get("ctr") is not None else {})})
+        growth_ledger.mark_scored(record["video_id"], {"views": stats.views, "avg_view_pct": (analytics.fetch_audience_metrics(record["video_id"], published, config, window_days=config.growth.maturity_days) or {}).get("avg_view_pct")})
         logger.info(
             "Scored %s (%s/%s): score=%.1f (views=%d, minutes_watched=%.1f, subs_gained=%d)",
             record["video_id"], record["niche"], record["format"], stats.score,
@@ -74,21 +73,21 @@ def main() -> None:
             logger.exception("Report generation failed for %s - continuing.", record["video_id"])
 
 
-    # CTR backfill + insights: look up impressions/CTR for already-scored public videos once, then publish a
-    # breakdown by what we control (niche, thumbnail style, title shape). Best-effort: never fails the sync.
+    # Audience backfill + insights: views and retention for scored public videos, sliced by what we control.
+    # Best-effort: never fails the sync. (CTR itself isn't available from the API - see analytics.fetch_audience_metrics.)
     try:
-        for rec in growth_ledger.needs_ctr(config):
-            m = analytics.fetch_ctr_metrics(rec["video_id"], dt.date.fromisoformat(rec["published_at"]), config,
-                                            window_days=config.growth.maturity_days)
-            if m:   # only record real data; failures are retried next sync (not marked as checked)
-                growth_ledger.set_fields(rec["video_id"], {**m, "ctr_checked": dt.date.today().isoformat()})
-        if analytics.CTR_ERRORS:
-            print(f"::warning title=CTR lookup failed ({len(analytics.CTR_ERRORS)} errors)::" + " || ".join(dict.fromkeys(analytics.CTR_ERRORS))[:900])
-        insights = growth_ledger.ctr_insights(growth_ledger._load(growth_ledger.ROOT / growth_ledger.LEDGER_PATH))
-        (growth_ledger.ROOT / "config" / "ctr_insights.json").write_text(json.dumps(insights, indent=2), encoding="utf-8")
-        logger.info("CTR insights: %s", json.dumps({k: insights[k] for k in ("videos_with_ctr", "overall_ctr", "by_niche")}))
+        for rec in growth_ledger.needs_audience(config):
+            m = analytics.fetch_audience_metrics(rec["video_id"], dt.date.fromisoformat(rec["published_at"]), config,
+                                                 window_days=config.growth.maturity_days)
+            if m:
+                growth_ledger.set_fields(rec["video_id"], m)
+        if analytics.LOOKUP_ERRORS:
+            print(f"::warning title=Audience lookup failed ({len(analytics.LOOKUP_ERRORS)} errors)::" + " || ".join(dict.fromkeys(analytics.LOOKUP_ERRORS))[:900])
+        insights = growth_ledger.audience_insights(growth_ledger._load(growth_ledger.ROOT / growth_ledger.LEDGER_PATH))
+        (growth_ledger.ROOT / "config" / "audience_insights.json").write_text(json.dumps(insights, indent=2), encoding="utf-8")
+        logger.info("Audience insights: %s", json.dumps({k: insights[k] for k in ("videos", "overall")}))
     except Exception:
-        logger.exception("CTR backfill/insights failed - continuing.")
+        logger.exception("Audience backfill/insights failed - continuing.")
 
     if failures:
         for vid, why in failures:
