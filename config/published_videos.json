@@ -1064,5 +1064,37 @@
         "text": "TRAPPED WITH NO WIND"
       }
     }
+  },
+  {
+    "video_id": "mz2g7d3ZzGE",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The 18-Year-Old Farm Girl Who Accidentally Started WWI",
+    "topic": "The 18-year-old French farm girl who accidentally started WWI: The panicked moment Marie-Jeanne Gabert sprinted down a country road shouting warnings about a burning farmhouse, triggering the mobilization orders that set Europe on fire.",
+    "published_at": "2026-10-23",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 49.2,
+        "audio_seconds": 79.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 67.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE FARM GIRL WHO STARTED WWI"
+      }
+    }
   }
 ]
