@@ -54,6 +54,11 @@ def generate_all_clips(scenes, durations: List[float], config, work_dir: Path, t
     dirs = direction.direct(scenes, durations, title)
     audio = [getattr(a, "audio_path", None) for a in (scene_audio or [])]
     audio += [None] * (len(scenes) - len(audio))
+    from dataclasses import replace
+    from . import callouts as _callouts
+    for i, a in enumerate(scene_audio or []):
+        if i < len(dirs) and getattr(a, "cues", None):
+            dirs[i] = replace(dirs[i], callouts=_callouts.extract(a.cues, durations[i]))
     outs = [work_dir / f"toon_scene_{i:02d}.mp4" for i in range(len(scenes))]
     jobs = [(dirs[i], durations[i], w, h, fps, str(outs[i]), str(audio[i]) if audio[i] else None) for i in range(len(scenes))]
 

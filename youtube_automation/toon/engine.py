@@ -16,7 +16,8 @@ from . import fx
 from .art import Color, col, fill, glow, stroke
 from .audio import envelope, sentence_beats
 from .direction import SceneDirection
-from .easing import clamp01, ease_in_out, ease_out_cubic, lerp, wobble
+from .callouts import HOLD as _CALLOUT_HOLD
+from .easing import clamp01, ease_in_out, ease_out_back, ease_out_cubic, lerp, wobble
 from .sets import SceneSet, build_set
 
 _SAMPLING = skia.SamplingOptions(skia.FilterMode.kLinear, skia.MipmapMode.kNone)
@@ -103,6 +104,34 @@ def _particles(canvas, kind: str, w: int, h: int, t: float, u: float, seed: int)
             p.quadTo(x - 6 * u, y - 6 * u, x, y)
             p.quadTo(x + 6 * u, y - 6 * u, x + 14 * u, y + flap)
             canvas.drawPath(p, stroke((40, 40, 60), 2.4 * u))
+
+
+_CARD_FONT = {}
+
+
+def _draw_callout(canvas, label: str, cx: float, cy: float, u: float, since: float) -> None:
+    """A parchment card that springs in, wobbles slightly, holds, then shrinks out."""
+    if since < 0 or since > _CALLOUT_HOLD + 0.3:
+        return
+    k = ease_out_back(clamp01(since / 0.35)) * (1 - ease_in_out(clamp01((since - _CALLOUT_HOLD) / 0.3)))
+    if k <= 0.01:
+        return
+    from .thumbnail import _typeface
+    size = 78 * u
+    font = _CARD_FONT.setdefault(round(size), skia.Font(_typeface(), size))
+    tw = font.measureText(label)
+    pw, ph = tw + 64 * u, size * 1.5
+    canvas.save()
+    canvas.translate(cx, cy)
+    canvas.rotate(-3.5 + 1.2 * math.sin(since * 6))
+    canvas.scale(k, k)
+    rect = skia.Rect(-pw / 2, -ph / 2, pw / 2, ph / 2)
+    rr = skia.RRect.MakeRectXY(rect, 22 * u, 22 * u)
+    canvas.drawRRect(skia.RRect.MakeRectXY(rect.makeOffset(7 * u, 9 * u), 22 * u, 22 * u), skia.Paint(AntiAlias=True, Color=col((0, 0, 0), 120)))
+    canvas.drawRRect(rr, fill((255, 238, 168)))
+    canvas.drawRRect(rr, stroke((27, 27, 47), 7 * u))
+    canvas.drawString(label, -tw / 2, size * 0.34, font, skia.Paint(AntiAlias=True, Color=col((27, 27, 47))))
+    canvas.restore()
 
 
 def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps: int,
@@ -261,6 +290,8 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                 canvas.restore()
                 if d.role == "insight":
                     fx.draw_emote(canvas, "bulb", mx, h * 0.2 - 40 * u, 2.2 * u, t - 1.6, 2.0)
+            for (ct, label) in d.callouts:
+                _draw_callout(canvas, label, w * (0.5 - side * (0.0 if portrait else 0.2)), h * (0.22 if portrait else 0.2), u, t - ct)
             finish.draw(canvas, w, h)
 
             surface.readPixels(info, buf, w * 4, 0, 0)

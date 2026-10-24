@@ -45,6 +45,7 @@ class SceneDirection:
     shot: str = "medium"                 # wide | medium | close
     hero: Optional[object] = None        # toon.character.Look for the on-screen character
     rival_look: Optional[object] = None
+    callouts: List[Tuple[float, str]] = field(default_factory=list)   # (time_in_scene, label) number/date cards
 
 
 def _has(text: str, words) -> bool:
