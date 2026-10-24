@@ -119,6 +119,7 @@ class QualityConfig:
 
 @dataclass
 class TopicsConfig:
+    use_demand_ranking: bool = True   # prefer candidate topics with real Wikipedia pageview demand (topic_demand.py)
     queue_file: str = "config/topics/{niche}.yaml"
     history_file: str = "config/topic_history/{niche}.json"
     # When the queue runs dry, brainstorm_trending_topics() (real current

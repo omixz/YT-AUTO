@@ -223,13 +223,21 @@ def choose_topic_with_intelligence(
     seasonal = _seasonal_multiplier(niche_key, current_month)
     gap = _competitor_gap_score(niche_key, history)
     
+    demand = {t: 1.0 for t in candidate_topics}
+    if getattr(config.topics, "use_demand_ranking", False) and len(candidate_topics) > 1:
+        try:   # best-effort: seasonal and gap are the same for every candidate, so without this only freshness differed
+            from .topic_demand import demand_factors
+            demand = demand_factors(candidate_topics)
+        except Exception:  # noqa: BLE001
+            pass
+
     best_topic = candidate_topics[0]
     best_score = -1.0
     
     for topic in candidate_topics:
         freshness = _topic_freshness(topic, history)
-        # Combined score: seasonal * gap * freshness
-        score = seasonal * gap * freshness
+        # Combined score: seasonal * gap * freshness * audience demand
+        score = seasonal * gap * freshness * demand.get(topic, 1.0)
         if score > best_score:
             best_score = score
             best_topic = topic
