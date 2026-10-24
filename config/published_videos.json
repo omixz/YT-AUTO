@@ -1162,5 +1162,41 @@
         "text": "SHE BURNED ROME"
       }
     }
+  },
+  {
+    "video_id": "u7OMA2zzJFw",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "Why the Norse God of Justice Put His Hand Inside a Monster's Jaws",
+    "topic": "The Severed Hand of Tyr: The horrifying moment the Norse god of justice willingly placed his wrist inside the jaws of the monstrous wolf Fenrir, knowing it would be snapped off so the other gods could bind him",
+    "published_at": "2026-10-24",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1943 words of narration, well under this 1200s video's own target of ~3100 words (expected at least 2108) - the model undershot the requested length rather than a hard generation failure",
+      "scene 36 narration looks like a refused/hedged LLM response, not real content",
+      "rendered video is only 772s (12.9 min), well under this video's own target of 1200s (20 min) (expected at least 816s / 13.6 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 287.8,
+        "audio_seconds": 773.1
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 75,
+        "fallback_scenes": 0,
+        "seconds": 563.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "PLACED HIS HAND IN THE JAWS"
+      }
+    }
   }
 ]
