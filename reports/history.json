@@ -1304,5 +1304,28 @@
         "YT_CHANNEL": 1
       }
     }
+  },
+  {
+    "video_id": "-ze8vjiASQY",
+    "published_at": "2026-10-17",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "Why 5 Soviet Hikers Fled Their Warm Cabin Barefoot Into a Blizzard",
+    "stats": {
+      "views": 12,
+      "minutes_watched": 8.0,
+      "avg_view_duration_s": 57.0,
+      "avg_view_percentage": 5.35,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 10,
+        "YT_CHANNEL": 1,
+        "YT_SEARCH": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]

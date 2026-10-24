@@ -841,10 +841,12 @@
     "title": "Why 5 Soviet Hikers Fled Their Warm Cabin Barefoot Into a Blizzard",
     "topic": "The bizarre 1978 Dyatlov Pass-style mystery of the five boys who abandoned their warm cabin in the remote Soviet Ural mountains during a blizzard, fleeing barefoot into freezing snowdrifts without their boots or coats for reasons that remain entirely unexplained",
     "published_at": "2026-10-17",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
-    "quality_gate_reasons": []
+    "quality_gate_reasons": [],
+    "views": 12,
+    "avg_view_pct": 5.3
   },
   {
     "video_id": "tM43bXFR2Ro",
