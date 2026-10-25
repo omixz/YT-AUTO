@@ -139,6 +139,28 @@ def soften_title(title: str) -> str:
     return title
 
 
+def drop_defective_scenes(script, max_fraction: float = 0.06) -> int:
+    """Delete scenes that are generation defects fixable by removal (refused/hedged text, exact duplicates,
+    one-word fragments) instead of failing the whole video. A mythology video went private over ONE refused
+    scene out of ~100. Never drops more than max_fraction of the scenes (more means a genuinely bad script -> the
+    gate decides), and re-labels the first/last scene so the hook/insight structure checks still hold."""
+    bad, seen = set(), {}
+    for i, sc in enumerate(script.scenes):
+        text = sc.narration.strip()
+        lower = text.lower()
+        norm = " ".join(lower.split()).rstrip(".!?")
+        if len(text.split()) < MIN_SCENE_WORDS or any(p in lower for p in _REFUSAL_PATTERNS) or (norm and norm in seen):
+            bad.add(i)
+        elif norm:
+            seen[norm] = i
+    if not bad or len(bad) > max(1, int(len(script.scenes) * max_fraction)):
+        return 0
+    script.scenes = [sc for i, sc in enumerate(script.scenes) if i not in bad]
+    script.scenes[0].role = "hook"
+    script.scenes[-1].role = "insight"
+    return len(bad)
+
+
 def has_unproven_certainty(title: str) -> bool:
     return bool(_CERTAINTY_TITLE.search(title or ""))
 

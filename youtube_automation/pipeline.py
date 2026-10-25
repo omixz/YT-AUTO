@@ -110,6 +110,9 @@ def run(
         # Script-level checks run now (cheap, before spending render time); media-level checks
         # (below, after the video is built) join the same final verdict - see quality_check.py.
         script.title = quality_check.soften_title(script.title)
+        dropped = quality_check.drop_defective_scenes(script)
+        if dropped:
+            logger.warning("Dropped %d defective scene(s) (refused/duplicate/fragment) instead of failing the video.", dropped)
         text_passed, text_reasons = quality_check.check(script, config)
         if text_passed:
             break

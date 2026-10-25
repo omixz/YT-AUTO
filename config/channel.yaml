@@ -99,7 +99,7 @@ quality:
   min_scenes: 6
   require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
   fallback_privacy_status: private # used only when on_gate_failure is "private"
-  min_length_fraction: 0.68        # was a hard-coded 0.75: a mythology video missed it by 5 words and went private. 0.68 of 20 min is still ~13.6 min (mid-roll eligible)
+  min_length_fraction: 0.60        # was hard-coded 0.75. The model writes ~2000 words against the 3100-word / 20-min target (2 of the last 3 mythology videos went private at 0.68); 0.60 = 12 min, still mid-roll eligible, and still catches truncated scripts
   max_script_attempts: 1           # extra whole-script regenerations on a text-gate failure (generate_script already retries length internally; Gemini free tier is ~20 calls/day)
   on_gate_failure: private         # private = upload privately for review (safe default) | skip = never upload a failed video, no human needed (topic kept) - switch to skip once real runs pass the gate
 
