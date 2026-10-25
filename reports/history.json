@@ -1327,5 +1327,25 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "tM43bXFR2Ro",
+    "published_at": "2026-10-18",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Chilling Cold War Mystery of the Woman With All Her Clothing Tags Cut Off",
+    "stats": {
+      "views": 2,
+      "minutes_watched": 19.0,
+      "avg_view_duration_s": 597.0,
+      "avg_view_percentage": 49.29,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 2
+      }
+    }
   }
 ]
