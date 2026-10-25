@@ -1232,5 +1232,37 @@
         "text": "HE PUSHED HIS NEPHEW"
       }
     }
+  },
+  {
+    "video_id": "bWSBTYUXltY",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Blind Execution of Orpheus: Why He Was Torn Apart by Fanatics",
+    "topic": "The Blind Execution of Orpheus: How the grief-stricken musician was torn limb from limb by frenzied Thracian women in a brutal, blood-drenched frenzy after he turned his back on the worship of Dionysus",
+    "published_at": "2026-10-25",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "edge-tts",
+        "fell_back": true,
+        "seconds": 787.2,
+        "audio_seconds": 826.4
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 80,
+        "fallback_scenes": 0,
+        "seconds": 688.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "TORN APART"
+      }
+    }
   }
 ]
