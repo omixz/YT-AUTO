@@ -869,10 +869,12 @@
     "title": "The Chilling Disappearance of Amy Lynn Bradley From a Cruise Ship And The Sighting Years Later That Proves She Was Trafficked",
     "topic": "The tragic 1999 disappearance of Amy Lynn Bradley from a Royal Caribbean cruise ship, leaving behind only her cigarettes and lighter before multiple passengers allegedly spotted her years later being sold into human trafficking in Cura\u00e7ao",
     "published_at": "2026-10-19",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
-    "quality_gate_reasons": []
+    "quality_gate_reasons": [],
+    "views": 5,
+    "avg_view_pct": 4.9
   },
   {
     "video_id": "kWhYLvfH1MQ",
@@ -881,7 +883,7 @@
     "title": "The 1970 Flight Attendant Hijacking That Paralyzed Aviation Security Forever",
     "topic": "The terrifying 1970 hijacking of flight attendant Lynda MacCausland aboard a commercial airliner by a desperate man demanding millions in ransom, culminating in a daring mid-air parachute jump into the freezing, pitch-black wilderness of the Pacific Northwest.",
     "published_at": "2026-10-19",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -900,7 +902,9 @@
         "seconds": 778.8,
         "workers": 3
       }
-    }
+    },
+    "views": 3,
+    "avg_view_pct": 0.6
   },
   {
     "video_id": "QfLU_lvu8VQ",

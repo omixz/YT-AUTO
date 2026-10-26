@@ -198,9 +198,9 @@
     "repaired_private_zeros": 8
   },
   "unsolved_mysteries:longform": {
-    "samples": 13,
-    "total_score": 263.30000000000007,
-    "avg_score": 20.25384615384616,
+    "samples": 15,
+    "total_score": 270.1000000000001,
+    "avg_score": 18.00666666666667,
     "history": [
       {
         "date": "2026-10-08",
@@ -253,14 +253,22 @@
       {
         "date": "2026-10-25",
         "score": 38.2
+      },
+      {
+        "date": "2026-10-26",
+        "score": 6.5
+      },
+      {
+        "date": "2026-10-26",
+        "score": 0.30000000000000004
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 27.700000000000003
+        "avg_score": 15.55
       },
       "30d": {
-        "avg_score": 20.215384615384615
+        "avg_score": 17.973333333333336
       }
     },
     "repaired_private_zeros": 2

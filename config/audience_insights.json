@@ -1,8 +1,8 @@
 {
-  "videos": 24,
+  "videos": 26,
   "overall": {
-    "avg_views": 7.2,
-    "avg_view_pct": 22.2
+    "avg_views": 7.0,
+    "avg_view_pct": 20.7
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -31,9 +31,9 @@
       "videos": 1
     },
     "unsolved_mysteries": {
-      "avg_views": 6.0,
-      "avg_view_pct": 27.1,
-      "videos": 8
+      "avg_views": 5.6,
+      "avg_view_pct": 22.2,
+      "videos": 10
     },
     "world_wars": {
       "avg_views": 8.5,
@@ -43,35 +43,35 @@
   },
   "by_format": {
     "longform": {
-      "avg_views": 7.2,
-      "avg_view_pct": 22.2,
-      "videos": 24
+      "avg_views": 7.0,
+      "avg_view_pct": 20.7,
+      "videos": 26
     }
   },
   "by_thumbnail_style": {
     "legacy": {
-      "avg_views": 7.2,
-      "avg_view_pct": 22.2,
-      "videos": 24
+      "avg_views": 7.0,
+      "avg_view_pct": 20.7,
+      "videos": 26
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 7.9,
-      "avg_view_pct": 21.1,
-      "videos": 20
+      "avg_views": 7.8,
+      "avg_view_pct": 20.4,
+      "videos": 21
     },
     "year": {
-      "avg_views": 4.0,
-      "avg_view_pct": 27.7,
-      "videos": 4
+      "avg_views": 3.8,
+      "avg_view_pct": 22.3,
+      "videos": 5
     }
   },
   "by_title_is_question": {
     "statement": {
-      "avg_views": 7.2,
-      "avg_view_pct": 22.2,
-      "videos": 24
+      "avg_views": 7.0,
+      "avg_view_pct": 20.7,
+      "videos": 26
     }
   },
   "by_title_length": {
@@ -86,9 +86,9 @@
       "videos": 4
     },
     ">70": {
-      "avg_views": 6.2,
-      "avg_view_pct": 40.2,
-      "videos": 4
+      "avg_views": 5.5,
+      "avg_view_pct": 27.7,
+      "videos": 6
     }
   }
 }

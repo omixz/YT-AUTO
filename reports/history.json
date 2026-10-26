@@ -1347,5 +1347,49 @@
         "RELATED_VIDEO": 2
       }
     }
+  },
+  {
+    "video_id": "fy6vgodLKZw",
+    "published_at": "2026-10-19",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Chilling Disappearance of Amy Lynn Bradley From a Cruise Ship And The Sighting Years Later That Proves She Was Trafficked",
+    "stats": {
+      "views": 5,
+      "minutes_watched": 3.0,
+      "avg_view_duration_s": 50.0,
+      "avg_view_percentage": 4.88,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 3,
+        "NO_LINK_OTHER": 1,
+        "YT_SEARCH": 1
+      }
+    }
+  },
+  {
+    "video_id": "kWhYLvfH1MQ",
+    "published_at": "2026-10-19",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1970 Flight Attendant Hijacking That Paralyzed Aviation Security Forever",
+    "stats": {
+      "views": 3,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 5.0,
+      "avg_view_percentage": 0.62,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 2,
+        "SUBSCRIBER": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]
