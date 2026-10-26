@@ -1300,5 +1300,37 @@
         "text": "SURVIVED THE WAR... DIED LIKE THIS"
       }
     }
+  },
+  {
+    "video_id": "BEIKayOwEOU",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Mystery of the Golden Fleece They Don't Tell You",
+    "topic": "The Curse of the Golden Fleece: How the theft of a sacred sheepskin triggered a spiral of infanticide, royal madness, and a betrayed Medea slaughtering her own children in a chariot of fire",
+    "published_at": "2026-10-26",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 372.3,
+        "audio_seconds": 991.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 90,
+        "fallback_scenes": 0,
+        "seconds": 814.7,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SHE SLAUGHTERED HER KIDS"
+      }
+    }
   }
 ]
