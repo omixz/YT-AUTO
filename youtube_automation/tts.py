@@ -293,30 +293,31 @@ def synthesize_script(
     script: Script, voice: VoiceConfig, work_dir: Path, google_api_key: Optional[str] = None,
 ) -> Tuple[List[SceneAudio], Path]:
     started = time.monotonic()
-    requested, fell_back = voice.provider, False
+    requested, fell_back, reason = voice.provider, False, ""
     if voice.provider == "kokoro":
         try:
             result = _synthesize_script_core(script, voice, work_dir, google_api_key)
-            _record_stats(requested, voice.provider, False, started, result[0])
+            _record_stats(requested, voice.provider, False, started, result[0], "")
             return result
         except Exception as exc:  # install/model-download/synthesis failure: never break the run
             logger.warning("Kokoro failed (%s: %s); re-synthesizing the WHOLE video with edge-tts so the voice stays consistent.",
                            type(exc).__name__, exc)
             voice = replace(voice, provider="edge-tts", name=_EDGE_TTS_FALLBACK_VOICE)
-            fell_back = True
+            fell_back, reason = True, f"{type(exc).__name__}: {exc}"[:240]
     result = _synthesize_script_core(script, voice, work_dir, google_api_key)
-    _record_stats(requested, voice.provider, fell_back, started, result[0])
+    _record_stats(requested, voice.provider, fell_back, started, result[0], reason)
     return result
 
 
 LAST_STATS: dict = {}   # read by pipeline.py into the run manifest / report
 
 
-def _record_stats(requested, used, fell_back, started, scene_audio) -> None:
+def _record_stats(requested, used, fell_back, started, scene_audio, reason: str = "") -> None:
     LAST_STATS.clear()
     LAST_STATS.update(requested=requested, used=used, fell_back=fell_back,
                       seconds=round(time.monotonic() - started, 1),
-                      audio_seconds=round(sum(a.duration for a in scene_audio), 1))
+                      audio_seconds=round(sum(a.duration for a in scene_audio), 1),
+                      **({"fallback_reason": reason} if reason else {}))
 
 
 def _synthesize_script_core(
