@@ -67,6 +67,7 @@ def test_kokoro_failure_falls_back_to_edge_for_whole_video(tmp_path, monkeypatch
     script = SimpleNamespace(scenes=[SimpleNamespace(narration="a b", role="hook"), SimpleNamespace(narration="c d", role="build")])
     scenes, _ = tts.synthesize_script(script, VoiceConfig(provider="kokoro", name="am_michael"), tmp_path)
     assert calls == ["edge-tts", "edge-tts"] and len(scenes) == 2        # every scene re-done with ONE consistent voice
+    assert tts.LAST_STATS["fell_back"] and "model download failed" in tts.LAST_STATS["fallback_reason"]   # recorded in the ledger so it can be diagnosed
 
 
 def test_config_defaults_are_backward_compatible():
