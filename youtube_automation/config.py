@@ -103,6 +103,8 @@ class UploadConfig:
     category_id: str = "27"
     default_tags: list = field(default_factory=list)
     made_for_kids: bool = False
+    crosspost_tiktok: bool = True   # also post each PUBLIC Short to TikTok via Buffer - needs BUFFER_API_KEY + BUFFER_TIKTOK_CHANNEL_ID, otherwise silently skipped
+    tiktok_hashtags: str = "#history #storytime #didyouknow #fyp"
 
 
 @dataclass
@@ -160,6 +162,9 @@ class Secrets:
     # is a deliberately best-effort fallback, not a primary upload path.
     buffer_api_key: Optional[str] = None
     buffer_youtube_channel_id: Optional[str] = None
+    buffer_tiktok_channel_id: Optional[str] = None
+    github_token: Optional[str] = None        # lets media_host use a GitHub Release as free public video hosting
+    github_repository: Optional[str] = None   # owner/name
     media_host_bucket: Optional[str] = None
     media_host_access_key: Optional[str] = None
     media_host_secret_key: Optional[str] = None
@@ -177,6 +182,9 @@ class Secrets:
             google_tts_api_key=os.getenv("GOOGLE_TTS_API_KEY"),
             buffer_api_key=os.getenv("BUFFER_API_KEY"),
             buffer_youtube_channel_id=os.getenv("BUFFER_YOUTUBE_CHANNEL_ID"),
+            buffer_tiktok_channel_id=os.getenv("BUFFER_TIKTOK_CHANNEL_ID"),
+            github_token=os.getenv("GITHUB_TOKEN"),
+            github_repository=os.getenv("GITHUB_REPOSITORY"),
             media_host_bucket=os.getenv("MEDIA_HOST_BUCKET"),
             media_host_access_key=os.getenv("MEDIA_HOST_ACCESS_KEY"),
             media_host_secret_key=os.getenv("MEDIA_HOST_SECRET_KEY"),

@@ -56,10 +56,49 @@ def _client(config: PipelineConfig):
     )
 
 
+_RELEASE_TAG = "shorts-media"
+_KEEP_DAYS = 14
+
+
+def _upload_github_release(path: Path, key: str, config: PipelineConfig) -> str:
+    """Free hosting: attach the file to a rolling 'shorts-media' GitHub Release of this (public) repo and return
+    its download URL. Assets older than _KEEP_DAYS are pruned. Needs GITHUB_TOKEN with contents: write
+    (provided automatically inside GitHub Actions)."""
+    import datetime as dt
+
+    import requests
+
+    s = config.secrets
+    api = f"https://api.github.com/repos/{s.github_repository}"
+    h = {"Authorization": f"Bearer {s.github_token}", "Accept": "application/vnd.github+json"}
+    r = requests.get(f"{api}/releases/tags/{_RELEASE_TAG}", headers=h, timeout=30)
+    if r.status_code == 404:
+        r = requests.post(f"{api}/releases", headers=h, timeout=30, json={
+            "tag_name": _RELEASE_TAG, "name": "Short media (auto-managed)", "prerelease": True,
+            "body": "Rolling storage for cross-posted Shorts; assets are pruned after 14 days."})
+    r.raise_for_status()
+    release = r.json()
+    cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=_KEEP_DAYS)
+    for a in release.get("assets", []):
+        if dt.datetime.fromisoformat(a["created_at"].replace("Z", "+00:00")) < cutoff:
+            requests.delete(f"{api}/releases/assets/{a['id']}", headers=h, timeout=30)
+    up = requests.post(f"https://uploads.github.com/repos/{s.github_repository}/releases/{release['id']}/assets",
+                       params={"name": key}, headers={**h, "Content-Type": "video/mp4" if path.suffix == ".mp4" else "image/jpeg"},
+                       data=path.read_bytes(), timeout=600)
+    up.raise_for_status()
+    url = up.json()["browser_download_url"]
+    logger.info("Hosted %s on a GitHub Release: %s", path.name, url)
+    return url
+
+
 def upload_public(path: Path, key: str, config: PipelineConfig) -> str:
     """Uploads path to the configured bucket under `key`, makes it publicly
-    readable, and returns the URL Buffer should fetch it from."""
+    readable, and returns the URL Buffer should fetch it from. With no bucket
+    configured but running in GitHub Actions, falls back to a free GitHub Release."""
     secrets = config.secrets
+    if not (secrets.media_host_bucket and secrets.media_host_access_key and secrets.media_host_secret_key) \
+            and secrets.github_token and secrets.github_repository:
+        return _upload_github_release(path, key, config)
     client = _client(config)
     content_type = "video/mp4" if path.suffix == ".mp4" else "image/jpeg"
 

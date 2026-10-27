@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    assembler, branding, buffer_publisher, growth_ledger, media_host, music, niche_selector,
+    assembler, branding, buffer_publisher, crosspost, growth_ledger, media_host, music, niche_selector,
     cinematic, procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
     visuals, youtube_uploader,
 )
@@ -298,12 +298,16 @@ def run(
             manifest["privacy_status"] = effective_privacy
             manifest["publish_at"] = effective_publish_at
             manifest["published_via"] = "youtube_api"
+            tiktok_id = crosspost.tiktok(config, format_name=format_name, privacy=effective_privacy, passed_gate=passed_quality_gate,
+                                         dry_run=dry_run, video_path=video_path, run_id=run_id, title=script.title)
+            if tiktok_id:
+                manifest["tiktok_post_id"] = tiktok_id
 
             growth_ledger.record_published(
                 niche_key, format_name, video_id, title=script.title, topic=topic,
                 privacy_status=effective_privacy, passed_quality_gate=passed_quality_gate,
                 quality_gate_reasons=quality_reasons,
-                render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail")},
+                render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail"), "tiktok_post_id": manifest.get("tiktok_post_id")},
             )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
