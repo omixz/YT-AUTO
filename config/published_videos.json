@@ -1364,5 +1364,38 @@
         "text": "THE WRONG BOY"
       }
     }
+  },
+  {
+    "video_id": "TxbjzrQK9eo",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Spartan General Starved To Death Inside A Temple By His Own Mother",
+    "topic": "The Execution of King Pausanias: The paranoid Spartan general who starved to death inside the Temple of Athena after his own mother laid the first brick to seal him alive within its walls",
+    "published_at": "2026-10-27",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 419.3,
+        "audio_seconds": 823.0
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 80,
+        "fallback_scenes": 0,
+        "seconds": 666.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SEALED ALIVE BY HIS MOTHER"
+      },
+      "tiktok_post_id": null
+    }
   }
 ]
