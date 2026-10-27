@@ -19,25 +19,40 @@ def gql(query, variables=None):
         return r.status_code, {"raw": r.text[:500]}
 
 
+def type_info(name):
+    code, d = gql('{ __type(name: "%s") { kind enumValues { name } inputFields { name type { name kind ofType { name kind } } } } }' % name)
+    return (d.get("data") or {}).get("__type")
+
+
+def show(out, title, obj):
+    out += [f"### {title}", "```json", json.dumps(obj, indent=1)[:2200], "```"]
+
+
 def main() -> None:
     out = ["## Buffer check", ""]
     if not KEY:
-        out.append("**BUFFER_API_KEY is not set** as a repo secret. Create a Buffer account, connect TikTok, make an API key, and add it as the secret `BUFFER_API_KEY`.")
+        out.append("**BUFFER_API_KEY is not set** as a repo secret.")
     else:
-        candidates = [
-            "{ account { organizations { id name channels { id name service } } } }",
-            "{ account { organizations { id name } } }",
-            "{ channels { id name service } }",
-        ]
-        for q in candidates:
-            code, data = gql(q)
-            out += [f"### `{q}` -> HTTP {code}", "```json", json.dumps(data, indent=1)[:2500], "```"]
-            if code == 200 and not data.get("errors"):
-                break
-        code, data = gql('{ __type(name: "PostInputMetaData") { inputFields { name type { name kind } } } }')
-        out += ["### Platform metadata accepted by createPost", "```json", json.dumps(data, indent=1)[:1500], "```"]
-        code, data = gql('{ __type(name: "TiktokPostMetadataInput") { inputFields { name type { name kind } } } }')
-        out += ["### TikTok metadata fields", "```json", json.dumps(data, indent=1)[:1500], "```"]
+        code, d = gql("{ account { organizations { id name } } }")
+        orgs = ((d.get("data") or {}).get("account") or {}).get("organizations") or []
+        show(out, "Organizations", orgs)
+        code, d = gql("{ __schema { queryType { fields { name args { name type { name kind ofType { name } } } } } } }")
+        fields = (((d.get("data") or {}).get("__schema") or {}).get("queryType") or {}).get("fields") or []
+        show(out, "Query fields (name + args)", [{"name": f["name"], "args": [(a["name"], (a["type"].get("name") or (a["type"].get("ofType") or {}).get("name"))) for a in f["args"]]} for f in fields])
+        for o in orgs:
+            for q in ('{ channels(input: {organizationId: "%s"}) { id name service } }' % o["id"],
+                      '{ channels(input: {organizationId: "%s"}) { id name service isLocked } }' % o["id"]):
+                code, d = gql(q)
+                show(out, f"Channels of {o['name']}: `{q[:70]}...` -> HTTP {code}", d)
+                if not d.get("errors"):
+                    break
+        for t in ("TikTokPostMetadataInput", "CreatePostInput"):
+            show(out, f"Type {t}", type_info(t))
+        post_input = type_info("CreatePostInput") or {}
+        for f in post_input.get("inputFields") or []:
+            tname = f["type"].get("name") or (f["type"].get("ofType") or {}).get("name")
+            if f["name"] in ("mode", "schedulingType") and tname:
+                show(out, f"Enum {tname} (for `{f['name']}`)", type_info(tname))
     open("buffer_report.md", "w", encoding="utf-8").write("\n".join(out))
     print("\n".join(out)[:3000])
 
