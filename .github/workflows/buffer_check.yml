@@ -1,0 +1,29 @@
+name: Buffer check
+
+# Manual. Lists the channels your Buffer key can see (copy the TikTok one into the BUFFER_TIKTOK_CHANNEL_ID secret)
+# and which TikTok fields Buffer's API accepts. Posts the result as an issue so it is readable without opening logs.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests
+      - run: python buffer_check.py
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      - name: Post report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "Buffer check report (run ${{ github.run_id }})" --body-file buffer_report.md || true

@@ -123,3 +123,29 @@ def publish_video(
 
     logger.info("Posted to Buffer (YouTube channel %s): post id %s", secrets.buffer_youtube_channel_id, post["id"])
     return post["id"]
+
+
+def publish_tiktok(video_url: str, caption: str, config: PipelineConfig) -> str:
+    """Posts a (vertical) video to the connected TikTok channel via Buffer. TikTok-specific `metadata` is left
+    unset because its schema is not confirmed for this account (run the 'Buffer check' workflow to introspect it);
+    Buffer applies the channel's defaults. Tries 'shareNow' then 'addToQueue'. Returns Buffer's post id."""
+    secrets = config.secrets
+    if not secrets.buffer_api_key or not secrets.buffer_tiktok_channel_id:
+        raise RuntimeError("BUFFER_API_KEY and BUFFER_TIKTOK_CHANNEL_ID must both be set to cross-post to TikTok.")
+    last_error = "unknown"
+    for mode in ("shareNow", "addToQueue"):
+        post_input = {"text": caption[:2000], "channelId": secrets.buffer_tiktok_channel_id, "schedulingType": "automatic",
+                      "mode": mode, "assets": [{"video": {"url": video_url}}]}
+        response = requests.post(API_URL, headers={"Authorization": f"Bearer {secrets.buffer_api_key}", "Content-Type": "application/json"},
+                                 json={"query": _CREATE_POST_MUTATION, "variables": {"input": post_input}}, timeout=60)
+        if response.status_code != 200:
+            last_error = f"HTTP {response.status_code}: {response.text[:400]}"
+            continue
+        data = response.json()
+        result = (data.get("data") or {}).get("createPost") or {}
+        post = result.get("post")
+        if post and post.get("id"):
+            logger.info("Posted to Buffer (TikTok, mode=%s): post id %s", mode, post["id"])
+            return post["id"]
+        last_error = str(data.get("errors") or result.get("message") or data)[:400]
+    raise RuntimeError(f"Buffer rejected the TikTok post: {last_error}")

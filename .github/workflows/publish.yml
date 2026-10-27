@@ -104,6 +104,8 @@ jobs:
           # clear "not configured" error instead of silently no-op'ing.
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
           BUFFER_YOUTUBE_CHANNEL_ID: ${{ secrets.BUFFER_YOUTUBE_CHANNEL_ID }}
+          BUFFER_TIKTOK_CHANNEL_ID: ${{ secrets.BUFFER_TIKTOK_CHANNEL_ID }}
+          GITHUB_TOKEN: ${{ github.token }}   # free Short hosting via a GitHub Release (media_host.py) when no S3 bucket is set
           MEDIA_HOST_BUCKET: ${{ secrets.MEDIA_HOST_BUCKET }}
           MEDIA_HOST_ACCESS_KEY: ${{ secrets.MEDIA_HOST_ACCESS_KEY }}
           MEDIA_HOST_SECRET_KEY: ${{ secrets.MEDIA_HOST_SECRET_KEY }}
