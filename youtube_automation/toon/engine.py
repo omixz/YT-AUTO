@@ -292,6 +292,8 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                     fx.draw_emote(canvas, "bulb", mx, h * 0.2 - 40 * u, 2.2 * u, t - 1.6, 2.0)
             for (ct, label) in d.callouts:
                 _draw_callout(canvas, label, w * (0.5 - side * (0.0 if portrait else 0.2)), h * (0.22 if portrait else 0.2), u, t - ct)
+            if d.cta:
+                fx.draw_cta_card(canvas, w * 0.5, h * (0.13 if portrait else 0.12), u * (1.15 if portrait else 1.0), t - (0.6 if d.cta == "mid" else max(0.6, duration - 3.6)), final=d.cta == "final")
             finish.draw(canvas, w, h)
 
             surface.readPixels(info, buf, w * 4, 0, 0)

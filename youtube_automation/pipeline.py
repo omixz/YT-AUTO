@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import (
-    assembler, branding, buffer_publisher, crosspost, growth_ledger, media_host, music, niche_selector,
+    assembler, branding, buffer_publisher, crosspost, youtube_suggest, growth_ledger, media_host, music, niche_selector,
     cinematic, procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
     visuals, youtube_uploader,
 )
@@ -240,7 +240,16 @@ def run(
         elif publish_now:
             logger.info("publish_now set - releasing immediately instead of scheduling an optimal slot.")
 
-        logger.info("Uploading to YouTube...")
+        # What people really type into YouTube search for this topic: put it in the tags and description so the
+        # video can surface for it, and reuse it as the "search for ..." call-to-action on TikTok.
+        search_phrase = youtube_suggest.top_query(script.title) or youtube_suggest.top_query(topic)
+        description, tags = script.description, list(script.tags)
+        if search_phrase:
+            if search_phrase.lower() not in [t.lower() for t in tags]:
+                tags = [search_phrase] + tags
+            if search_phrase.lower() not in description.lower():
+                description = f"{description}\n\nSearch YouTube for: {search_phrase}"
+        logger.info("Uploading to YouTube (search phrase: %s)...", search_phrase)
         try:
             # Only the upload call itself should trigger the Buffer fallback
             # below - once upload_video() returns, the video is already live
@@ -248,7 +257,7 @@ def run(
             # ledger file write) must not be mistaken for an upload failure
             # and must not cause a second, duplicate publish via Buffer.
             video_id = youtube_uploader.upload_video(
-                video_path, script.title, script.description, script.tags, config,
+                video_path, script.title, description, tags, config,
                 thumbnail_path=thumb_path, publish_at=effective_publish_at,
                 privacy_status_override=effective_privacy,
             )
@@ -299,7 +308,8 @@ def run(
             manifest["publish_at"] = effective_publish_at
             manifest["published_via"] = "youtube_api"
             tiktok_id = crosspost.tiktok(config, format_name=format_name, privacy=effective_privacy, passed_gate=passed_quality_gate,
-                                         dry_run=dry_run, video_path=video_path, run_id=run_id, title=script.title)
+                                         dry_run=dry_run, video_path=video_path, run_id=run_id, title=script.title,
+                                         video_id=video_id, search_phrase=search_phrase)
             if tiktok_id:
                 manifest["tiktok_post_id"] = tiktok_id
 

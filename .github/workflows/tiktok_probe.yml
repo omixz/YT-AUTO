@@ -1,0 +1,33 @@
+name: TikTok probe
+
+# Manual. Saves a 3-second test clip as a DRAFT on your TikTok channel via Buffer (nothing is published) to prove hosting,
+# API shape and TikTok metadata work end to end. Result is posted as an issue.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: pip install -r requirements.txt
+      - run: python tiktok_probe.py
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_TIKTOK_CHANNEL_ID: ${{ secrets.BUFFER_TIKTOK_CHANNEL_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Post report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh issue create --title "TikTok probe report (run ${{ github.run_id }})" --body-file probe_report.md || true

@@ -30,7 +30,7 @@ def test_skipped_silently_without_credentials(monkeypatch):
 def test_posts_and_never_raises(monkeypatch):
     monkeypatch.setattr(media_host, "upload_public", lambda path, key, cfg: "https://x/v.mp4")
     seen = {}
-    monkeypatch.setattr(buffer_publisher, "publish_tiktok", lambda url, caption, cfg: seen.update(url=url, caption=caption) or "post9")
+    monkeypatch.setattr(buffer_publisher, "publish_tiktok", lambda url, caption, cfg, title="": seen.update(url=url, caption=caption) or "post9")
     assert crosspost.tiktok(_cfg(), **KW) == "post9" and seen["url"] == "https://x/v.mp4" and "#h" in seen["caption"]
     monkeypatch.setattr(buffer_publisher, "publish_tiktok", lambda *a: (_ for _ in ()).throw(RuntimeError("boom")))
     assert crosspost.tiktok(_cfg(), **KW) is None
@@ -44,12 +44,14 @@ def test_publish_tiktok_tries_share_now_then_queue(monkeypatch):
         def json(self): return self._b
 
     def fake_post(url, headers, json, timeout):
-        mode = json["variables"]["input"]["mode"]
-        calls.append(mode)
-        return R(200, {"data": {"createPost": {"post": {"id": "p1"}}}}) if mode == "addToQueue" else R(200, {"errors": [{"message": "bad mode"}]})
+        inp = json["variables"]["input"]
+        assert inp["needsApproval"] is False and inp["channelId"] == "ch1"
+        calls.append((inp["mode"], "metadata" in inp))
+        ok = inp["mode"] == "addToQueue" and "metadata" not in inp      # worst case: only the plainest request is accepted
+        return R(200, {"data": {"createPost": {"post": {"id": "p1"}}}}) if ok else R(200, {"errors": [{"message": "rejected"}]})
 
     monkeypatch.setattr(buffer_publisher.requests, "post", fake_post)
-    assert buffer_publisher.publish_tiktok("https://x/v.mp4", "cap", _cfg()) == "p1" and calls == ["shareNow", "addToQueue"]
+    assert buffer_publisher.publish_tiktok("https://x/v.mp4", "cap", _cfg()) == "p1" and calls == [("shareNow", True), ("shareNow", False), ("addToQueue", True), ("addToQueue", False)]
 
 
 def test_github_release_hosting_is_used_when_no_bucket(monkeypatch, tmp_path):
