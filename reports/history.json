@@ -1391,5 +1391,25 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "u7FTxQHujg0",
+    "published_at": "2026-10-21",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Dark Truth Behind Paul Bern\u2019s 1932 Hollywood Death",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 1
+      }
+    }
   }
 ]

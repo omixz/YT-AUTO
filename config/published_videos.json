@@ -947,7 +947,7 @@
     "title": "The Dark Truth Behind Paul Bern\u2019s 1932 Hollywood Death",
     "topic": "The haunting 1932 murder of Hollywood insider Paul Bern, who left behind a tragic suicide note that hinted at dark secrets before his bride, screen icon Jean Harlow, discovered his body\u2014initiating a studio cover-up that rewrote the truth of his final hours.",
     "published_at": "2026-10-21",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -970,7 +970,9 @@
         "style": "toon",
         "text": "THE COVER UP"
       }
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "NmWcFK3sR2I",

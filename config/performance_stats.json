@@ -314,5 +314,24 @@
       }
     },
     "repaired_private_zeros": 2
+  },
+  "unsolved_mysteries:shorts": {
+    "samples": 1,
+    "total_score": 0.1,
+    "avg_score": 0.1,
+    "history": [
+      {
+        "date": "2026-10-28",
+        "score": 0.1
+      }
+    ],
+    "windows": {
+      "7d": {
+        "avg_score": 0.1
+      },
+      "30d": {
+        "avg_score": 0.1
+      }
+    }
   }
 }
