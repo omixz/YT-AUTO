@@ -1432,5 +1432,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "3jWIfRBN44k",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "How a Dying Centaur Tricked Heracles Into Wearing a Poisoned Robe",
+    "topic": "The Poisoned Robe of Heracles' Wife: How a dying centaur's final revenge tricked Deianira into sending a burning, venom-soaked tunic that fused to her husband's skin",
+    "published_at": "2026-10-28",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 619.8,
+        "audio_seconds": 962.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 56,
+        "fallback_scenes": 0,
+        "seconds": 805.0,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE POISONED SHIRT"
+      },
+      "tiktok_post_id": null
+    }
   }
 ]
