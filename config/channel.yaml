@@ -93,6 +93,8 @@ upload:
   category_id: "27"            # 27 = Education, see https://developers.google.com/youtube/v3/docs/videoCategories
   default_tags: ["facts", "education"]
   made_for_kids: false
+  crosspost_tiktok: false      # OFF until the TikTok probe (Actions -> TikTok probe) passes, then set true. TikTok exists to feed YouTube.
+  tiktok_hashtags: "#history #storytime #didyouknow #fyp"
 
 quality:
   min_words: 90                # below this, a script reads as too thin to be "produced content" (shorts baseline; longform naturally clears this)

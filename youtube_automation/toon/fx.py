@@ -109,6 +109,65 @@ def draw_speed_lines(canvas, w: int, h: int, since: float, dur: float = 0.5, a: 
                         cx + math.cos(ang) * reach * 1.1, cy + math.sin(ang) * reach * 1.1, p)
 
 
+def draw_cta_card(canvas, cx: float, cy: float, u: float, since: float, hold: float = 3.4, final: bool = False) -> None:
+    """'LIKE' thumbs-up + 'SUBSCRIBE' button with a ringing bell. Springs in, holds, shrinks out.
+    final=True (end of the video) stays until the scene ends."""
+    if since < 0:
+        return
+    out = 0.0 if final else ease_in_out(clamp01((since - hold) / 0.3))
+    if out >= 1.0:
+        return
+    k = ease_out_back(clamp01(since / 0.4)) * (1 - out)
+    canvas.save()
+    canvas.translate(cx, cy)
+    canvas.scale(k, k)
+    o = max(3.0, 4.0 * u)
+    w, h = 470 * u, 128 * u
+    rect = skia.Rect(-w / 2, -h / 2, w / 2, h / 2)
+    canvas.drawRRect(skia.RRect.MakeRectXY(rect.makeOffset(6 * u, 8 * u), 28 * u, 28 * u), fill((0, 0, 0), 110))
+    canvas.drawRRect(skia.RRect.MakeRectXY(rect, 28 * u, 28 * u), fill((255, 255, 255)))
+    canvas.drawRRect(skia.RRect.MakeRectXY(rect, 28 * u, 28 * u), stroke(INK, o))
+    # thumbs-up (left)
+    tx = -w / 2 + 62 * u
+    canvas.save()
+    canvas.translate(tx, 4 * u)
+    canvas.rotate(-8 + 6 * math.sin(since * 7))
+    inked(canvas, poly_path([(-22 * u, -4 * u), (-9 * u, -4 * u), (-9 * u, 26 * u), (-22 * u, 26 * u)]), (66, 133, 244), o * 0.7)
+    thumb = skia.Path()
+    thumb.moveTo(-9 * u, 26 * u)
+    thumb.lineTo(-9 * u, -2 * u)
+    thumb.lineTo(2 * u, -22 * u)
+    thumb.quadTo(12 * u, -22 * u, 8 * u, -6 * u)
+    thumb.lineTo(24 * u, -6 * u)
+    thumb.quadTo(30 * u, -4 * u, 27 * u, 6 * u)
+    thumb.lineTo(23 * u, 22 * u)
+    thumb.quadTo(21 * u, 26 * u, 16 * u, 26 * u)
+    thumb.close()
+    inked(canvas, thumb, (66, 133, 244), o * 0.7)
+    canvas.restore()
+    # subscribe button (right) with a ringing bell
+    bx0, bx1 = -w / 2 + 120 * u, w / 2 - 22 * u
+    btn = skia.Rect(bx0, -34 * u, bx1, 34 * u)
+    canvas.drawRRect(skia.RRect.MakeRectXY(btn, 16 * u, 16 * u), fill((230, 33, 23)))
+    canvas.drawRRect(skia.RRect.MakeRectXY(btn, 16 * u, 16 * u), stroke(INK, o * 0.8))
+    from .thumbnail import _typeface
+    font = skia.Font(_typeface(), 30 * u)
+    label = "SUBSCRIBE"
+    canvas.drawString(label, bx0 + 62 * u, 11 * u, font, skia.Paint(AntiAlias=True, Color=skia.ColorWHITE))
+    canvas.save()
+    canvas.translate(bx0 + 30 * u, 0)
+    canvas.rotate(18 * math.sin(since * 11) * (1 - out))
+    bell = skia.Path()
+    bell.moveTo(-13 * u, 14 * u)
+    bell.quadTo(-13 * u, -14 * u, 0, -16 * u)
+    bell.quadTo(13 * u, -14 * u, 13 * u, 14 * u)
+    bell.close()
+    inked(canvas, bell, (255, 214, 64), o * 0.6)
+    canvas.drawCircle(0, 18 * u, 4 * u, fill((255, 214, 64)))
+    canvas.restore()
+    canvas.restore()
+
+
 # ---- sidekick mascot -------------------------------------------------------------------------
 
 def draw_mascot(canvas, x: float, y: float, u: float, t: float, mood: str, look_toward: float,

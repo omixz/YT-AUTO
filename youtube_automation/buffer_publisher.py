@@ -125,27 +125,36 @@ def publish_video(
     return post["id"]
 
 
-def publish_tiktok(video_url: str, caption: str, config: PipelineConfig) -> str:
-    """Posts a (vertical) video to the connected TikTok channel via Buffer. TikTok-specific `metadata` is left
-    unset because its schema is not confirmed for this account (run the 'Buffer check' workflow to introspect it);
-    Buffer applies the channel's defaults. Tries 'shareNow' then 'addToQueue'. Returns Buffer's post id."""
+def publish_tiktok(video_url: str, caption: str, config: PipelineConfig, title: str = "", save_to_draft: bool = False) -> str:
+    """Posts a (vertical) video to the connected TikTok channel via Buffer and returns Buffer's post id.
+
+    Shape confirmed by introspecting Buffer's schema with the account's key: CreatePostInput requires
+    assets/channelId/mode/needsApproval/schedulingType; TikTok metadata accepts `isAiGenerated` and `title`
+    (we disclose the content as AI-generated, as TikTok requires). Tries shareNow then addToQueue, each with and
+    without the TikTok metadata, so one rejected field can't block the post. save_to_draft=True stores a draft
+    instead of publishing (used by the end-to-end probe)."""
     secrets = config.secrets
     if not secrets.buffer_api_key or not secrets.buffer_tiktok_channel_id:
         raise RuntimeError("BUFFER_API_KEY and BUFFER_TIKTOK_CHANNEL_ID must both be set to cross-post to TikTok.")
     last_error = "unknown"
     for mode in ("shareNow", "addToQueue"):
-        post_input = {"text": caption[:2000], "channelId": secrets.buffer_tiktok_channel_id, "schedulingType": "automatic",
-                      "mode": mode, "assets": [{"video": {"url": video_url}}]}
-        response = requests.post(API_URL, headers={"Authorization": f"Bearer {secrets.buffer_api_key}", "Content-Type": "application/json"},
-                                 json={"query": _CREATE_POST_MUTATION, "variables": {"input": post_input}}, timeout=60)
-        if response.status_code != 200:
-            last_error = f"HTTP {response.status_code}: {response.text[:400]}"
-            continue
-        data = response.json()
-        result = (data.get("data") or {}).get("createPost") or {}
-        post = result.get("post")
-        if post and post.get("id"):
-            logger.info("Posted to Buffer (TikTok, mode=%s): post id %s", mode, post["id"])
-            return post["id"]
-        last_error = str(data.get("errors") or result.get("message") or data)[:400]
+        for with_meta in (True, False):
+            post_input = {"text": caption[:2000], "channelId": secrets.buffer_tiktok_channel_id, "schedulingType": "automatic",
+                          "mode": mode, "needsApproval": False, "assets": [{"video": {"url": video_url}}]}
+            if with_meta:
+                post_input["metadata"] = {"tiktok": {"isAiGenerated": True, "title": (title or caption.splitlines()[0])[:90]}}
+            if save_to_draft:
+                post_input["saveToDraft"] = True
+            response = requests.post(API_URL, headers={"Authorization": f"Bearer {secrets.buffer_api_key}", "Content-Type": "application/json"},
+                                     json={"query": _CREATE_POST_MUTATION, "variables": {"input": post_input}}, timeout=60)
+            if response.status_code != 200:
+                last_error = f"HTTP {response.status_code}: {response.text[:400]}"
+                continue
+            data = response.json()
+            result = (data.get("data") or {}).get("createPost") or {}
+            post = result.get("post")
+            if post and post.get("id"):
+                logger.info("Posted to Buffer (TikTok, mode=%s, metadata=%s, draft=%s): post id %s", mode, with_meta, save_to_draft, post["id"])
+                return post["id"]
+            last_error = str(data.get("errors") or result.get("message") or data)[:400]
     raise RuntimeError(f"Buffer rejected the TikTok post: {last_error}")

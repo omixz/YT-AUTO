@@ -45,6 +45,7 @@ class SceneDirection:
     shot: str = "medium"                 # wide | medium | close
     hero: Optional[object] = None        # toon.character.Look for the on-screen character
     rival_look: Optional[object] = None
+    cta: str = ""                      # "" | "mid" (reminder card for ~3.4s) | "final" (stays to the end)
     callouts: List[Tuple[float, str]] = field(default_factory=list)   # (time_in_scene, label) number/date cards
 
 
@@ -121,4 +122,9 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
         out.append(SceneDirection(index=i, setting=(directed_setting or hinted or settings[i]), archetype=archetype, rival=rival, mood=mood,
                                   action=action, camera=camera, tod=tod, role=role, seed=i, emotes=emotes,
                                   mascot=True, era=era, shot=shot, hero=hero, rival_look=rival_look))   # Pip is the narrator: present in every scene
+    # Like/subscribe reminders: Shorts get one at the very end; longform one ~40% in (after the hook has paid off) and one at the end.
+    if out:
+        out[-1].cta = "final"
+        if len(out) >= 8:
+            out[int(len(out) * 0.4)].cta = "mid"
     return out
