@@ -1397,5 +1397,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "bS6CmVYzZNA",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "The 1916 Shark Attacks That Sent Armed Mobs Into the Water",
+    "topic": "The 1916 New Jersey Shark Attacks and the Red Scare of the Sea: Over a single hot July week, a rogue shark attacks five people along the Jersey Shore\u2014including miles inland up a freshwater creek\u2014unleashing a national panic that drove armed mobs into the water with pitchforks and dynamite.",
+    "published_at": "2026-10-28",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 39.0,
+        "audio_seconds": 63.7
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 56.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE 1916 TERROR"
+      },
+      "tiktok_post_id": null
+    }
   }
 ]
