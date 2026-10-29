@@ -1465,5 +1465,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "G3uHF5JoJb4",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Fake Rubber Army That Fooled Hitler Before D-Day",
+    "topic": "The decoy army made of rubber and inflatable tanks: The surreal, high-stakes game of deception where a troupe of Hollywood set designers and sound engineers fooled the Luftwaffe into looking at a ghost army before D-Day.",
+    "published_at": "2026-10-29",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 49.8,
+        "audio_seconds": 75.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 59.7,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE FAKE ARMY THAT FOOLED HITLER"
+      },
+      "tiktok_post_id": "6ae2a2ae7a72c9efac0e4c4b"
+    }
   }
 ]
