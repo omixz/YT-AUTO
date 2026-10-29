@@ -1411,5 +1411,25 @@
         "YT_SEARCH": 1
       }
     }
+  },
+  {
+    "video_id": "2rmNlgtS8qA",
+    "published_at": "2026-10-22",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "The Moment America Almost Nuke-Bombed Itself",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SUBSCRIBER": 1
+      }
+    }
   }
 ]

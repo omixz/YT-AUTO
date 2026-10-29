@@ -333,5 +333,24 @@
         "avg_score": 0.1
       }
     }
+  },
+  "modern_history:shorts": {
+    "samples": 1,
+    "total_score": 0.1,
+    "avg_score": 0.1,
+    "history": [
+      {
+        "date": "2026-10-29",
+        "score": 0.1
+      }
+    ],
+    "windows": {
+      "7d": {
+        "avg_score": 0.1
+      },
+      "30d": {
+        "avg_score": 0.1
+      }
+    }
   }
 }

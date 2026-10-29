@@ -1016,7 +1016,7 @@
     "title": "The Moment America Almost Nuke-Bombed Itself",
     "topic": "The 1961 B-52 crash over Goldsboro, North Carolina, where a dropping nuclear bomb had four safety switches and three failed instantly, leaving a single low-voltage toggle switch to prevent an accidental detonation over the American mainland.",
     "published_at": "2026-10-22",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1039,7 +1039,9 @@
         "style": "toon",
         "text": "ONE SWITCH AWAY"
       }
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "MlQ2B1haGms",
