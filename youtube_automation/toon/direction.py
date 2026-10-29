@@ -45,7 +45,8 @@ class SceneDirection:
     shot: str = "medium"                 # wide | medium | close
     hero: Optional[object] = None        # toon.character.Look for the on-screen character
     rival_look: Optional[object] = None
-    cta: str = ""                      # "" | "mid" (reminder card for ~3.4s) | "final" (stays to the end)
+    cta: str = ""                      # "" | "early" (pop-up reminder ~3.4s, in the first 10-20s) | "final" (stays to the end)
+    cta_t: float = 0.6                 # seconds into the scene when the card appears
     callouts: List[Tuple[float, str]] = field(default_factory=list)   # (time_in_scene, label) number/date cards
 
 
@@ -122,9 +123,17 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
         out.append(SceneDirection(index=i, setting=(directed_setting or hinted or settings[i]), archetype=archetype, rival=rival, mood=mood,
                                   action=action, camera=camera, tod=tod, role=role, seed=i, emotes=emotes,
                                   mascot=True, era=era, shot=shot, hero=hero, rival_look=rival_look))   # Pip is the narrator: present in every scene
-    # Like/subscribe reminders: Shorts get one at the very end; longform one ~40% in (after the hook has paid off) and one at the end.
+    # Like/subscribe reminders: an early pop-up (viewers decide to subscribe in the first seconds - longform at ~12s,
+    # Shorts at ~8s, always inside the first 10-20s window for longform) plus one that stays to the end.
     if out:
+        total = sum(durations)
+        target = 8.0 if total <= 75 else 12.0      # <=75s of content = a Short
+        start = 0.0
+        for i, dur in enumerate(durations):
+            if start + dur > target and i < len(out) - 1:      # the scene that is on screen at `target`
+                out[i].cta = "early"
+                out[i].cta_t = min(max(0.4, target - start), max(0.4, dur - 3.6))
+                break
+            start += dur
         out[-1].cta = "final"
-        if len(out) >= 8:
-            out[int(len(out) * 0.4)].cta = "mid"
     return out

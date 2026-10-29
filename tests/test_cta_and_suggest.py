@@ -24,15 +24,25 @@ def test_tiktok_caption_markets_youtube_with_the_exact_search_phrase():
 
 def test_cta_placement():
     long = direction.direct([Scene(f"Scene {i} about 1912.", ["x"], "build") for i in range(20)], [4.0] * 20, "T")
-    assert [d.cta for d in long].count("mid") == 1 and long[-1].cta == "final" and long[int(20 * 0.4)].cta == "mid"
+    assert [d.cta for d in long].count("early") == 1 and long[-1].cta == "final"
+    first = next(i for i, d in enumerate(long) if d.cta == "early")
+    assert 10.0 <= first * 4.0 + long[first].cta_t <= 20.0           # the pop-up lands inside the first 10-20 seconds
     short = direction.direct([Scene(f"Scene {i} here.", ["x"], "build") for i in range(6)], [4.0] * 6, "T")
-    assert [d.cta for d in short] == ["", "", "", "", "", "final"]
+    assert [d.cta for d in short] == ["", "", "early", "", "", "final"] and short[2].cta_t == 0.4   # a ~24s Short: reminder at ~8s
+
+
+def test_cta_still_fires_when_scenes_are_long_or_the_video_is_tiny():
+    one = direction.direct([Scene("Only scene.", ["x"])], [30.0], "T")
+    assert [d.cta for d in one] == ["final"]                           # never two cards on the last scene
+    longscenes = direction.direct([Scene(f"S{i}.", ["x"]) for i in range(5)], [20.0] * 5, "T")
+    e = next(i for i, d in enumerate(longscenes) if d.cta == "early")
+    assert 10.0 <= e * 20.0 + longscenes[e].cta_t <= 20.0 and longscenes[e].cta_t <= 16.4
 
 
 def test_cta_card_changes_the_frame(tmp_path):
     base = direction.direct([Scene("A scene.", ["x"], "build")], [4.0], "T")[0]
     base = base.__class__(**{**base.__dict__, "cta": ""})
-    with_cta = base.__class__(**{**base.__dict__, "cta": "mid"})
+    with_cta = base.__class__(**{**base.__dict__, "cta": "early", "cta_t": 0.6})
     frames = []
     for name, d in (("a", base), ("b", with_cta)):
         engine.render_scene(d, 2.0, 320, 180, 10, tmp_path / f"{name}.mp4", dump_frames=[1.5], frames_dir=tmp_path)
