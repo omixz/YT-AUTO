@@ -38,6 +38,17 @@ def main() -> None:
         out += ["### Platform metadata accepted by createPost", "```json", json.dumps(data, indent=1)[:1500], "```"]
         code, data = gql('{ __type(name: "TiktokPostMetadataInput") { inputFields { name type { name kind } } } }')
         out += ["### TikTok metadata fields", "```json", json.dumps(data, indent=1)[:1500], "```"]
+    pid = os.environ.get("POST_ID", "").strip()
+    if KEY and pid:
+        t = type_info("Post") or {}
+        code, d = gql('{ __type(name: "Post") { fields { name type { name kind ofType { name kind } } } } }')
+        fields = ((d.get("data") or {}).get("__type") or {}).get("fields") or []
+        def leaf(f):
+            t_ = f["type"]; return (t_.get("kind") == "SCALAR" or t_.get("kind") == "ENUM") or ((t_.get("ofType") or {}).get("kind") in ("SCALAR", "ENUM"))
+        wanted = [f["name"] for f in fields if leaf(f)][:40]
+        show(out, "Post scalar fields available", wanted)
+        code, d = gql('{ post(input: {id: "%s"}) { %s } }' % (pid, " ".join(wanted)))
+        show(out, f"Status of post {pid}", d)
     open("buffer_report.md", "w", encoding="utf-8").write("\n".join(out))
     print("\n".join(out)[:3000])
 

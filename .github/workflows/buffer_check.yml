@@ -4,6 +4,11 @@ name: Buffer check
 # and which TikTok fields Buffer's API accepts. Posts the result as an issue so it is readable without opening logs.
 on:
   workflow_dispatch:
+    inputs:
+      post_id:
+        description: "Optional Buffer post id to look up (e.g. from the ledger's render.tiktok_post_id)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -22,6 +27,7 @@ jobs:
       - run: python buffer_check.py
         env:
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          POST_ID: ${{ github.event.inputs.post_id }}
       - name: Post report
         if: always()
         env:
