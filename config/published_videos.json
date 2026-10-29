@@ -1533,5 +1533,41 @@
       },
       "tiktok_post_id": "6ae2b31404f348da4006c5c6"
     }
+  },
+  {
+    "video_id": "_eAHaCuxRWk",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Mystery Behind the Athenian Youths Sent to the Minotaur",
+    "topic": "The Sacrificial Leap of the Athenian Youths: The terrifying annual tribute of teenagers sent into the dark, echoing tunnels of the Labyrinth to be hunted by the Minotaur before Theseus arrived",
+    "published_at": "2026-10-29",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 1733 words of narration, well under this 1200s video's own target of ~3100 words (expected at least 1860) - the model undershot the requested length rather than a hard generation failure",
+      "rendered video is only 684s (11.4 min), well under this video's own target of 1200s (20 min) (expected at least 720s / 12.0 min) - actual TTS pace ran faster than script-generation's word-count estimate assumed"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 188.0,
+        "audio_seconds": 685.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 83,
+        "fallback_scenes": 0,
+        "seconds": 324.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "INTO THE MAZE"
+      },
+      "tiktok_post_id": null
+    }
   }
 ]
