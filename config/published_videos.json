@@ -1498,5 +1498,38 @@
       },
       "tiktok_post_id": "6ae2a2ae7a72c9efac0e4c4b"
     }
+  },
+  {
+    "video_id": "KRahnabH3sk",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Chilling Disappearance That Left Behind a Mystifying Package Years Later",
+    "topic": "The chilling 1994 disappearance of Luke Durbin, a 19-year-old who walked out of an English nightclub in the early hours of the morning, spoke briefly to a stranger on a CCTV camera, and walked straight off the face of the earth, leaving behind a set of house keys and a wallet that were mysteriously mailed back to his home years later.",
+    "published_at": "2026-10-29",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 24.2,
+        "audio_seconds": 59.8
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 10,
+        "fallback_scenes": 0,
+        "seconds": 30.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "WALKED AWAY AND VANISHED"
+      },
+      "tiktok_post_id": "6ae2b31404f348da4006c5c6"
+    }
   }
 ]
