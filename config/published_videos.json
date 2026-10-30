@@ -1569,5 +1569,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "zPOdkAiBInM",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Bizarre Peacetime Maneuver That Sunk a Battleship",
+    "topic": "The catastrophic miscalculation of Admiral Sir George Tryon: The bizarre peacetime maneuver off the coast of Tripoli where a legendary Royal Navy commander stubbornly ordered two massive battleships to turn directly into each other, watched in horror by hundreds of sailors on deck.",
+    "published_at": "2026-10-30",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 51.7,
+        "audio_seconds": 78.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 66.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE FATAL ORDER"
+      },
+      "tiktok_post_id": "6ae3f44556e01b97637df173"
+    }
   }
 ]
