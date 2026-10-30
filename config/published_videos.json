@@ -1084,7 +1084,7 @@
     "title": "The 18-Year-Old Farm Girl Who Accidentally Started WWI",
     "topic": "The 18-year-old French farm girl who accidentally started WWI: The panicked moment Marie-Jeanne Gabert sprinted down a country road shouting warnings about a burning farmhouse, triggering the mobilization orders that set Europe on fire.",
     "published_at": "2026-10-23",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1107,7 +1107,9 @@
         "style": "toon",
         "text": "THE FARM GIRL WHO STARTED WWI"
       }
-    }
+    },
+    "views": 950,
+    "avg_view_pct": 14.6
   },
   {
     "video_id": "pf_fDWX5buY",
@@ -1116,7 +1118,7 @@
     "title": "The Cursed King Who Was Forced to Eat His Own Flesh",
     "topic": "The Self-Decapitation of King Erysichthon: The cursed Spartan king who was driven to a horrific, endless cannibalistic hunger by Demeter after cutting down her sacred grove, until he was forced to consume his own flesh to survive.",
     "published_at": "2026-10-23",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1139,7 +1141,9 @@
         "style": "toon",
         "text": "HE ATE HIMSELF"
       }
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 0.7
   },
   {
     "video_id": "JDZ0fY8hdGg",

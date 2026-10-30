@@ -158,9 +158,9 @@
     }
   },
   "mythology:longform": {
-    "samples": 6,
-    "total_score": 202.7,
-    "avg_score": 33.78333333333333,
+    "samples": 7,
+    "total_score": 202.79999999999998,
+    "avg_score": 28.971428571428568,
     "history": [
       {
         "date": "2026-10-08",
@@ -185,14 +185,18 @@
       {
         "date": "2026-10-21",
         "score": 40.5
+      },
+      {
+        "date": "2026-10-30",
+        "score": 0.1
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 18.666666666666668
+        "avg_score": 0.1
       },
       "30d": {
-        "avg_score": 33.766666666666666
+        "avg_score": 28.957142857142856
       }
     },
     "repaired_private_zeros": 8
@@ -350,6 +354,25 @@
       },
       "30d": {
         "avg_score": 0.1
+      }
+    }
+  },
+  "world_wars:shorts": {
+    "samples": 1,
+    "total_score": 179.0,
+    "avg_score": 179.0,
+    "history": [
+      {
+        "date": "2026-10-30",
+        "score": 179.0
+      }
+    ],
+    "windows": {
+      "7d": {
+        "avg_score": 179.0
+      },
+      "30d": {
+        "avg_score": 179.0
       }
     }
   }

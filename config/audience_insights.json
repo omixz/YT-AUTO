@@ -1,8 +1,8 @@
 {
-  "videos": 28,
+  "videos": 30,
   "overall": {
-    "avg_views": 6.6,
-    "avg_view_pct": 19.2
+    "avg_views": 37.8,
+    "avg_view_pct": 18.5
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -21,9 +21,9 @@
       "videos": 6
     },
     "mythology": {
-      "avg_views": 14.0,
-      "avg_view_pct": 32.3,
-      "videos": 1
+      "avg_views": 7.5,
+      "avg_view_pct": 16.5,
+      "videos": 2
     },
     "science_history": {
       "avg_views": 12.0,
@@ -36,21 +36,21 @@
       "videos": 11
     },
     "world_wars": {
-      "avg_views": 8.5,
-      "avg_view_pct": 7.8,
-      "videos": 2
+      "avg_views": 322.3,
+      "avg_view_pct": 10.1,
+      "videos": 3
     }
   },
   "by_format": {
     "longform": {
-      "avg_views": 7.0,
-      "avg_view_pct": 20.7,
-      "videos": 26
+      "avg_views": 6.8,
+      "avg_view_pct": 20.0,
+      "videos": 27
     },
     "shorts": {
-      "avg_views": 1.0,
-      "avg_view_pct": 0.0,
-      "videos": 2
+      "avg_views": 317.3,
+      "avg_view_pct": 4.9,
+      "videos": 3
     }
   },
   "by_thumbnail_style": {
@@ -60,16 +60,16 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 1.0,
-      "avg_view_pct": 0.0,
-      "videos": 2
+      "avg_views": 238.2,
+      "avg_view_pct": 3.8,
+      "videos": 4
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 7.5,
-      "avg_view_pct": 19.4,
-      "videos": 22
+      "avg_views": 46.5,
+      "avg_view_pct": 18.4,
+      "videos": 24
     },
     "year": {
       "avg_views": 3.3,
@@ -79,16 +79,16 @@
   },
   "by_title_is_question": {
     "statement": {
-      "avg_views": 6.6,
-      "avg_view_pct": 19.2,
-      "videos": 28
+      "avg_views": 37.8,
+      "avg_view_pct": 18.5,
+      "videos": 30
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 8.1,
-      "avg_view_pct": 19.0,
-      "videos": 17
+      "avg_views": 57.3,
+      "avg_view_pct": 17.8,
+      "videos": 19
     },
     "<=50": {
       "avg_views": 2.8,

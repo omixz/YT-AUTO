@@ -1431,5 +1431,50 @@
         "SUBSCRIBER": 1
       }
     }
+  },
+  {
+    "video_id": "mz2g7d3ZzGE",
+    "published_at": "2026-10-23",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The 18-Year-Old Farm Girl Who Accidentally Started WWI",
+    "stats": {
+      "views": 950,
+      "minutes_watched": 42.0,
+      "avg_view_duration_s": 11.0,
+      "avg_view_percentage": 14.57,
+      "likes": 3,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 921,
+        "YT_SEARCH": 24,
+        "YT_OTHER_PAGE": 4,
+        "YT_CHANNEL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "pf_fDWX5buY",
+    "published_at": "2026-10-23",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Cursed King Who Was Forced to Eat His Own Flesh",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 7.0,
+      "avg_view_percentage": 0.69,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]
