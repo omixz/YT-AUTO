@@ -1606,5 +1606,38 @@
       },
       "tiktok_post_id": "6ae3f44556e01b97637df173"
     }
+  },
+  {
+    "video_id": "xBTSHWz0uVA",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Terrifying Flood That Wiped Out Humanity Before Noah's Ark",
+    "topic": "The Vengeful Flood of Gilgamesh's Gods: The terrifying moment the sky turned pitch black and the ancient gods unleashed a global deluge that wiped out humanity, while one man desperately built a towering ark",
+    "published_at": "2026-10-30",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 538.7,
+        "audio_seconds": 1263.1
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 103,
+        "fallback_scenes": 0,
+        "seconds": 896.0,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE GODS DESTROYED EARTH"
+      },
+      "tiktok_post_id": null
+    }
   }
 ]
