@@ -375,5 +375,24 @@
         "avg_score": 179.0
       }
     }
+  },
+  "mythology:shorts": {
+    "samples": 1,
+    "total_score": 2.4,
+    "avg_score": 2.4,
+    "history": [
+      {
+        "date": "2026-10-31",
+        "score": 2.4
+      }
+    ],
+    "windows": {
+      "7d": {
+        "avg_score": 2.4
+      },
+      "30d": {
+        "avg_score": 2.4
+      }
+    }
   }
 }

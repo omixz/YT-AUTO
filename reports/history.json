@@ -1476,5 +1476,26 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "JDZ0fY8hdGg",
+    "published_at": "2026-10-24",
+    "niche": "mythology",
+    "format": "shorts",
+    "title": "How Queen Boudicca Burned Roman Londinium to the Ground",
+    "stats": {
+      "views": 4,
+      "minutes_watched": 1.0,
+      "avg_view_duration_s": 41.0,
+      "avg_view_percentage": 53.61,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 3,
+        "YT_CHANNEL": 1
+      }
+    }
   }
 ]
