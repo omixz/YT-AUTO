@@ -1639,5 +1639,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "ujAqkjkvGIg",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1912 Mystery of the Boy Who Wasn't Bobby Dunbar",
+    "topic": "The 1912 disappearance of Bobby Dunbar, the 4-year-old boy who vanished during a family fishing trip, only to be \"found\" months later\u2014prompting a heartbroken mother to tearfully insist the child returned to her arms was a complete stranger, a claim proven true nearly a century later by DNA.",
+    "published_at": "2026-10-31",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 53.8,
+        "audio_seconds": 84.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 66.9,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SHE KNEW IT WASN'T HIM"
+      },
+      "tiktok_post_id": "6ae543c8ceb491e585ceed4b"
+    }
   }
 ]
