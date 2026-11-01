@@ -1746,5 +1746,38 @@
       },
       "tiktok_post_id": "6ae68aea37c1acd2a0dcbbcf"
     }
+  },
+  {
+    "video_id": "jK3G58-JU4w",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1979 Amityville Horror Hoax: How Investigator Stephen Kaplan Questioned the Lie",
+    "topic": "The 1979 Amityville Horror Hoax: The chilling moment investigator Stephen Kaplan confronted the Lutz family's paranormal claims, exposing a manufactured haunting built on financial desperation and a true crime tragedy.",
+    "published_at": "2026-11-01",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 433.2,
+        "audio_seconds": 1189.0
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 49,
+        "fallback_scenes": 0,
+        "seconds": 675.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE HOAX EXPOSED"
+      },
+      "tiktok_post_id": null
+    }
   }
 ]
