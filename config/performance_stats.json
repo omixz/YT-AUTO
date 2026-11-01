@@ -158,9 +158,9 @@
     }
   },
   "mythology:longform": {
-    "samples": 7,
-    "total_score": 202.79999999999998,
-    "avg_score": 28.971428571428568,
+    "samples": 8,
+    "total_score": 202.99999999999997,
+    "avg_score": 25.374999999999996,
     "history": [
       {
         "date": "2026-10-08",
@@ -189,14 +189,18 @@
       {
         "date": "2026-10-30",
         "score": 0.1
+      },
+      {
+        "date": "2026-11-01",
+        "score": 0.2
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 0.1
+        "avg_score": 0.15000000000000002
       },
       "30d": {
-        "avg_score": 28.957142857142856
+        "avg_score": 25.362499999999997
       }
     },
     "repaired_private_zeros": 8
@@ -358,40 +362,48 @@
     }
   },
   "world_wars:shorts": {
-    "samples": 1,
-    "total_score": 179.0,
-    "avg_score": 179.0,
+    "samples": 2,
+    "total_score": 512.3,
+    "avg_score": 256.15,
     "history": [
       {
         "date": "2026-10-30",
         "score": 179.0
+      },
+      {
+        "date": "2026-11-01",
+        "score": 333.3
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 179.0
+        "avg_score": 256.15
       },
       "30d": {
-        "avg_score": 179.0
+        "avg_score": 256.15
       }
     }
   },
   "mythology:shorts": {
-    "samples": 1,
-    "total_score": 2.4,
-    "avg_score": 2.4,
+    "samples": 2,
+    "total_score": 318.9,
+    "avg_score": 159.45,
     "history": [
       {
         "date": "2026-10-31",
         "score": 2.4
+      },
+      {
+        "date": "2026-11-01",
+        "score": 316.5
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 2.4
+        "avg_score": 159.45
       },
       "30d": {
-        "avg_score": 2.4
+        "avg_score": 159.45
       }
     }
   }

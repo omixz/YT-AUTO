@@ -1497,5 +1497,74 @@
         "YT_CHANNEL": 1
       }
     }
+  },
+  {
+    "video_id": "k-O7jfAP4jU",
+    "published_at": "2026-10-25",
+    "niche": "mythology",
+    "format": "shorts",
+    "title": "The Dark Origin of Daedalus: How Jealousy Sparked the Fall of Icarus",
+    "stats": {
+      "views": 45,
+      "minutes_watched": 156.0,
+      "avg_view_duration_s": 519.0,
+      "avg_view_percentage": 895.31,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 34,
+        "YT_SEARCH": 9,
+        "YT_CHANNEL": 1,
+        "YT_OTHER_PAGE": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "bWSBTYUXltY",
+    "published_at": "2026-10-25",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Blind Execution of Orpheus: Why He Was Torn Apart by Fanatics",
+    "stats": {
+      "views": 2,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 10.0,
+      "avg_view_percentage": 1.31,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 2,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "S0rx5MYHRJI",
+    "published_at": "2026-10-25",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "How Patton's Freak Traffic Accident Altered the Cold War",
+    "stats": {
+      "views": 473,
+      "minutes_watched": 143.0,
+      "avg_view_duration_s": 41.0,
+      "avg_view_percentage": 53.78000000000001,
+      "likes": 16,
+      "comments": 2,
+      "shares": 1,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 449,
+        "YT_SEARCH": 15,
+        "YT_OTHER_PAGE": 8,
+        "YT_CHANNEL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]

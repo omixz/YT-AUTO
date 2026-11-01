@@ -1222,7 +1222,7 @@
     "title": "The Dark Origin of Daedalus: How Jealousy Sparked the Fall of Icarus",
     "topic": "The Fatal Gift of Daedalus: How the brilliant inventor's jealousy drove him to murder his own nephew by shoving him off the roof of the Acropolis, sparking his desperate flight on wings of wax",
     "published_at": "2026-10-25",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1245,7 +1245,9 @@
         "style": "toon",
         "text": "HE PUSHED HIS NEPHEW"
       }
-    }
+    },
+    "views": 45,
+    "avg_view_pct": 895.3
   },
   {
     "video_id": "bWSBTYUXltY",
@@ -1254,7 +1256,7 @@
     "title": "The Blind Execution of Orpheus: Why He Was Torn Apart by Fanatics",
     "topic": "The Blind Execution of Orpheus: How the grief-stricken musician was torn limb from limb by frenzied Thracian women in a brutal, blood-drenched frenzy after he turned his back on the worship of Dionysus",
     "published_at": "2026-10-25",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1277,7 +1279,9 @@
         "style": "toon",
         "text": "TORN APART"
       }
-    }
+    },
+    "views": 2,
+    "avg_view_pct": 1.3
   },
   {
     "video_id": "S0rx5MYHRJI",
@@ -1286,7 +1290,7 @@
     "title": "How Patton's Freak Traffic Accident Altered the Cold War",
     "topic": "The death of General George S. Patton in a mundane traffic accident: How a freak low-speed collision in post-war Germany robbed the Allies of their most volatile, prophetic commander just as the Cold War's iron curtain was descending.",
     "published_at": "2026-10-25",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1309,7 +1313,9 @@
         "style": "toon",
         "text": "SURVIVED THE WAR... DIED LIKE THIS"
       }
-    }
+    },
+    "views": 473,
+    "avg_view_pct": 53.8
   },
   {
     "video_id": "BEIKayOwEOU",
