@@ -1707,5 +1707,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "0_m6AVtIJFA",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "The Extremist Tailor Who Declared Himself King of M\u00fcnster",
+    "topic": "The M\u00fcnster Rebellion of 1534: An extremist tailor named John of Leiden seizes control of a German city, declares himself the King of the New Jerusalem, outlaws private property, forces polygamy under pain of death, and starves his citizens before being publicly tortured with red-hot tongs and left in hanging iron cages.",
+    "published_at": "2026-11-01",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 37.9,
+        "audio_seconds": 73.7
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 57.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE TAILOR KING OF TERROR"
+      },
+      "tiktok_post_id": "6ae68aea37c1acd2a0dcbbcf"
+    }
   }
 ]
