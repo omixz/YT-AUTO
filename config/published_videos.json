@@ -1779,5 +1779,38 @@
       },
       "tiktok_post_id": null
     }
+  },
+  {
+    "video_id": "PGS4-2-gzXg",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "The Surgeon Who Amputated at 300mph: The Bloody 300% Mortality Operation",
+    "topic": "The Surgeon Who Amputated at 300mph: The Bloody 300% Mortality Operation That Changed Medicine Forever",
+    "published_at": "2026-11-02",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 41.9,
+        "audio_seconds": 82.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 42.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "300% MORTALITY?"
+      },
+      "tiktok_post_id": "6ae7e618779ee9f13cc70773"
+    }
   }
 ]
