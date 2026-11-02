@@ -1814,5 +1814,39 @@
       },
       "tiktok_post_id": "6ae7e618779ee9f13cc70773"
     }
+  },
+  {
+    "video_id": "a3UlCA13_bM",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "Why the 1982 Chicago Tylenol Murders Remain Completely Unsolved",
+    "topic": "The 1982 Chicago Tylenol Murders: The terrifying unsolved poisoning spree where an unknown killer laced supermarket capsules with potassium cyanide, forcing a panic that permanently changed how the world packages medicine.",
+    "published_at": "2026-11-02",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 305.9,
+        "audio_seconds": 996.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 93,
+        "fallback_scenes": 0,
+        "seconds": 378.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "POISONED PILLS"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
