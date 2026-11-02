@@ -105,7 +105,7 @@ def _apply_volume_envelope(
         for d in scene_durations[:-1]:
             cumulative += d
             gauss = np.exp(-((t - cumulative) ** 2) / (2 * 0.04))
-            env *= 1.0 + 0.15 * gauss
+            env *= 1.0 + 0.06 * gauss
 
     bed *= env
     return bed

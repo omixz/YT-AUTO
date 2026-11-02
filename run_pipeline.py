@@ -33,6 +33,7 @@ def main() -> None:
     parser.add_argument("--publish-now", action="store_true", help="Release immediately instead of scheduling the next optimal slot.")
     parser.add_argument("--keep-work-dir", action="store_true", help="Keep per-scene scratch files after the run.")
     parser.add_argument("--animation-engine", choices=["toon", "legacy"], default=None, help="Override animation.engine from the config for this run.")
+    parser.add_argument("--force", action="store_true", help="Ignore the one-Short-and-one-longform-per-day cap.")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -53,6 +54,7 @@ def main() -> None:
             publish_now=args.publish_now,
             keep_work_dir=args.keep_work_dir,
             format_override=args.format,
+            force=args.force,
         )
     except Exception:
         # Surface the real failure as a GitHub Actions error annotation, so it's

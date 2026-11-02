@@ -205,7 +205,7 @@ def _build_mix_command(burned, narration_path, background_music, ambience_path, 
         if kind == "music":
             # threshold -24dB, ratio 4:1, 10ms attack, 200ms release
             parts.append(f"[{i}:a]{_NORM}[m{i}]")
-            parts.append(f"[m{i}][nsc{side}]sidechaincompress=threshold=-24dB:ratio=4:attack=10:release=200:makeup=1[music]")
+            parts.append(f"[m{i}][nsc{side}]sidechaincompress=threshold=-28dB:ratio=9:attack=8:release=260:makeup=1[music]")
             labels.append("[music]"); side += 1
         elif kind == "amb":
             parts.append(f"[{i}:a]{_NORM}[a{i}]")
