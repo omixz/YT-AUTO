@@ -51,6 +51,7 @@ SCRIPT_SCHEMA = {
         "title": {"type": "string", "description": "YouTube title, under 100 chars, hook-forward. Makes one specific, curiosity-gap promise (not a vague topic label) - the hook scene's opening line must deliver on exactly this promise, since a title/thumbnail that overpromises what the video actually opens with kills retention and the algorithm's willingness to keep distributing it."},
         "description": {"type": "string", "description": "YouTube description, 2-4 sentences plus hashtags."},
         "tags": {"type": "array", "items": {"type": "string"}, "description": "8-15 relevant search tags."},
+        "title_options": {"type": "array", "items": {"type": "string"}, "description": "3 alternative titles (different angles), 35-65 chars each."},
         "thumbnail_text": {"type": "string", "description": "2-4 ALL-CAPS-friendly words for the thumbnail (e.g. \"THEY VANISHED?\", \"NO SURVIVORS\", \"THE LAST ORDER\"). Must add curiosity the title does not already give - never repeat the title, never state an unproven claim as fact."},
         "scenes": {
             "type": "array",
@@ -201,6 +202,7 @@ class Script:
     description: str
     tags: List[str]
     scenes: List[Scene] = field(default_factory=list)
+    title_options: List[str] = field(default_factory=list)   # alternative titles from the same call; quality_check.pick_best_title chooses
     thumbnail_text: str = ""   # 2-4 punchy words printed on the thumbnail (complements, never repeats, the title)
 
     @property
@@ -470,6 +472,14 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
         "filmable nouns tied to the topic, not abstract ideas or generic mood words"
     )
 
+    shorts_rules = ""
+    if config.video.format == "shorts":
+        shorts_rules = """
+SHORTS RULES (this is a vertical Short, not a mini documentary):
+- ONE idea only. The first sentence is 8 words or fewer and states the strangest concrete fact ("Three men vanished from a locked island.").
+- No context, no history lesson, no setup - the viewer decides in under 3 seconds. Every sentence must be a new reveal or escalation.
+- The final line loops back to the first line so the Short replays naturally, then says: "Follow for the full story on YouTube."
+"""
     prompt = f"""You are writing a {config.video.format} YouTube video script for a faceless channel.
 This channel's videos need to read as a genuinely produced mini-documentary with a point of
 view, not a text-to-speech slideshow of disconnected trivia - YouTube treats the latter as
@@ -499,6 +509,19 @@ categories) and the hook scene's first sentence must open by directly delivering
 promise - a title/thumbnail that oversells what the video actually opens with is the single
 biggest reason a video's retention (and therefore YouTube's willingness to keep recommending it)
 collapses in the first seconds.
+
+HOOK CRAFT (the first 15 seconds decide whether anyone watches; most of this channel's viewers leave here):
+- The very first sentence is 14 words or fewer and names something SPECIFIC (a person, place, number or object). Open IN the moment -
+  the single most striking concrete image or event, mid-action - BEFORE any background.
+- NEVER open with throat-clearing: not "In [year]...", "Welcome", "Today", "Have you ever wondered", "Imagine", "Did you know",
+  "Let's", "Picture this", "This is the story of". Start with the event itself.
+- Sentence 2 states the unanswered question or the stakes. Sentence 3 promises a payoff that is specific and delayed
+  ("The answer was in a letter nobody opened for 80 years.") without claiming anything unproven.
+- The whole hook scene is 35 words or fewer. Scene 2 must ESCALATE (new twist), never explain the hook.
+- Concrete beats abstract: "a table set for dinner, clocks stopped" beats "a mysterious disappearance".
+{shorts_rules}
+TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
+Each is 35-65 characters, specific, and never states an unproven claim as fact.
 
 RETENTION ENGINEERING - DO NOT SKIP THESE:
 1. HOOK (scene 1): Open with a PATTERN INTERRUPT - a statement that violates expectations.
@@ -641,6 +664,7 @@ already here.
         tags=[t.strip() for t in data["tags"]],
         scenes=scenes,
         thumbnail_text=(data.get("thumbnail_text") or "").strip(),
+        title_options=[t.strip() for t in (data.get("title_options") or []) if isinstance(t, str) and t.strip()][:5],
     )
 
 

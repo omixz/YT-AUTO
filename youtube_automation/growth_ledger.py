@@ -68,6 +68,13 @@ def record_published(
     _save(path, records)
 
 
+def daily_counts(format_name: str, today: "dt.date | None" = None) -> tuple:
+    """(public uploads, total attempts) of this format dated today (UTC). Drives the one-a-day cap."""
+    today = today or dt.datetime.now(dt.timezone.utc).date()
+    todays = [r for r in _load(ROOT / LEDGER_PATH) if r.get("format") == format_name and str(r.get("published_at", ""))[:10] == today.isoformat()]
+    return sum(1 for r in todays if is_scorable(r)), len(todays)
+
+
 def is_scorable(record: dict) -> bool:
     """A video the public could actually watch. Gate-failed uploads go up as PRIVATE and get zero views,
     so scoring them would teach the bandit that the *niche* is bad when only the pipeline failed (mythology

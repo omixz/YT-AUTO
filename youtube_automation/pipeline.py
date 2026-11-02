@@ -90,12 +90,21 @@ def run(
     publish_now: bool = False,
     keep_work_dir: bool = False,
     format_override: Optional[str] = None,
+    force: bool = False,
 ) -> dict:
     run_id = time.strftime("%Y%m%d-%H%M%S")
     work_dir = ROOT / "output" / run_id
     work_dir.mkdir(parents=True, exist_ok=True)
 
     niche_key, format_name = _select_niche_and_format(config, format_override=format_override)
+    if not (force or dry_run or topic_override):
+        # One Short and one longform per day: skip if a public one already went up today, or two attempts were already
+        # made (a gate-failed private upload may be retried once). Costs nothing: no Gemini calls happen before this.
+        public_today, attempts_today = growth_ledger.daily_counts(format_name)
+        if public_today >= 1 or attempts_today >= 2:
+            logger.warning("Daily cap: %d public / %d attempt(s) of %s already today - skipping this run (use --force to override).",
+                           public_today, attempts_today, format_name)
+            return {"skipped": "daily_cap", "format": format_name, "public_today": public_today, "attempts_today": attempts_today}
     logger.info("Selected niche=%s format=%s", niche_key, format_name)
 
     logger.info("Picking topic...")
@@ -103,13 +112,17 @@ def run(
     logger.info("Topic: %s", topic)
 
     max_attempts = max(1, int(config.quality.max_script_attempts))
+    hook_warns: list = []
     for attempt in range(1, max_attempts + 1):
         logger.info("Writing script (attempt %d/%d)...", attempt, max_attempts)
         script = generate_script(topic, config)
         logger.info("Title: %s (%d scenes)", script.title, len(script.scenes))
         # Script-level checks run now (cheap, before spending render time); media-level checks
         # (below, after the video is built) join the same final verdict - see quality_check.py.
-        script.title = quality_check.soften_title(script.title)
+        script.title = quality_check.soften_title(quality_check.pick_best_title(script))
+        hook_warns = quality_check.hook_warnings(script)
+        if hook_warns:
+            logger.warning("Weak hook: %s", "; ".join(hook_warns))
         dropped = quality_check.drop_defective_scenes(script)
         if dropped:
             logger.warning("Dropped %d defective scene(s) (refused/duplicate/fragment) instead of failing the video.", dropped)
@@ -202,6 +215,7 @@ def run(
 
     manifest = {
         "voice": dict(tts.LAST_STATS),
+        "hook_warnings": hook_warns,
         "thumbnail": {"style": thumb_style, "text": script.thumbnail_text},
         "animation": {"engine": _engine_used[0], **__import__("youtube_automation.toon.render", fromlist=["LAST_STATS"]).LAST_STATS},
         "run_id": run_id,
@@ -317,7 +331,7 @@ def run(
                 niche_key, format_name, video_id, title=script.title, topic=topic,
                 privacy_status=effective_privacy, passed_quality_gate=passed_quality_gate,
                 quality_gate_reasons=quality_reasons,
-                render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail"), "tiktok_post_id": manifest.get("tiktok_post_id")},
+                render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail"), "tiktok_post_id": manifest.get("tiktok_post_id"), "hook_warnings": manifest.get("hook_warnings")},
             )
 
     (work_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")

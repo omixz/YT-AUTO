@@ -139,6 +139,46 @@ def soften_title(title: str) -> str:
     return title
 
 
+_WEAK_OPENERS = re.compile(r"^\s*(in\s+(the\s+year\s+)?\d{3,4}\b|welcome\b|today\b|have you ever\b|imagine\b|did you know\b|let'?s\b|picture this\b|this is the story\b|what if\b|hello\b|hey\b)", re.I)
+_CURIOSITY = re.compile(r"\b(vanish|disappear|secret|last|never|impossible|mystery|why|how|who|what|lost|hidden|forbidden|silent|missing|final|strange|unsolved)", re.I)
+
+
+def hook_warnings(script) -> list:
+    """Soft hook checks (logged and recorded, never a gate failure - a mediocre hook shouldn't cost the whole video)."""
+    if not script.scenes:
+        return []
+    hook = script.scenes[0].narration.strip()
+    first = re.split(r"(?<=[.!?])\s", hook, maxsplit=1)[0]
+    out = []
+    if _WEAK_OPENERS.match(hook):
+        out.append("hook opens with throat-clearing instead of the event itself")
+    if len(first.split()) > 16:
+        out.append(f"first sentence is {len(first.split())} words (aim for 14 or fewer)")
+    if len(hook.split()) > 45:
+        out.append(f"hook scene is {len(hook.split())} words (aim for 35 or fewer)")
+    if not re.search(r"\d|[A-Z][a-z]+", first[1:]):
+        out.append("first sentence names nothing specific (no person/place/number)")
+    return out
+
+
+def title_score(title: str) -> float:
+    t = title.strip()
+    score = 0.0
+    score += 2.0 if re.search(r"\d", t) else 0.0                                   # a number/year is concrete
+    score += 1.5 if len(re.findall(r"\b[A-Z][a-z]{2,}", t[1:])) >= 2 else 0.0         # proper nouns = specific
+    score += 1.5 if _CURIOSITY.search(t) else 0.0
+    score += 1.0 if 35 <= len(t) <= 65 else (-2.0 if len(t) > 75 else 0.0)
+    score -= 4.0 if has_unproven_certainty(t) else 0.0
+    score -= 1.0 if re.match(r"(?i)^the (dark|terrifying|chilling|shocking|gruesome)\b", t) else 0.0   # the model's favourite cliches
+    return score
+
+
+def pick_best_title(script) -> str:
+    """Highest-scoring of the main title and the model's alternatives (ties keep the original). Free: one call already made."""
+    cands = [script.title] + [t for t in getattr(script, "title_options", []) if t and t != script.title]
+    return max(cands, key=lambda t: (title_score(soften_title(t)), t == script.title))
+
+
 def drop_defective_scenes(script, max_fraction: float = 0.06) -> int:
     """Delete scenes that are generation defects fixable by removal (refused/hedged text, exact duplicates,
     one-word fragments) instead of failing the whole video. A mythology video went private over ONE refused

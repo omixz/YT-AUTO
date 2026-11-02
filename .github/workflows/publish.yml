@@ -11,6 +11,11 @@ on:
     - cron: "0 22 * * *"
   workflow_dispatch:
     inputs:
+      force:
+        description: "Ignore the one-Short-and-one-longform-per-day cap"
+        type: boolean
+        required: false
+        default: false
       topic:
         description: "Override topic (leave blank to pull from the queue)"
         required: false
@@ -119,6 +124,7 @@ jobs:
           IN_TOPIC: ${{ github.event.inputs.topic }}
           IN_FORMAT: ${{ github.event.inputs.format }}
           IN_DRY_RUN: ${{ github.event.inputs.dry_run }}
+          IN_FORCE: ${{ github.event.inputs.force }}
           IN_PUBLISH_AT: ${{ github.event.inputs.publish_at }}
           IN_PUBLISH_NOW: ${{ github.event.inputs.publish_now }}
         run: |
@@ -130,6 +136,9 @@ jobs:
             ARGS+=(--format "$IN_FORMAT")
           elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 22 * * *" ]; then
             ARGS+=(--format shorts)
+          fi
+          if [ "$IN_FORCE" = "true" ]; then
+            ARGS+=(--force)
           fi
           if [ "$IN_DRY_RUN" = "true" ]; then
             ARGS+=(--dry-run)
