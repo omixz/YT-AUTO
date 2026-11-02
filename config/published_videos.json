@@ -1324,7 +1324,7 @@
     "title": "The Mystery of the Golden Fleece They Don't Tell You",
     "topic": "The Curse of the Golden Fleece: How the theft of a sacred sheepskin triggered a spiral of infanticide, royal madness, and a betrayed Medea slaughtering her own children in a chariot of fire",
     "published_at": "2026-10-26",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1347,7 +1347,9 @@
         "style": "toon",
         "text": "SHE SLAUGHTERED HER KIDS"
       }
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 0.3
   },
   {
     "video_id": "__KbQDme-yc",

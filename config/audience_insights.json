@@ -1,8 +1,8 @@
 {
-  "videos": 34,
+  "videos": 35,
   "overall": {
-    "avg_views": 48.8,
-    "avg_view_pct": 45.8
+    "avg_views": 47.4,
+    "avg_view_pct": 44.5
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -21,9 +21,9 @@
       "videos": 6
     },
     "mythology": {
-      "avg_views": 13.2,
-      "avg_view_pct": 196.6,
-      "videos": 5
+      "avg_views": 11.2,
+      "avg_view_pct": 163.9,
+      "videos": 6
     },
     "science_history": {
       "avg_views": 12.0,
@@ -43,9 +43,9 @@
   },
   "by_format": {
     "longform": {
-      "avg_views": 6.6,
-      "avg_view_pct": 19.3,
-      "videos": 28
+      "avg_views": 6.4,
+      "avg_view_pct": 18.7,
+      "videos": 29
     },
     "shorts": {
       "avg_views": 245.7,
@@ -60,16 +60,16 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 184.6,
-      "avg_view_pct": 127.4,
-      "videos": 8
+      "avg_views": 164.2,
+      "avg_view_pct": 113.3,
+      "videos": 9
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 58.5,
-      "avg_view_pct": 51.7,
-      "videos": 28
+      "avg_views": 56.6,
+      "avg_view_pct": 49.9,
+      "videos": 29
     },
     "year": {
       "avg_views": 3.3,
@@ -79,16 +79,16 @@
   },
   "by_title_is_question": {
     "statement": {
-      "avg_views": 48.8,
-      "avg_view_pct": 45.8,
-      "videos": 34
+      "avg_views": 47.4,
+      "avg_view_pct": 44.5,
+      "videos": 35
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 70.1,
-      "avg_view_pct": 58.3,
-      "videos": 23
+      "avg_views": 67.2,
+      "avg_view_pct": 55.9,
+      "videos": 24
     },
     "<=50": {
       "avg_views": 2.8,

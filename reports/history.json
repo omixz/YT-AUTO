@@ -1566,5 +1566,25 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "BEIKayOwEOU",
+    "published_at": "2026-10-26",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Mystery of the Golden Fleece They Don't Tell You",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 3.0,
+      "avg_view_percentage": 0.32,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "EXT_URL": 1
+      }
+    }
   }
 ]
