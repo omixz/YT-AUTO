@@ -1586,5 +1586,47 @@
         "EXT_URL": 1
       }
     }
+  },
+  {
+    "video_id": "__KbQDme-yc",
+    "published_at": "2026-10-27",
+    "niche": "ancient_civilizations",
+    "format": "shorts",
+    "title": "When a Roman Kidnapper Snatched the Wrong Child",
+    "stats": {
+      "views": 10,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 8.0,
+      "avg_view_percentage": 9.82,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 5,
+        "YT_SEARCH": 4,
+        "YT_CHANNEL": 1
+      }
+    }
+  },
+  {
+    "video_id": "TxbjzrQK9eo",
+    "published_at": "2026-10-27",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Spartan General Starved To Death Inside A Temple By His Own Mother",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 19.0,
+      "avg_view_percentage": 2.32,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 1
+      }
+    }
   }
 ]
