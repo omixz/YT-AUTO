@@ -1888,5 +1888,42 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     }
+  },
+  {
+    "video_id": "gtROaFCNqv8",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Secret Truth Behind the 1962 Alcatraz Escape",
+    "topic": "The 1962 Escape from Alcatraz: The meticulous, chilling prison break where inmates Frank Morris and the Anglin brothers vanished into the freezing San Francisco Bay using papier-m\u00e2ch\u00e9 heads and a makeshift raincoat raft.",
+    "published_at": "2026-11-03",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 489.4,
+        "audio_seconds": 1053.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 128,
+        "fallback_scenes": 0,
+        "seconds": 791.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THEY SURVIVED?"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)",
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    }
   }
 ]
