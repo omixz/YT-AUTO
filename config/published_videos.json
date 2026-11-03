@@ -1848,5 +1848,41 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "n0en0lZWNkY",
+    "niche": "ancient_civilizations",
+    "format": "shorts",
+    "title": "What a Carthaginian Mother Hid From the Roman Siege",
+    "topic": "The brutal reality of a Carthaginian mother in the besieged city of Carthage who stood before the temple furnace clutching her family's last bronze heirloom, faced with the agonizing choice of melting it down for defensive spear-points or breaking sacred law to hide it for her children's future.",
+    "published_at": "2026-11-03",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 20.1,
+        "audio_seconds": 56.0
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 32.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "MELT IT OR DIE"
+      },
+      "tiktok_post_id": "6ae95446a5f6b0f74384ea3c",
+      "hook_warnings": [
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    }
   }
 ]
