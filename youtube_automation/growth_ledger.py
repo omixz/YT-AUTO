@@ -75,6 +75,12 @@ def daily_counts(format_name: str, today: "dt.date | None" = None) -> tuple:
     return sum(1 for r in todays if is_scorable(r)), len(todays)
 
 
+def related_videos(niche: str, format_name: str = "longform", n: int = 2) -> List[dict]:
+    """Most recent PUBLIC videos in this niche, for 'Watch next' links (a session-time signal YouTube rewards)."""
+    recs = [r for r in _load(ROOT / LEDGER_PATH) if r.get("niche") == niche and r.get("format") == format_name and is_scorable(r)]
+    return sorted(recs, key=lambda r: str(r.get("published_at", "")), reverse=True)[:n]
+
+
 def is_scorable(record: dict) -> bool:
     """A video the public could actually watch. Gate-failed uploads go up as PRIVATE and get zero views,
     so scoring them would teach the bandit that the *niche* is bad when only the pipeline failed (mythology

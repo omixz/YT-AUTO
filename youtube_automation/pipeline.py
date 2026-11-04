@@ -155,7 +155,7 @@ def run(
     on_screen_texts = [s.on_screen_text for s in script.scenes] + [""]
     ass_path = subtitles.build_ass(
         all_scene_audio, work_dir / "captions.ass", config.video.resolution,
-        on_screen_texts=on_screen_texts,
+        on_screen_texts=on_screen_texts, position=config.video.subtitle_position,
     )
 
     logger.info("Building ambient sound effects...")
@@ -263,6 +263,9 @@ def run(
                 tags = [search_phrase] + tags
             if search_phrase.lower() not in description.lower():
                 description = f"{description}\n\nSearch YouTube for: {search_phrase}"
+        related = growth_ledger.related_videos(niche_key, "longform", n=2)
+        if related:
+            description += "\n\nWatch next:\n" + "\n".join(f"\u25B6 {r['title']} - https://youtu.be/{r['video_id']}" for r in related)
         logger.info("Uploading to YouTube (search phrase: %s)...", search_phrase)
         try:
             # Only the upload call itself should trigger the Buffer fallback

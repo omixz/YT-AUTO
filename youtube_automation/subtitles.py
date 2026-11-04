@@ -55,6 +55,7 @@ def build_ass(
     out_path: Path,
     resolution: Tuple[int, int],
     on_screen_texts: Optional[List[str]] = None,
+    position: str = "bottom",
 ) -> Path:
     """`on_screen_texts`, if given, must be the same length as `scenes` (one
     entry per scene, empty string for "none") - each non-empty entry pops in
@@ -73,6 +74,7 @@ def build_ass(
     # fixed FontSize=16.
     font_size = round(h * 0.052)
     margin_v = round(h * 0.09)
+    align = 5 if position == "center" else 2     # ASS alignment: 5 = middle-centre of the screen, 2 = bottom-centre
     emphasis_font_size = round(h * 0.062)
     emphasis_margin_v = round(h * 0.06)
 
@@ -84,7 +86,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,{FONT_NAME},{font_size},{HIGHLIGHT_COLOUR},{BASE_COLOUR},{OUTLINE_COLOUR},&H00000000,1,0,0,0,100,100,0,0,1,3,0,2,60,60,{margin_v},1
+Style: Default,{FONT_NAME},{font_size},{HIGHLIGHT_COLOUR},{BASE_COLOUR},{OUTLINE_COLOUR},&H00000000,1,0,0,0,100,100,0,0,1,3,0,{align},60,60,{margin_v},1
 {_emphasis_style_line(emphasis_font_size, emphasis_margin_v)}
 
 [Events]
