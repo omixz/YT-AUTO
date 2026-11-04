@@ -1628,5 +1628,48 @@
         "RELATED_VIDEO": 1
       }
     }
+  },
+  {
+    "video_id": "bS6CmVYzZNA",
+    "published_at": "2026-10-28",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "The 1916 Shark Attacks That Sent Armed Mobs Into the Water",
+    "stats": {
+      "views": 18,
+      "minutes_watched": 7.0,
+      "avg_view_duration_s": 50.0,
+      "avg_view_percentage": 75.87,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 10,
+        "YT_CHANNEL": 4,
+        "SHORTS": 4,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "3jWIfRBN44k",
+    "published_at": "2026-10-28",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "How a Dying Centaur Tricked Heracles Into Wearing a Poisoned Robe",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 1
+      }
+    }
   }
 ]

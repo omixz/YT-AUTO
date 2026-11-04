@@ -1427,7 +1427,7 @@
     "title": "The 1916 Shark Attacks That Sent Armed Mobs Into the Water",
     "topic": "The 1916 New Jersey Shark Attacks and the Red Scare of the Sea: Over a single hot July week, a rogue shark attacks five people along the Jersey Shore\u2014including miles inland up a freshwater creek\u2014unleashing a national panic that drove armed mobs into the water with pitchforks and dynamite.",
     "published_at": "2026-10-28",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1451,7 +1451,9 @@
         "text": "THE 1916 TERROR"
       },
       "tiktok_post_id": null
-    }
+    },
+    "views": 18,
+    "avg_view_pct": 75.9
   },
   {
     "video_id": "3jWIfRBN44k",
@@ -1460,7 +1462,7 @@
     "title": "How a Dying Centaur Tricked Heracles Into Wearing a Poisoned Robe",
     "topic": "The Poisoned Robe of Heracles' Wife: How a dying centaur's final revenge tricked Deianira into sending a burning, venom-soaked tunic that fused to her husband's skin",
     "published_at": "2026-10-28",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1484,7 +1486,9 @@
         "text": "THE POISONED SHIRT"
       },
       "tiktok_post_id": null
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "G3uHF5JoJb4",

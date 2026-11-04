@@ -158,9 +158,9 @@
     }
   },
   "mythology:longform": {
-    "samples": 10,
-    "total_score": 203.19999999999996,
-    "avg_score": 20.319999999999997,
+    "samples": 11,
+    "total_score": 203.29999999999995,
+    "avg_score": 18.481818181818177,
     "history": [
       {
         "date": "2026-10-08",
@@ -201,14 +201,18 @@
       {
         "date": "2026-11-03",
         "score": 0.1
+      },
+      {
+        "date": "2026-11-04",
+        "score": 0.1
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 0.125
+        "avg_score": 0.12
       },
       "30d": {
-        "avg_score": 20.309999999999995
+        "avg_score": 18.47272727272727
       }
     },
     "repaired_private_zeros": 8
@@ -431,6 +435,25 @@
       },
       "30d": {
         "avg_score": 1.0
+      }
+    }
+  },
+  "dark_history:shorts": {
+    "samples": 1,
+    "total_score": 15.8,
+    "avg_score": 15.8,
+    "history": [
+      {
+        "date": "2026-11-04",
+        "score": 15.8
+      }
+    ],
+    "windows": {
+      "7d": {
+        "avg_score": 15.8
+      },
+      "30d": {
+        "avg_score": 15.8
       }
     }
   }
