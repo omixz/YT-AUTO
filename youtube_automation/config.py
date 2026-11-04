@@ -46,6 +46,7 @@ class FormatConfig:
 
 @dataclass
 class VideoConfig:
+    subtitle_position: str = "bottom"   # bottom | center (middle of the screen)
     fps: int = 30
     background_music: Optional[str] = None
     music_volume_db: float = -22.0

@@ -544,6 +544,7 @@ RETENTION ENGINEERING - DO NOT SKIP THESE:
 4. THE INSIGHT (final scene): Don't just summarize. Deliver a PERSPECTIVE SHIFT - a new lens
    that reframes everything the viewer just watched. "This wasn't really about [topic]. It was
    about [deeper truth]." That's what earns the share, the subscribe, the algorithm boost.
+   Finish with ONE specific, easy-to-answer question that invites a comment ("Do you think it was an accident, or something worse? Tell me below.").
 
 SCENE DIRECTION: for EVERY scene fill in setting, action, mood and time_of_day. The setting must match
 where that scene's narration physically takes place (a trench scene is battlefield, a general's briefing is

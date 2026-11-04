@@ -192,7 +192,12 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                 zoom += 0.22 * math.exp(-t * 5.0)      # opening punch: snaps from tight to settled
             if d.action == "walk":
                 cam_x = t * 150 * u
-            zoom += 0.012 * beat_k                       # nudge on every sentence start
+            zoom += 0.03 * beat_k                        # nudge on every sentence start
+            if duration > 7.0 and t >= 3.5:              # pattern interrupt: snap punch-in / pull-out every ~4.5s so long scenes never sit still
+                k_cut = int((t - 3.5) // 4.5) + 1
+                since_cut = t - (3.5 + (k_cut - 1) * 4.5)
+                cur, prev = (0.15 if k_cut % 2 == 1 else 0.0), (0.15 if (k_cut - 1) % 2 == 1 else 0.0)
+                zoom += lerp(prev, cur, ease_out_cubic(since_cut / 0.14))
             shake = 0.0
             if d.mood == "shocked" and t < 1.2:
                 shake = 9 * math.exp(-t * 2.4) * u
