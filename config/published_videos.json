@@ -1925,5 +1925,41 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     }
+  },
+  {
+    "video_id": "4C5RREQdf-w",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "Why the Sun Turned Blood-Red in 1783",
+    "topic": "The Mountain That Rained Glass: The Forgotten 1783 Eruption That Choked Europe in Blood-Red Fog",
+    "published_at": "2026-11-04",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 18.5,
+        "audio_seconds": 46.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 25.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE BLOOD RED SUN"
+      },
+      "tiktok_post_id": "6aea8fbdb8d162e0d8f94f1c",
+      "hook_warnings": [
+        "hook opens with throat-clearing instead of the event itself"
+      ]
+    }
   }
 ]
