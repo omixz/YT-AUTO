@@ -1965,5 +1965,39 @@
         "hook opens with throat-clearing instead of the event itself"
       ]
     }
+  },
+  {
+    "video_id": "_qTUzsqOeeM",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "How One Soviet Clerk Accidentally Stopped World War 3 in 1960",
+    "topic": "How a forgotten Soviet intercept operator named Vasili Chuikov during the 1960 U-2 spy plane crisis chose to bypass protocol and hold his fire, unknowingly sparing Francis Gary Powers from instant vaporization and preventing an immediate Cold War escalation.",
+    "published_at": "2026-11-05",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 42.4,
+        "audio_seconds": 67.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 10,
+        "fallback_scenes": 0,
+        "seconds": 52.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE MAN WHO STOPPED WW3"
+      },
+      "tiktok_post_id": "6aebe37bff03f6944a1aae50",
+      "hook_warnings": []
+    }
   }
 ]
