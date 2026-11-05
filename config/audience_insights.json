@@ -1,8 +1,8 @@
 {
-  "videos": 39,
+  "videos": 41,
   "overall": {
-    "avg_views": 43.3,
-    "avg_view_pct": 42.2
+    "avg_views": 43.6,
+    "avg_view_pct": 41.5
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -31,14 +31,14 @@
       "videos": 1
     },
     "unsolved_mysteries": {
-      "avg_views": 5.2,
-      "avg_view_pct": 20.2,
-      "videos": 11
+      "avg_views": 12.2,
+      "avg_view_pct": 20.7,
+      "videos": 12
     },
     "world_wars": {
-      "avg_views": 360.0,
-      "avg_view_pct": 21.0,
-      "videos": 4
+      "avg_views": 289.8,
+      "avg_view_pct": 22.5,
+      "videos": 5
     }
   },
   "by_format": {
@@ -48,9 +48,9 @@
       "videos": 31
     },
     "shorts": {
-      "avg_views": 187.8,
-      "avg_view_pct": 137.9,
-      "videos": 8
+      "avg_views": 160.0,
+      "avg_view_pct": 115.7,
+      "videos": 10
     }
   },
   "by_thumbnail_style": {
@@ -60,16 +60,16 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 116.0,
-      "avg_view_pct": 85.2,
-      "videos": 13
+      "avg_views": 107.1,
+      "avg_view_pct": 77.5,
+      "videos": 15
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 51.6,
-      "avg_view_pct": 45.6,
-      "videos": 32
+      "avg_views": 51.5,
+      "avg_view_pct": 44.5,
+      "videos": 34
     },
     "year": {
       "avg_views": 5.4,
@@ -79,16 +79,16 @@
   },
   "by_title_is_question": {
     "statement": {
-      "avg_views": 43.3,
-      "avg_view_pct": 42.2,
-      "videos": 39
+      "avg_views": 43.6,
+      "avg_view_pct": 41.5,
+      "videos": 41
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 60.5,
-      "avg_view_pct": 52.6,
-      "videos": 27
+      "avg_views": 58.6,
+      "avg_view_pct": 51.7,
+      "videos": 28
     },
     "<=50": {
       "avg_views": 4.0,
@@ -96,9 +96,9 @@
       "videos": 6
     },
     ">70": {
-      "avg_views": 5.5,
-      "avg_view_pct": 27.7,
-      "videos": 6
+      "avg_views": 17.4,
+      "avg_view_pct": 27.5,
+      "videos": 7
     }
   }
 }

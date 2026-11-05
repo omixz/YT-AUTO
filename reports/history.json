@@ -1671,5 +1671,51 @@
         "YT_SEARCH": 1
       }
     }
+  },
+  {
+    "video_id": "G3uHF5JoJb4",
+    "published_at": "2026-10-29",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Fake Rubber Army That Fooled Hitler Before D-Day",
+    "stats": {
+      "views": 9,
+      "minutes_watched": 1.0,
+      "avg_view_duration_s": 22.0,
+      "avg_view_percentage": 28.309999999999995,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 8,
+        "YT_SEARCH": 1,
+        "NO_LINK_OTHER": 0,
+        "YT_CHANNEL": 0
+      }
+    }
+  },
+  {
+    "video_id": "KRahnabH3sk",
+    "published_at": "2026-10-29",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Chilling Disappearance That Left Behind a Mystifying Package Years Later",
+    "stats": {
+      "views": 89,
+      "minutes_watched": 5.0,
+      "avg_view_duration_s": 16.0,
+      "avg_view_percentage": 25.86,
+      "likes": 2,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 86,
+        "YT_CHANNEL": 2,
+        "YT_OTHER_PAGE": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]
