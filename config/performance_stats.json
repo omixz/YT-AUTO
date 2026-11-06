@@ -158,9 +158,9 @@
     }
   },
   "mythology:longform": {
-    "samples": 11,
-    "total_score": 203.29999999999995,
-    "avg_score": 18.481818181818177,
+    "samples": 12,
+    "total_score": 203.39999999999995,
+    "avg_score": 16.949999999999996,
     "history": [
       {
         "date": "2026-10-08",
@@ -205,14 +205,18 @@
       {
         "date": "2026-11-04",
         "score": 0.1
+      },
+      {
+        "date": "2026-11-06",
+        "score": 0.1
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 0.12
+        "avg_score": 0.11666666666666665
       },
       "30d": {
-        "avg_score": 18.47272727272727
+        "avg_score": 16.941666666666663
       }
     },
     "repaired_private_zeros": 8
@@ -378,9 +382,9 @@
     }
   },
   "world_wars:shorts": {
-    "samples": 3,
-    "total_score": 515.1999999999999,
-    "avg_score": 171.73333333333332,
+    "samples": 4,
+    "total_score": 533.5999999999999,
+    "avg_score": 133.39999999999998,
     "history": [
       {
         "date": "2026-10-30",
@@ -393,14 +397,18 @@
       {
         "date": "2026-11-05",
         "score": 2.9
+      },
+      {
+        "date": "2026-11-06",
+        "score": 18.4
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 171.73333333333332
+        "avg_score": 133.39999999999998
       },
       "30d": {
-        "avg_score": 171.73333333333332
+        "avg_score": 133.39999999999998
       }
     }
   },

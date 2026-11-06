@@ -1717,5 +1717,48 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "zPOdkAiBInM",
+    "published_at": "2026-10-30",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Bizarre Peacetime Maneuver That Sunk a Battleship",
+    "stats": {
+      "views": 84,
+      "minutes_watched": 5.0,
+      "avg_view_duration_s": 23.0,
+      "avg_view_percentage": 28.77,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 81,
+        "YT_CHANNEL": 2,
+        "YT_SEARCH": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "xBTSHWz0uVA",
+    "published_at": "2026-10-30",
+    "niche": "mythology",
+    "format": "longform",
+    "title": "The Terrifying Flood That Wiped Out Humanity Before Noah's Ark",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 45.0,
+      "avg_view_percentage": 3.61,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 1
+      }
+    }
   }
 ]

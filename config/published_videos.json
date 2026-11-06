@@ -1603,7 +1603,7 @@
     "title": "The Bizarre Peacetime Maneuver That Sunk a Battleship",
     "topic": "The catastrophic miscalculation of Admiral Sir George Tryon: The bizarre peacetime maneuver off the coast of Tripoli where a legendary Royal Navy commander stubbornly ordered two massive battleships to turn directly into each other, watched in horror by hundreds of sailors on deck.",
     "published_at": "2026-10-30",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1627,7 +1627,9 @@
         "text": "THE FATAL ORDER"
       },
       "tiktok_post_id": "6ae3f44556e01b97637df173"
-    }
+    },
+    "views": 84,
+    "avg_view_pct": 28.8
   },
   {
     "video_id": "xBTSHWz0uVA",
@@ -1636,7 +1638,7 @@
     "title": "The Terrifying Flood That Wiped Out Humanity Before Noah's Ark",
     "topic": "The Vengeful Flood of Gilgamesh's Gods: The terrifying moment the sky turned pitch black and the ancient gods unleashed a global deluge that wiped out humanity, while one man desperately built a towering ark",
     "published_at": "2026-10-30",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1660,7 +1662,9 @@
         "text": "THE GODS DESTROYED EARTH"
       },
       "tiktok_post_id": null
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 3.6
   },
   {
     "video_id": "ujAqkjkvGIg",
