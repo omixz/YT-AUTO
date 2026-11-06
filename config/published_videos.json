@@ -2003,5 +2003,39 @@
       "tiktok_post_id": "6aebe37bff03f6944a1aae50",
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "tqFi6NGQ0OI",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "Why Captain Scott Died Just 34 Days Too Late",
+    "topic": "The frozen inkwell of Captain Robert Falcon Scott: The final, agonizing diary entries written inside a blizzard-swept tent in Antarctica as his dying expedition realized they were beaten to the South Pole by just 34 days.",
+    "published_at": "2026-11-06",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 37.4,
+        "audio_seconds": 55.8
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 49.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "34 DAYS TOO LATE"
+      },
+      "tiktok_post_id": "6aed34f87b7e47e8f4ff99d5",
+      "hook_warnings": []
+    }
   }
 ]
