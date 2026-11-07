@@ -136,6 +136,8 @@ jobs:
           fi
           if [ -n "$IN_FORMAT" ]; then
             ARGS+=(--format "$IN_FORMAT")
+          elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 13 * * *" ]; then
+            ARGS+=(--format longform)
           elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 22 * * *" ]; then
             ARGS+=(--format shorts)
           elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 17 * * *" ]; then
