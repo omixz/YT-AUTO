@@ -38,7 +38,7 @@ def tiktok(config: PipelineConfig, *, format_name: str, privacy: str, passed_gat
            video_path: Path, run_id: str, title: str, video_id: Optional[str] = None, search_phrase: Optional[str] = None) -> Optional[str]:
     """Returns the Buffer post id, or None if skipped/failed."""
     s = config.secrets
-    if dry_run or format_name != "shorts" or privacy != "public" or not passed_gate:
+    if dry_run or format_name not in ("shorts", "teaser") or privacy != "public" or not passed_gate:
         return None
     if not (config.upload.crosspost_tiktok and s.buffer_api_key and s.buffer_tiktok_channel_id):
         logger.info("TikTok cross-post skipped (disabled or BUFFER_API_KEY / BUFFER_TIKTOK_CHANNEL_ID not set).")

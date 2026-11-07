@@ -35,6 +35,8 @@ def record_published(
     privacy_status: str = "", passed_quality_gate: "bool | None" = None,
     quality_gate_reasons: "List[str] | None" = None,
     render: "dict | None" = None,
+    seed: str = "",
+    teaser_for: "str | None" = None,
 ) -> None:
     # Title/topic are captured here because the analytics token's scopes
     # can't read video metadata back from the Data API later - reporting.py
@@ -51,7 +53,7 @@ def record_published(
     # to check against, only guesswork.
     path = ROOT / LEDGER_PATH
     records = _load(path)
-    records.append({
+    record = {
         "video_id": video_id,
         "niche": niche_key,
         "format": format_name,
@@ -64,7 +66,12 @@ def record_published(
         "quality_gate_reasons": quality_gate_reasons or [],
         # which voice/animation engine really produced this video (and any fallbacks) - readable from the repo
         "render": render or {},
-    })
+    }
+    if seed:
+        record["seed"] = seed                # longform opening narration, so a teaser Short can tell the SAME story
+    if teaser_for:
+        record["teaser_for"] = teaser_for    # video_id of the longform this Short promotes
+    records.append(record)
     _save(path, records)
 
 
@@ -73,6 +80,27 @@ def daily_counts(format_name: str, today: "dt.date | None" = None) -> tuple:
     today = today or dt.datetime.now(dt.timezone.utc).date()
     todays = [r for r in _load(ROOT / LEDGER_PATH) if r.get("format") == format_name and str(r.get("published_at", ""))[:10] == today.isoformat()]
     return sum(1 for r in todays if is_scorable(r)), len(todays)
+
+
+def pick_teaser_source(window_days: int = 14, min_age_hours: int = 0, now: "dt.datetime | None" = None) -> "dict | None":
+    """The newest PUBLIC longform inside the window that has no public teaser Short yet (None if there is none).
+    A gate-failed/private teaser does not count as 'teased', so that longform stays eligible for a retry.
+    Ledger dates are day-granular, so min_age_hours only matters for same-day longforms (hours since 00:00 UTC)."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    records = _load(ROOT / LEDGER_PATH)
+    teased = {r.get("teaser_for") for r in records if r.get("format") == "teaser" and r.get("teaser_for") and is_scorable(r)}
+    cutoff = now.date() - dt.timedelta(days=window_days)
+    eligible = []
+    for r in records:
+        if r.get("format") != "longform" or not is_scorable(r) or r["video_id"] in teased:
+            continue
+        published = dt.date.fromisoformat(str(r["published_at"])[:10])
+        if published < cutoff:
+            continue
+        if min_age_hours and published == now.date() and now.hour < min_age_hours:
+            continue
+        eligible.append(r)
+    return sorted(eligible, key=lambda r: str(r["published_at"]))[-1] if eligible else None   # stable sort: ties keep the later ledger entry
 
 
 def related_videos(niche: str, format_name: str = "longform", n: int = 2) -> List[dict]:

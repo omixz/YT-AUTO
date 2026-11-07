@@ -114,10 +114,12 @@ def build_intro(config: PipelineConfig, work_dir: Path, duration: float = 1.6) -
     )
 
 
-def build_outro(config: PipelineConfig, work_dir: Path, duration: float = 2.2) -> Tuple[VisualAsset, SceneAudio]:
-    cta = config.channel.subscribe_cta.format(niche=config.channel.niche)
+def build_outro(config: PipelineConfig, work_dir: Path, duration: float = 2.2,
+                heading: str = "Subscribe", cta: "str | None" = None) -> Tuple[VisualAsset, SceneAudio]:
+    """Default is the subscribe card; a teaser passes heading="Full story" and the longform's title as cta."""
+    cta = cta if cta is not None else config.channel.subscribe_cta.format(niche=config.channel.niche)
     image_path = _card(
-        config.video.resolution, "Subscribe", cta,
+        config.video.resolution, heading, cta,
         work_dir / "outro_card.jpg", accent=tuple(config.animation.accent_color),
     )
     audio_path = silent_audio(duration, work_dir / "outro_audio.mp3")

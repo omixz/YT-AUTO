@@ -201,6 +201,19 @@ def drop_defective_scenes(script, max_fraction: float = 0.06) -> int:
     return len(bad)
 
 
+_TEASER_CTA = re.compile(r"\bfull (story|video)\b", re.I)
+
+
+def ensure_teaser_cta(script, cta: str) -> bool:
+    """A teaser must always point at the longform. If the model's last scene doesn't already say so, append the
+    configured call-to-action to it (deterministic, so the Short never ships without its CTA). Returns True if added."""
+    if not script.scenes or _TEASER_CTA.search(script.scenes[-1].narration):
+        return False
+    last = script.scenes[-1]
+    last.narration = last.narration.rstrip() + " " + cta.strip()
+    return True
+
+
 def has_unproven_certainty(title: str) -> bool:
     return bool(_CERTAINTY_TITLE.search(title or ""))
 
