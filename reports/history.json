@@ -1760,5 +1760,51 @@
         "RELATED_VIDEO": 1
       }
     }
+  },
+  {
+    "video_id": "ujAqkjkvGIg",
+    "published_at": "2026-10-31",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1912 Mystery of the Boy Who Wasn't Bobby Dunbar",
+    "stats": {
+      "views": 314,
+      "minutes_watched": 263.0,
+      "avg_view_duration_s": 87.0,
+      "avg_view_percentage": 100.88999999999999,
+      "likes": 5,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 296,
+        "YT_SEARCH": 12,
+        "YT_CHANNEL": 3,
+        "YT_OTHER_PAGE": 2,
+        "EXT_URL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "_85fADO6jTs",
+    "published_at": "2026-10-31",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Bizarre Disappearance of DA Ray Gricar That Still Baffles Detectives",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 42.0,
+      "avg_view_percentage": 4.42,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 1,
+      "traffic_sources": {
+        "RELATED_VIDEO": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]
