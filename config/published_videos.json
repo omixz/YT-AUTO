@@ -2041,5 +2041,39 @@
       "tiktok_post_id": "6aed34f87b7e47e8f4ff99d5",
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "VXzijUYlVJc",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Forger Who Fooled the Gestapo to Save Thousands",
+    "topic": "The painter who forged Hitler\\'s signature to save thousands: How a Dutch art forger in occupied Amsterdam faked Nazi transit papers so convincingly that the Gestapo used his forgeries to route French resistance fighters to safety.",
+    "published_at": "2026-11-07",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 33.7,
+        "audio_seconds": 47.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 33.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THEY USED HIS FORGERY!"
+      },
+      "tiktok_post_id": "6aee81f8af7e526d43f318bf",
+      "hook_warnings": []
+    }
   }
 ]
