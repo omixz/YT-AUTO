@@ -2114,5 +2114,40 @@
       "hook_warnings": []
     },
     "seed": "Hours before Pearl Harbor burned, a Dutch submarine fired the torpedo that started the Pacific War. That lone attack violated strict allied neutrality orders and caught everyone by surprise. But that is only the beginning of a much stranger story of operational isolation and command friction. Lieutenant Commander A.A. Mulder was commanding the HNLMS O-16 in the South China Sea during a period of immense regional tension. The Netherlands was officially neutral at that precise moment in December nineteen forty one, trying desperately to avoid drawing the wrath of the rising empire in Tokyo. Yet Mulder held orders of his own, sealed and waiting for the moment of invasion, drafted by commanders "
+  },
+  {
+    "video_id": "wGO20HT-0LM",
+    "niche": "world_wars",
+    "format": "teaser",
+    "title": "The Unauthorized Torpedo That Stunned Tokyo in 1941",
+    "topic": "The rogue submarine commander who accidentally started the Pacific War: How Dutch Lieutenant Commander A.A. Mulder sank a Japanese ship off Malaya hours *before* Pearl Harbor, forcing Tokyo\\'s hand and altering the global timeline of WWII.",
+    "published_at": "2026-11-07",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 29.2,
+        "audio_seconds": 64.7
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 45.9,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE ROGUE TORPEDO"
+      },
+      "tiktok_post_id": "6aef8d53004e4879a77b61ac",
+      "hook_warnings": []
+    },
+    "teaser_for": "c8rmXw9WMTk"
   }
 ]
