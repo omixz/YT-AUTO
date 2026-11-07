@@ -101,6 +101,18 @@ python sync_analytics.py
 
 Output for each run lands in `output/<timestamp>/`: `final.mp4`, `thumbnail.jpg`, `captions.ass` (karaoke-style word-highlight captions), `manifest.json` (includes which niche/format got picked and whether it passed the quality gate).
 
+## Cliffhanger teaser Shorts (promote the longform)
+
+Three video types run side by side, each with its own cron, one-per-day cap, ledger bucket and analytics key:
+
+| Format | Cron (UTC) | What it is |
+|---|---|---|
+| `longform` | 13:00 | The daily documentary (bandit-picked niche). |
+| `teaser` | 17:00 | A ~40s vertical **cliffhanger** built from your newest public longform: it tells the opening of that same story, stops at the most gripping unresolved moment, then ends with "The full story is on this channel." The end card names the longform, the description links to it (`youtu.be/<id>` plus an exact "Search YouTube for:" line), and it is cross-posted to TikTok. |
+| `shorts` | 22:00 | Your standalone daily Short, unchanged. |
+
+How it works: `growth_ledger.pick_teaser_source()` takes the newest public, gate-passed longform from the last `teaser.window_days` days that has no public teaser yet (a failed/private teaser doesn't count, so it is retried). The longform's opening narration is saved in the ledger (`seed`) at publish time so the teaser tells the *same* story instead of inventing a new one. A teaser never consumes the niche topic queue. If there is nothing to tease the run exits cleanly (`skipped: no_longform_to_tease`) at zero cost. Run one by hand: `python run_pipeline.py --format teaser --dry-run`, or pick `teaser` in the workflow's `format` input. Tune it under `teaser:` in `config/channel.yaml`.
+
 ## Automating it (GitHub Actions)
 
 Two workflows:

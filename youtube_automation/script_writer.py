@@ -456,8 +456,11 @@ EXISTING NARRATION:
     return data
 
 
-def generate_script(topic: str, config: PipelineConfig) -> Script:
-    """Ask Gemini to write a full scene-by-scene script for one video."""
+def generate_script(topic: str, config: PipelineConfig, source: "dict | None" = None) -> Script:
+    """Ask Gemini to write a full scene-by-scene script for one video.
+
+    `source` (teaser format only) is the ledger record of the longform being promoted: its title and opening narration.
+    """
     target_words, suggested_scenes, max_output_tokens = _script_length_params(config.video.target_seconds, config.voice.words_per_minute)
 
     # Shorts use these directly for Pexels stock-footage search; longform
@@ -473,6 +476,26 @@ def generate_script(topic: str, config: PipelineConfig) -> Script:
     )
 
     shorts_rules = ""
+    teaser_override = ""
+    if config.video.format == "teaser":
+        src_title = (source or {}).get("title") or topic
+        src_seed = (source or {}).get("seed") or ""
+        seed_block = (f"\nThe real video opens like this (stay consistent with it, never contradict it):\n---\n{src_seed}\n---\n" if src_seed
+                      else "\nOnly use facts you are certain are accurate about this story; do not invent details.\n")
+        shorts_rules = f"""
+CLIFFHANGER TEASER RULES (this vertical Short is the opening of a longer story; the full story is a separate, much longer
+video already on this channel titled "{src_title}"):
+- The first sentence is 8 words or fewer and states the strangest concrete fact of the story.
+- Every sentence is a new reveal or escalation. No background, no history lesson.
+- Tell the story forward and STOP at its single most gripping unresolved moment, right before the answer. NEVER reveal the
+  outcome, culprit, explanation or twist - not even hinted at as solved. The viewer must NEED the rest.
+- The final scene before the call-to-action is one short line that cuts off mid-tension (an unanswered question or "And then they opened it.").
+- Do NOT loop back to the first line. Do NOT summarise or draw a lesson. Do NOT read a URL aloud.
+- Title: a curiosity gap that withholds the outcome (a specific name/place/number plus an open question).{seed_block}"""
+        teaser_override = """
+FORMAT OVERRIDE FOR THIS SHORT (wins over the HOOK->BUILD->INSIGHT, 'perspective shift' and 'comment question' instructions above):
+the last scene must be the unresolved cliffhanger, NOT a perspective shift, summary or comment question. Still tag it role=insight.
+"""
     if config.video.format == "shorts":
         shorts_rules = """
 SHORTS RULES (this is a vertical Short, not a mini documentary):
@@ -579,7 +602,8 @@ Each scene's narration should target {config.video.target_scene_duration} second
 do not write paragraph-length narration for a single scene, split it into more scenes instead. Give
 {visual_keyword_guidance}.
 Do not use markdown in the narration. Only state facts you're confident are accurate; do not
-fabricate statistics or quotes. Call emit_script with the final result."""
+fabricate statistics or quotes.{teaser_override}
+Call emit_script with the final result."""
 
     data = _call_gemini(prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
 

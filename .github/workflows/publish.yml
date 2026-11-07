@@ -9,6 +9,8 @@ on:
     - cron: "0 13 * * *"
     # A Short every evening (forced via the schedule string below; the longform bandit never picks shorts)
     - cron: "0 22 * * *"
+    # A cliffhanger teaser Short promoting the newest longform (forced via the schedule string below). Runs ~4h after the 13:00 longform.
+    - cron: "0 17 * * *"
   workflow_dispatch:
     inputs:
       force:
@@ -25,7 +27,7 @@ on:
         required: false
         default: ""
         type: choice
-        options: ["", "shorts", "longform"]
+        options: ["", "shorts", "longform", "teaser"]
       dry_run:
         description: "Build the video but skip uploading to YouTube"
         required: false
@@ -136,6 +138,8 @@ jobs:
             ARGS+=(--format "$IN_FORMAT")
           elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 22 * * *" ]; then
             ARGS+=(--format shorts)
+          elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 17 * * *" ]; then
+            ARGS+=(--format teaser)
           fi
           if [ "$IN_FORCE" = "true" ]; then
             ARGS+=(--force)

@@ -18,7 +18,7 @@ from . import (
     cinematic, procedural_illustration, quality_check, scheduling, sound_effects, subtitles, thumbnail, topic_store, tts,
     visuals, youtube_uploader,
 )
-from .config import ROOT, PipelineConfig
+from .config import ROOT, VERTICAL_FORMATS, PipelineConfig
 from .script_writer import generate_script
 from .tts import SceneAudio
 from .visuals import VisualAsset
@@ -28,12 +28,18 @@ logger = logging.getLogger(__name__)
 KEEP_FILES = {"final.mp4", "thumbnail.jpg", "captions.ass", "manifest.json"}
 
 
-def _select_niche_and_format(config: PipelineConfig, format_override: Optional[str] = None) -> tuple:
+def _select_niche_and_format(config: PipelineConfig, format_override: Optional[str] = None,
+                             niche_key: Optional[str] = None) -> tuple:
     """Picks (niche_key, format_name) and mutates config in place so every
     other module (script_writer, branding, quality_check, assembler, ...)
     just keeps reading config.channel.niche / config.video.format like
     before - see ChannelConfig.niche / VideoConfig.format docstrings."""
-    niche_key, format_name = niche_selector.choose(config, format_override=format_override)
+    if format_override == "teaser":
+        # Teasers are never bandit-picked: the format is forced and the niche is whichever niche the promoted longform is in.
+        format_name = "teaser"
+        niche_key = niche_key or niche_selector.choose(config, format_override="shorts")[0]
+    else:
+        niche_key, format_name = niche_selector.choose(config, format_override=format_override)
     niche = next(n for n in config.niches if n.key == niche_key)
 
     config.channel.niche = niche.niche
@@ -42,7 +48,7 @@ def _select_niche_and_format(config: PipelineConfig, format_override: Optional[s
 
     config.video.format = format_name
     config.video.target_seconds = config.video.formats[format_name].target_seconds
-    config.visuals.orientation = "portrait" if format_name == "shorts" else "landscape"
+    config.visuals.orientation = "portrait" if format_name in VERTICAL_FORMATS else "landscape"
 
     return niche_key, format_name
 
@@ -96,8 +102,23 @@ def run(
     work_dir = ROOT / "output" / run_id
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    niche_key, format_name = _select_niche_and_format(config, format_override=format_override)
-    if not (force or dry_run or topic_override):
+    teaser_source = None
+    if format_override == "teaser":
+        # Cheapest checks first (no Gemini/render cost): daily cap, then is there a longform worth promoting?
+        if not (force or dry_run or topic_override):
+            public_today, attempts_today = growth_ledger.daily_counts("teaser")
+            if public_today >= 1 or attempts_today >= 2:
+                logger.warning("Daily cap: %d public / %d attempt(s) of teaser already today - skipping (use --force to override).", public_today, attempts_today)
+                return {"skipped": "daily_cap", "format": "teaser", "public_today": public_today, "attempts_today": attempts_today}
+        teaser_source = growth_ledger.pick_teaser_source(config.teaser.window_days, config.teaser.min_age_hours)
+        if teaser_source is None and not topic_override:
+            logger.warning("No public longform from the last %d days is waiting for a teaser - skipping this run.", config.teaser.window_days)
+            return {"skipped": "no_longform_to_tease", "format": "teaser"}
+        niche_key, format_name = _select_niche_and_format(config, "teaser", niche_key=(teaser_source or {}).get("niche"))
+        logger.info("Teaser for longform %s: %s", (teaser_source or {}).get("video_id"), (teaser_source or {}).get("title"))
+    else:
+        niche_key, format_name = _select_niche_and_format(config, format_override=format_override)
+    if format_name != "teaser" and not (force or dry_run or topic_override):
         # One Short and one longform per day: skip if a public one already went up today, or two attempts were already
         # made (a gate-failed private upload may be retried once). Costs nothing: no Gemini calls happen before this.
         public_today, attempts_today = growth_ledger.daily_counts(format_name)
@@ -108,18 +129,24 @@ def run(
     logger.info("Selected niche=%s format=%s", niche_key, format_name)
 
     logger.info("Picking topic...")
-    topic = topic_store.next_topic(config, niche_key, override=topic_override)
+    if teaser_source and not topic_override:
+        # A teaser retells an existing longform's story: do NOT consume the niche's topic queue/history.
+        topic = teaser_source.get("topic") or teaser_source["title"]
+    else:
+        topic = topic_store.next_topic(config, niche_key, override=topic_override)
     logger.info("Topic: %s", topic)
 
     max_attempts = max(1, int(config.quality.max_script_attempts))
     hook_warns: list = []
     for attempt in range(1, max_attempts + 1):
         logger.info("Writing script (attempt %d/%d)...", attempt, max_attempts)
-        script = generate_script(topic, config)
+        script = generate_script(topic, config, source=teaser_source)
         logger.info("Title: %s (%d scenes)", script.title, len(script.scenes))
         # Script-level checks run now (cheap, before spending render time); media-level checks
         # (below, after the video is built) join the same final verdict - see quality_check.py.
         script.title = quality_check.soften_title(quality_check.pick_best_title(script))
+        if format_name == "teaser" and quality_check.ensure_teaser_cta(script, config.teaser.cta):
+            logger.info("Teaser's last scene had no 'full story' call-to-action; appended it.")
         hook_warns = quality_check.hook_warnings(script)
         if hook_warns:
             logger.warning("Weak hook: %s", "; ".join(hook_warns))
@@ -141,7 +168,10 @@ def run(
 
     logger.info("Building outro...")
     # No channel-branded intro card - the video opens directly on content.
-    outro_visual, outro_audio = branding.build_outro(config, work_dir)
+    if format_name == "teaser" and teaser_source:
+        outro_visual, outro_audio = branding.build_outro(config, work_dir, duration=2.5, heading="Full story", cta=teaser_source["title"])
+    else:
+        outro_visual, outro_audio = branding.build_outro(config, work_dir)
 
     all_scene_audio = content_scene_audio + [outro_audio]
     all_visuals = content_visuals + [outro_visual]
@@ -264,6 +294,10 @@ def run(
             if search_phrase.lower() not in description.lower():
                 description = f"{description}\n\nSearch YouTube for: {search_phrase}"
         related = growth_ledger.related_videos(niche_key, "longform", n=2)
+        if format_name == "teaser" and teaser_source:
+            # The point of this Short: send viewers to the longform. Put it first, as a link and as an exact search.
+            description += f"\n\n\u25B6 Watch the full story: https://youtu.be/{teaser_source['video_id']}\nSearch YouTube for: {teaser_source['title']}"
+            related = []
         if related:
             description += "\n\nWatch next:\n" + "\n".join(f"\u25B6 {r['title']} - https://youtu.be/{r['video_id']}" for r in related)
         logger.info("Uploading to YouTube (search phrase: %s)...", search_phrase)
@@ -295,7 +329,7 @@ def run(
             # buffer_publisher.py's module docstring). Attempting it for a
             # longform run would just add a doomed network round-trip before
             # still failing, so only try it for "shorts".
-            if format_name != "shorts":
+            if format_name not in VERTICAL_FORMATS:
                 logger.error(
                     "Direct YouTube upload failed (%s) - not attempting the Buffer fallback, since Buffer's "
                     "YouTube integration only supports Shorts and this run is '%s'.", exc, format_name,
@@ -320,13 +354,16 @@ def run(
             )
         else:
             manifest["youtube_video_id"] = video_id
+            if teaser_source:
+                manifest["teaser_for"] = teaser_source["video_id"]
             manifest["youtube_url"] = f"https://youtu.be/{video_id}"
             manifest["privacy_status"] = effective_privacy
             manifest["publish_at"] = effective_publish_at
             manifest["published_via"] = "youtube_api"
             tiktok_id = crosspost.tiktok(config, format_name=format_name, privacy=effective_privacy, passed_gate=passed_quality_gate,
                                          dry_run=dry_run, video_path=video_path, run_id=run_id, title=script.title,
-                                         video_id=video_id, search_phrase=search_phrase)
+                                         video_id=video_id,
+                                         search_phrase=(teaser_source["title"] if teaser_source else search_phrase))
             if tiktok_id:
                 manifest["tiktok_post_id"] = tiktok_id
 
@@ -334,6 +371,8 @@ def run(
                 niche_key, format_name, video_id, title=script.title, topic=topic,
                 privacy_status=effective_privacy, passed_quality_gate=passed_quality_gate,
                 quality_gate_reasons=quality_reasons,
+                seed=(" ".join(sc.narration for sc in script.scenes[:5])[:700] if format_name == "longform" else ""),
+                teaser_for=(teaser_source["video_id"] if teaser_source else None),
                 render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail"), "tiktok_post_id": manifest.get("tiktok_post_id"), "hook_warnings": manifest.get("hook_warnings")},
             )
 

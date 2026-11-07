@@ -14,6 +14,10 @@ load_dotenv()
 ROOT = Path(__file__).resolve().parent.parent
 
 
+# Formats rendered 9:16. "shorts" = the standalone daily Short; "teaser" = a cliffhanger Short that sends viewers to a longform.
+VERTICAL_FORMATS = frozenset({"shorts", "teaser"})
+
+
 @dataclass
 class ChannelConfig:
     name: str
@@ -63,7 +67,7 @@ class VideoConfig:
 
     @property
     def resolution(self) -> tuple:
-        return self.resolution_shorts if self.format == "shorts" else self.resolution_longform
+        return self.resolution_shorts if self.format in VERTICAL_FORMATS else self.resolution_longform
 
 
 @dataclass
@@ -144,6 +148,14 @@ class GrowthConfig:
 
 
 @dataclass
+class TeaserConfig:
+    """Cliffhanger Shorts that promote an already-published longform (format "teaser"; see pipeline.py)."""
+    window_days: int = 14   # only tease longforms published within this many days
+    cta: str = "The full story is on this channel. Watch it now."   # guaranteed to end the narration (see quality_check.ensure_teaser_cta)
+    min_age_hours: int = 0  # wait this long after the longform goes public (lets its link/processing settle)
+
+
+@dataclass
 class Secrets:
     gemini_api_key: Optional[str] = None
     pexels_api_key: Optional[str] = None
@@ -208,6 +220,7 @@ class PipelineConfig:
     topics: TopicsConfig
     growth: GrowthConfig
     secrets: Secrets
+    teaser: TeaserConfig = field(default_factory=TeaserConfig)
 
     @classmethod
     def load(cls, path: "str | Path | None" = None) -> "PipelineConfig":
@@ -241,4 +254,5 @@ class PipelineConfig:
             topics=TopicsConfig(**raw.get("topics", {})),
             growth=GrowthConfig(**raw.get("growth", {})),
             secrets=Secrets.from_env(),
+            teaser=TeaserConfig(**raw.get("teaser", {})),
         )

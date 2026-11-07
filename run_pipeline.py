@@ -26,7 +26,7 @@ def _escape_for_annotation(text: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--topic", help="Override the next topic instead of pulling from the queue.")
-    parser.add_argument("--format", choices=["shorts", "longform"], default=None, help="Force a specific format instead of letting the bandit pick one.")
+    parser.add_argument("--format", choices=["shorts", "longform", "teaser"], default=None, help="Force a specific format instead of letting the bandit pick one.")
     parser.add_argument("--dry-run", action="store_true", help="Build the video but skip uploading.")
     parser.add_argument("--config", default=None, help="Path to a channel config YAML (default: config/channel.yaml).")
     parser.add_argument("--publish-at", default=None, help="RFC3339 timestamp to schedule the YouTube release.")
