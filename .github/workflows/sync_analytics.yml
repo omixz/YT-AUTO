@@ -36,6 +36,9 @@ jobs:
           echo "${{ secrets.YOUTUBE_TOKEN_B64 }}" | base64 -d > token.json
 
       - name: Sync analytics
+        env:
+          # Only used to brainstorm follow-up topics for breakout videos (sync_analytics._queue_breakout_followups).
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GEMINI_API }}
         run: python sync_analytics.py
 
       - name: Remove OAuth credential files before committing
@@ -53,6 +56,7 @@ jobs:
           [ -f config/published_videos.json ] && git add config/published_videos.json
           [ -f config/audience_insights.json ] && git add config/audience_insights.json
           [ -d reports ] && git add reports/
+          git add config/topics/ config/topic_history/
           git diff --cached --quiet || git commit -m "chore: sync YouTube analytics into growth bandit"
           git pull --rebase origin main
           git push

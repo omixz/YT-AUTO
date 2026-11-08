@@ -117,6 +117,20 @@ def top_titles(formats: "tuple | list", n: int = 5, min_views: int = 20) -> List
     return sorted(recs, key=lambda r: r["views"], reverse=True)[:n]
 
 
+def breakout_videos(min_views: int = 100, ratio: float = 3.0, limit: int = 3) -> List[dict]:
+    """Public videos that clearly out-performed their format (views >= max(min_views, ratio x that format's median))
+    and haven't had follow-up topics queued yet. Best first. Shorts and teasers are judged together."""
+    import statistics
+    recs = [r for r in _load(ROOT / LEDGER_PATH) if is_scorable(r) and isinstance(r.get("views"), (int, float))]
+    group = lambda r: "short" if r.get("format") in ("shorts", "teaser") else r.get("format")  # noqa: E731
+    medians = {}
+    for g in {group(r) for r in recs}:
+        medians[g] = statistics.median([r["views"] for r in recs if group(r) == g])
+    hits = [r for r in recs if not r.get("followups_queued")
+            and r["views"] >= max(min_views, ratio * medians[group(r)])]
+    return sorted(hits, key=lambda r: r["views"], reverse=True)[:limit]
+
+
 def is_scorable(record: dict) -> bool:
     """A video the public could actually watch. Gate-failed uploads go up as PRIVATE and get zero views,
     so scoring them would teach the bandit that the *niche* is bad when only the pipeline failed (mythology
