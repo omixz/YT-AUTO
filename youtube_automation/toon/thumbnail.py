@@ -73,9 +73,10 @@ def _draw_caption(canvas, text: str, x0: float, x1: float, mood: str) -> None:
         y += size * 1.02
 
 
-def render(scenes, durations: List[float], title: str, out_path: Path, thumbnail_text: str = "") -> Path:
+def render(scenes, durations: List[float], title: str, out_path: Path, thumbnail_text: str = "",
+           characters: Optional[list] = None) -> Path:
     """Render a 1280x720 JPEG. Raises on any problem so the pipeline can fall back to the legacy thumbnail."""
-    dirs = direction.direct(scenes, durations, title)
+    dirs = direction.direct(scenes, durations, title, characters=characters)
     d = next((x for x in dirs if x.mood == "shocked"), None) or next((x for x in dirs if x.mood == "serious"), dirs[0])
     rng = random.Random(zlib.crc32(title.encode()))
     sset = build_set(d.setting, d.tod, W, H, rng)

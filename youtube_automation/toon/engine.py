@@ -157,12 +157,16 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
     if d.action == "crowd":
         for k in range(7):
             from . import casting
-            extras.append((casting.random_look(d.era, rng, military=(d.mood == "serious")),
-                           rng.uniform(0.04, 0.96), rng.uniform(0.60, 0.72), rng.uniform(0, 6.28)))
+            elook = casting.random_look(d.era, rng, military=(d.mood == "serious"))
+            elook.skin = rng.choice([look.skin, rival_look.skin] + [c.skin for c in d.companions])   # the story's people, not random tones
+            extras.append((elook, rng.uniform(0.04, 0.96), rng.uniform(0.60, 0.72), rng.uniform(0, 6.28)))
         extras.sort(key=lambda e: e[2])
     side = -1 if d.index % 2 == 0 else 1   # alternate which side the hero stands on
     hero_x = w * (0.5 + side * (0.10 if portrait else 0.17))
     facing = -side if d.action != "fight" else 1
+    # Other cast members in the shot, standing on the far side and turned toward the hero (behind them in depth).
+    comps = list(d.companions or [])[: (1 if portrait else 2)]
+    comp_slots = [(0.13, 0.36), (0.22,)][1 if portrait else 0]
     blinks = []
     bt = rng.uniform(0.8, 2.0)
     while bt < duration:
@@ -246,6 +250,16 @@ def render_scene(direction: SceneDirection, duration: float, w: int, h: int, fps
                     ep.sh_l = 20 + 60 * max(0.0, math.sin(t * 2.4 + ph * 1.3)) if (d.mood == "shocked") else ep.sh_l
                     C.draw_shadow(canvas, exs, ey * h + 40 * u, es)
                     C.draw_character(canvas, elook, ep, C.Face(mood="neutral", mouth=0.0), exs, ey * h + 40 * u, es, 1 if exs < w / 2 else -1)
+            for k, clook in enumerate(comps):
+                cs = scale * 0.93
+                if d.action == "walk":
+                    cx_, cpose, cf = hx - w * (0.17 if not portrait else 0.24) * (k + 1), C.pose_walk(t + 0.37 * (k + 1)), 1
+                else:
+                    cx_, cf = w * (0.5 - side * comp_slots[k]), side
+                    cpose = C.pose_shock(t, t - 0.2 - 0.1 * k) if (d.mood == "shocked" and t < 1.6) else C.pose_idle(t * 1.1 + k * 1.7, d.seed + k)
+                cface = C.Face(mood=d.mood, mouth=0.0, blink=blink if k == 0 else 0.0, look_x=0.5 * side)
+                C.draw_shadow(canvas, cx_, gy, cs)
+                C.draw_character(canvas, clook, cpose, cface, cx_, gy, cs, cf)
             C.draw_shadow(canvas, hx - cam_x * 0.0, gy, scale)
             C.draw_character(canvas, look, pose, face, hx, gy, scale, facing)
             head_x = hx

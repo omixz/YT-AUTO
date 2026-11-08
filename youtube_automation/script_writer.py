@@ -102,14 +102,37 @@ SCRIPT_SCHEMA = {
                         "type": "string",
                         "description": "Short on-screen caption/emphasis text. Empty string if none.",
                     },
-                    "setting": {"type": "string", "enum": ['default', 'city', 'courtroom', 'desert', 'dungeon', 'forest', 'government', 'harbor', 'indoor', 'mountain', 'mythic', 'palace', 'ruins', 'snow', 'water', 'ancient', 'battlefield', 'warroom', 'shipdeck', 'island'],
+                    "setting": {"type": "string", "enum": ['default', 'city', 'courtroom', 'desert', 'dungeon', 'forest', 'government', 'harbor', 'indoor', 'mountain', 'mythic', 'palace', 'ruins', 'snow', 'water', 'ancient', 'battlefield', 'warroom', 'shipdeck', 'island',
+                                                            'village', 'jungle', 'camp', 'street', 'library', 'church', 'tavern'],
                                 "description": "The place this scene physically happens - pick the closest match to the narration."},
                     "action": {"type": "string", "enum": ['talk', 'walk', 'fight', 'crowd', 'shock'],
                                "description": "What the on-screen character does. talk = stands/thinks/explains (use for most scenes); walk = travelling; fight = ONLY actual hand-to-hand combat; crowd = ONLY a large group is the point; shock = a startled reveal."},
                     "mood": {"type": "string", "enum": ["neutral", "serious", "shocked"]},
                     "time_of_day": {"type": "string", "enum": ["day", "dusk", "night"]},
+                    "on_screen": {"type": "array", "items": {"type": "string"},
+                                  "description": "Names (from `characters`) of the 1-3 people visible in this scene, the main one first."},
+                    "prop": {"type": "string", "enum": ["", "rifle", "pistol", "sword", "spear", "axe", "shield", "book", "letter", "map",
+                                                       "scroll", "torch", "lantern", "telescope", "bag", "compass"],
+                             "description": "What the main person holds, only if the narration involves it and it fits the era; else empty."},
                 },
                 "required": ["role", "narration", "visual_keywords"],
+            },
+        },
+        "characters": {
+            "type": "array",
+            "description": "The real people in this story (2-5), so the cartoon shows the right person in every scene.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Short name used in scenes' on_screen, e.g. \"Gavrilo\" or \"the guard\"."},
+                    "gender": {"type": "string", "enum": ["male", "female"]},
+                    "skin": {"type": "string", "enum": ["light", "olive", "tan", "brown", "dark"],
+                             "description": "Historically accurate for this real person."},
+                    "age": {"type": "string", "enum": ["young", "adult", "old"]},
+                    "kind": {"type": "string", "enum": ["civilian", "soldier", "officer", "royal", "scholar", "priest", "worker",
+                                                        "sailor", "criminal", "detective"]},
+                },
+                "required": ["name", "gender", "skin"],
             },
         },
     },
@@ -194,6 +217,8 @@ class Scene:
     action: str = ""        # what the hero is doing
     mood: str = ""          # neutral | serious | shocked
     time_of_day: str = ""   # day | dusk | night
+    on_screen: List[str] = field(default_factory=list)   # names from Script.characters visible in this scene (main first)
+    prop: str = ""          # what the main person holds (validated against the era by toon/casting.py)
 
 
 @dataclass
@@ -204,6 +229,7 @@ class Script:
     tags: List[str]
     scenes: List[Scene] = field(default_factory=list)
     title_options: List[str] = field(default_factory=list)   # alternative titles from the same call; quality_check.pick_best_title chooses
+    characters: List[dict] = field(default_factory=list)   # real people: name/gender/skin/age/kind (drives the cartoon cast)
     thumbnail_text: str = ""   # 2-4 punchy words printed on the thumbnail (complements, never repeats, the title)
 
     @property
@@ -521,7 +547,7 @@ CURRENT SCRIPT (JSON):
     if (len(cut["scenes"]) >= 3 and min_words <= cut_words < words
             and cut["scenes"][0]["narration"].strip().split()[:4] == first_line.split()[:4]):
         logger.info("Tightened Short from %d to %d words (budget %d).", words, cut_words, target_words)
-        for key in ("title", "description", "tags", "thumbnail_text", "title_options"):
+        for key in ("title", "description", "tags", "thumbnail_text", "title_options", "characters"):
             if key in data:
                 cut[key] = data[key]
         return cut
@@ -648,6 +674,12 @@ warroom, a cruise-ship scene is shipdeck). Use action=talk for most scenes; rese
 few scenes where combat or a large crowd is genuinely the subject, and never use the same non-talk action
 in back-to-back scenes.
 
+CHARACTERS: list the 2-5 real people of this story in `characters` with their true gender, a historically accurate
+skin tone, age and kind (soldier/royal/scholar/...). In EVERY scene, `on_screen` names who is visible (1-3 people,
+main one first - include a second person whenever two people interact), and `prop` names what the main person
+holds when the narration involves it (a rifle for a WW1 soldier, a letter, a map, a book, a sword in ancient or
+medieval times). Never give a prop from the wrong era (no guns before 1600, no swords in modern scenes).
+
 FACTUAL INTEGRITY (non-negotiable): when the story involves real people, unsolved cases, or disputed
 events, never state an unproven claim as established fact - in the TITLE, the hook, or the narration.
 Attribute it ("witnesses claimed", "investigators believed", "allegedly") and frame open questions as
@@ -762,6 +794,7 @@ already here.
             on_screen_text=s.get("on_screen_text", "") or "",
             setting=s.get("setting", "") or "", action=s.get("action", "") or "",
             mood=s.get("mood", "") or "", time_of_day=s.get("time_of_day", "") or "",
+            on_screen=[n for n in (s.get("on_screen") or []) if isinstance(n, str)][:3], prop=s.get("prop", "") or "",
         )
         for s in data["scenes"]
     ]
@@ -773,6 +806,7 @@ already here.
         tags=[t.strip() for t in data["tags"]],
         scenes=scenes,
         thumbnail_text=(data.get("thumbnail_text") or "").strip(),
+        characters=[c for c in (data.get("characters") or []) if isinstance(c, dict) and c.get("name")][:6],
         title_options=[t.strip() for t in (data.get("title_options") or []) if isinstance(t, str) and t.strip()][:5],
     )
 

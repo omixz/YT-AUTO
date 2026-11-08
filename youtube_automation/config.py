@@ -54,7 +54,7 @@ class VideoConfig:
     subtitle_position: str = "bottom"   # bottom | center (middle of the screen)
     fps: int = 30
     background_music: Optional[str] = None
-    music_volume_db: float = -22.0
+    music_volume_db: float = -10.0   # gain applied to the music bed in assembler._build_mix_command
     sfx_volume_db: float = -23.0
     resolution_shorts: tuple = (1080, 1920)
     resolution_longform: tuple = (1920, 1080)

@@ -45,13 +45,14 @@ def _legacy_clip(scenes, i, config, work_dir, durations, title) -> Path:
 
 
 def generate_all_clips(scenes, durations: List[float], config, work_dir: Path, title: str = "",
-                       scene_audio: Optional[list] = None, workers: Optional[int] = None) -> List[Path]:
+                       scene_audio: Optional[list] = None, workers: Optional[int] = None,
+                       characters: Optional[list] = None) -> List[Path]:
     from . import direction
 
     work_dir = Path(work_dir)
     w, h = config.video.resolution
     fps = int(config.animation.fps)
-    dirs = direction.direct(scenes, durations, title)
+    dirs = direction.direct(scenes, durations, title, characters=characters)
     audio = [getattr(a, "audio_path", None) for a in (scene_audio or [])]
     audio += [None] * (len(scenes) - len(audio))
     from dataclasses import replace

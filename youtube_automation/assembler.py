@@ -175,7 +175,8 @@ _OUT_AUDIO_BITRATE = "192k"
 _NORM = f"aresample={_OUT_SAMPLE_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo"
 
 
-def _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path):
+def _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path,
+                       music_db: float = 0.0):
     inputs = ["-i", str(burned), "-i", str(narration_path)]
     parts = []
     idx = 2
@@ -204,7 +205,9 @@ def _build_mix_command(burned, narration_path, background_music, ambience_path, 
     for kind, i in beds:
         if kind == "music":
             # threshold -24dB, ratio 4:1, 10ms attack, 200ms release
-            parts.append(f"[{i}:a]{_NORM}[m{i}]")
+            # music_db (config.video.music_volume_db) was defined but never applied: the generated bed is ~-17 LUFS,
+            # as loud as the voice, so between sentences the music was as loud as the narration.
+            parts.append(f"[{i}:a]{_NORM},volume={music_db:.1f}dB[m{i}]")
             parts.append(f"[m{i}][nsc{side}]sidechaincompress=threshold=-28dB:ratio=9:attack=8:release=260:makeup=1[music]")
             labels.append("[music]"); side += 1
         elif kind == "amb":
@@ -284,6 +287,7 @@ def build_video(
     # Sidechain compression: duck music/ambience when narration is present.
     # This uses ffmpeg's sidechaincompress filter - the narration (input 1)
     # acts as the control signal to compress the music/ambience beds.
-    cmd = _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path)
+    cmd = _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path,
+                             music_db=float(getattr(config.video, "music_volume_db", 0.0)))
     run_ffmpeg(cmd)
     return out_path

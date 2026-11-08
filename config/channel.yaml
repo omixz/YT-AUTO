@@ -44,7 +44,8 @@ video:
   fps: 30
   background_music: null       # path to an mp3 under youtube-automation/assets, optional
   subtitle_position: center    # captions in the middle of the screen (was bottom)
-  music_volume_db: -25         # dB below narration; with amix normalize=0 this is the real level. Was -16 (too loud under the voice).
+  music_volume_db: -10         # gain on the music bed (~-17 LUFS raw, about as loud as the voice) -> ~-27 LUFS, clearly under the narration.
+                               # NOTE: until 2026-11 this setting was never applied, so music played at full level.
   sfx_volume_db: -14           # scene-matched ambience level below narration
   resolution_shorts: [1080, 1920]
   resolution_longform: [1920, 1080]
