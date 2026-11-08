@@ -2190,5 +2190,42 @@
       "tiktok_post_id": "6aefca429214322f6825c28e",
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "_NpLqqchJxY",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1914 Bobby Dunbar Case: How DNA Questioned a Century-Old Stolen Identity",
+    "topic": "The 1914 aftermath of the Bobby Dunbar case, where the boy mistakenly identified as Bobby grew up carrying the quiet, lifelong burden of a stolen identity until modern descendants finally uncovered the truth.",
+    "published_at": "2026-11-08",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 292.0,
+        "audio_seconds": 514.5
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 69,
+        "fallback_scenes": 0,
+        "seconds": 326.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "STOLEN IDENTITY?"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    },
+    "seed": "In nineteen fourteen, a mother held a boy she swore was her stolen son. She was wrong. That mistaken identity wasn't just a legal error. It was the beginning of a lifelong silent burden for everyone involved. To understand how this happened, we have to look back to a swamp in Louisiana three years earlier. Four-year-old Bobby Dunbar vanished during a family fishing trip near Swayze Lake in a flash. A massive frantic search immediately scoured the dense, alligator-infested swamplands day and night."
   }
 ]
