@@ -46,6 +46,7 @@ class FormatConfig:
     enabled: bool = True
     target_seconds: int = 60
     weight: float = 1.0
+    daily_cap: int = 1          # public uploads of this format per UTC day (attempts allowed: daily_cap + 1, so a gate-failed one can retry)
 
 
 @dataclass

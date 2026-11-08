@@ -7,8 +7,11 @@ on:
     # 13:00 UTC plus build time. scheduling.py's optimal-slot logic only
     # applies to a manual dispatch with publish_now unchecked.
     - cron: "0 13 * * *"
-    # A Short every evening (forced via the schedule string below; the longform bandit never picks shorts)
+    # Three Shorts a day (forced via the schedule strings below; the longform bandit never picks shorts).
+    # Shorts get ~30x the views of longform on this channel - video.formats.shorts.daily_cap allows 3.
     - cron: "0 22 * * *"
+    - cron: "0 15 * * *"
+    - cron: "0 19 * * *"
     # A cliffhanger teaser Short promoting the newest longform (forced via the schedule string below). Runs ~4h after the 13:00 longform.
     - cron: "0 17 * * *"
   workflow_dispatch:
@@ -138,7 +141,7 @@ jobs:
             ARGS+=(--format "$IN_FORMAT")
           elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 13 * * *" ]; then
             ARGS+=(--format longform)
-          elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 22 * * *" ]; then
+          elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && { [ "$SCHEDULE_CRON" = "0 22 * * *" ] || [ "$SCHEDULE_CRON" = "0 15 * * *" ] || [ "$SCHEDULE_CRON" = "0 19 * * *" ]; }; then
             ARGS+=(--format shorts)
           elif [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$SCHEDULE_CRON" = "0 17 * * *" ]; then
             ARGS+=(--format teaser)

@@ -84,6 +84,21 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
 _engine_used = ["legacy"]   # which renderer actually produced the visuals (set in _build_content_visuals)
 
 
+def _over_daily_cap(config: PipelineConfig, format_name: str, public_today: int, attempts_today: int) -> bool:
+    """daily_cap public uploads per format per UTC day; one extra attempt is allowed so a gate-failed run can retry."""
+    fmt = config.video.formats.get(format_name)
+    cap = max(1, int(getattr(fmt, "daily_cap", 1) or 1))
+    return public_today >= cap or attempts_today >= cap + 1
+
+
+def discovery_hashtags(niche_key: str, format_name: str) -> str:
+    """3 hashtags for the description (YouTube shows the first 3 above the title and indexes them for search/browse).
+    #Shorts first on vertical formats - it is the Shorts-feed discovery tag."""
+    niche_tag = "#" + "".join(w.capitalize() for w in niche_key.split("_"))
+    tags = (["#Shorts"] if format_name in VERTICAL_FORMATS else []) + [niche_tag, "#History", "#Documentary"]
+    return " ".join(list(dict.fromkeys(tags))[:3])
+
+
 class QualityGateFailed(RuntimeError):
     """Raised when a video fails the gate and quality.on_gate_failure == 'skip'."""
 
@@ -107,7 +122,7 @@ def run(
         # Cheapest checks first (no Gemini/render cost): daily cap, then is there a longform worth promoting?
         if not (force or dry_run or topic_override):
             public_today, attempts_today = growth_ledger.daily_counts("teaser")
-            if public_today >= 1 or attempts_today >= 2:
+            if _over_daily_cap(config, "teaser", public_today, attempts_today):
                 logger.warning("Daily cap: %d public / %d attempt(s) of teaser already today - skipping (use --force to override).", public_today, attempts_today)
                 return {"skipped": "daily_cap", "format": "teaser", "public_today": public_today, "attempts_today": attempts_today}
         teaser_source = growth_ledger.pick_teaser_source(config.teaser.window_days, config.teaser.min_age_hours)
@@ -122,7 +137,7 @@ def run(
         # One Short and one longform per day: skip if a public one already went up today, or two attempts were already
         # made (a gate-failed private upload may be retried once). Costs nothing: no Gemini calls happen before this.
         public_today, attempts_today = growth_ledger.daily_counts(format_name)
-        if public_today >= 1 or attempts_today >= 2:
+        if _over_daily_cap(config, format_name, public_today, attempts_today):
             logger.warning("Daily cap: %d public / %d attempt(s) of %s already today - skipping this run (use --force to override).",
                            public_today, attempts_today, format_name)
             return {"skipped": "daily_cap", "format": format_name, "public_today": public_today, "attempts_today": attempts_today}
@@ -277,7 +292,12 @@ def run(
         # not have it auto-publish later unattended - only schedule the
         # optimal slot on the normal (passed-gate) path, and only when the
         # caller hasn't already pinned a specific publish_at themselves.
-        effective_publish_at = publish_at
+        # An explicit --publish-at must not apply to a gate-failed video either: the uploader turns publishAt into
+        # "private now, PUBLIC at that time", which would auto-release exactly the video a human was meant to review.
+        effective_publish_at = publish_at if passed_quality_gate else None
+        if publish_at and not passed_quality_gate:
+            logger.warning("Ignoring publish_at=%s: the quality gate failed, so this video stays %s for review.",
+                           publish_at, effective_privacy)
         if effective_publish_at is None and passed_quality_gate and not publish_now:
             effective_publish_at = scheduling.next_optimal_publish_time()
             logger.info("Scheduling publish for the next optimal slot: %s", effective_publish_at)
@@ -300,6 +320,8 @@ def run(
             related = []
         if related:
             description += "\n\nWatch next:\n" + "\n".join(f"\u25B6 {r['title']} - https://youtu.be/{r['video_id']}" for r in related)
+        if "#" not in description:
+            description += "\n\n" + discovery_hashtags(niche_key, format_name)
         logger.info("Uploading to YouTube (search phrase: %s)...", search_phrase)
         try:
             # Only the upload call itself should trigger the Buffer fallback
@@ -339,7 +361,7 @@ def run(
             logger.warning("Direct YouTube upload failed (%s) - trying the Buffer fallback...", exc)
             video_url = media_host.upload_public(video_path, f"{run_id}.mp4", config)
             buffer_post_id = buffer_publisher.publish_video(
-                video_url, script.title, script.description, config, publish_at=effective_publish_at,
+                video_url, script.title, description, config, publish_at=effective_publish_at,
                 privacy_status=effective_privacy, category_id=config.upload.category_id,
                 made_for_kids=config.upload.made_for_kids,
             )

@@ -76,9 +76,19 @@ def _enabled_combos(config: PipelineConfig) -> List[Tuple[str, str, float]]:
 
 def _seasonal_multiplier(niche_key: str, month: int) -> float:
     """Returns >1.0 for in-season months, <1.0 for off-season, 1.0 neutral."""
-    # Extract base niche name (strip any prefix)
-    base_niche = niche_key.split("_")[-1].lower()
-    affinity_months = SEASONAL_AFFINITY.get(base_niche, SEASONAL_AFFINITY["default"])
+    # Match any word of the key, singular or plural: the old "last word only" lookup turned world_wars into
+    # "wars" and unsolved_mysteries into "mysteries", so neither ever matched a seasonal entry.
+    affinity_months = SEASONAL_AFFINITY["default"]
+    for word in niche_key.lower().split("_"):
+        for cand in (word, word[:-1] if word.endswith("s") else word):
+            if cand in SEASONAL_AFFINITY and cand != "default":
+                affinity_months = SEASONAL_AFFINITY[cand]
+                break
+        else:
+            continue
+        break
+    if affinity_months is SEASONAL_AFFINITY["default"]:
+        return 1.0   # no seasonal data: neutral (the default list contains every month and would boost everything)
     if month in affinity_months:
         return 1.3  # 30% boost in peak months
     # Check adjacent months for shoulder season

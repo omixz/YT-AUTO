@@ -59,7 +59,8 @@ def record_published(
         "format": format_name,
         "title": title,
         "topic": topic,
-        "published_at": dt.date.today().isoformat(),
+        # UTC, same clock daily_counts() uses for the one-a-day cap (a local-date stamp could miscount near midnight).
+        "published_at": dt.datetime.now(dt.timezone.utc).date().isoformat(),
         "scored": False,
         "privacy_status": privacy_status,
         "passed_quality_gate": passed_quality_gate,
@@ -109,6 +110,13 @@ def related_videos(niche: str, format_name: str = "longform", n: int = 2) -> Lis
     return sorted(recs, key=lambda r: str(r.get("published_at", "")), reverse=True)[:n]
 
 
+def top_titles(formats: "tuple | list", n: int = 5, min_views: int = 20) -> List[dict]:
+    """This channel's best-viewed public titles in these formats (needs synced analytics: records carry `views`)."""
+    recs = [r for r in _load(ROOT / LEDGER_PATH)
+            if r.get("format") in formats and is_scorable(r) and (r.get("views") or 0) >= min_views and r.get("title")]
+    return sorted(recs, key=lambda r: r["views"], reverse=True)[:n]
+
+
 def is_scorable(record: dict) -> bool:
     """A video the public could actually watch. Gate-failed uploads go up as PRIVATE and get zero views,
     so scoring them would teach the bandit that the *niche* is bad when only the pipeline failed (mythology
@@ -153,7 +161,7 @@ def needs_audience(config: PipelineConfig, limit: int = 40) -> List[dict]:
     """Public, mature videos whose views/retention were never looked up (newest first); failures are retried."""
     today = dt.date.today()
     out = [r for r in _load(ROOT / LEDGER_PATH)
-           if is_scorable(r) and "avg_view_pct" not in r
+           if is_scorable(r) and r.get("avg_view_pct") is None
            and (today - dt.date.fromisoformat(r["published_at"])).days >= config.growth.maturity_days]
     return sorted(out, key=lambda r: r["published_at"], reverse=True)[:limit]
 

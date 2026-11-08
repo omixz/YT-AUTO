@@ -319,6 +319,14 @@ def _call_gemini(prompt: str, function_name: str, parameters: dict, config: Pipe
         if call and call.get("name") == function_name:
             return call.get("args", {})
 
+    if candidates[0].get("finishReason") == "MAX_TOKENS" and max_output_tokens < _MODEL_MAX_OUTPUT_TOKENS:
+        # The function call was cut off mid-JSON (nothing usable comes back). Retry with a bigger budget
+        # instead of failing the whole run; doubling reaches the model ceiling in a couple of steps.
+        bigger = min(_MODEL_MAX_OUTPUT_TOKENS, max_output_tokens * 2)
+        logger.warning("Gemini hit MAX_TOKENS at %d output tokens without finishing %s - retrying with %d.",
+                       max_output_tokens, function_name, bigger)
+        return _call_gemini(prompt, function_name, parameters, config, bigger)
+
     raise RuntimeError(f"Gemini did not call {function_name}: {data}")
 
 
@@ -361,11 +369,16 @@ def _script_length_params(target_seconds: int, wpm: int = 165) -> Tuple[int, int
     # was never actually close to that limit, it was just an unrelated
     # conservative guess.
     suggested_scenes = max(6, min(160, round(target_words / (12 if target_seconds <= 90 else 25))))   # Shorts: ~4s scenes keep the visuals moving
-    max_output_tokens = min(32000, max(2000, round(target_words * 4) + 500))
+    # ~8 tokens per narration word, not 4: the forced function call is JSON, and every scene also carries
+    # role/visual_keywords/on_screen_text/setting/action/mood/time_of_day. At 4/word a ~3100-word longform
+    # (12,900 tokens) hit finishReason=MAX_TOKENS mid-JSON and returned no function call at all, which
+    # crashed three scheduled longform runs in a row (2026-11-04..06).
+    max_output_tokens = min(_MODEL_MAX_OUTPUT_TOKENS, max(2000, round(target_words * 8) + 2000))
     return target_words, suggested_scenes, max_output_tokens
 
 
 _LENGTH_RETRIES = 5
+_MODEL_MAX_OUTPUT_TOKENS = 65536   # gemini-3.5-flash(-lite) output ceiling
 _EXTEND_PASSES = 4
 EMIT_EXTRA_SCENES = "emit_extra_scenes"
 # Same scene shape as the full script, just without title/description/tags.
@@ -456,6 +469,25 @@ EXISTING NARRATION:
     return data
 
 
+def _winning_titles_block(format_name: str) -> str:
+    """Prompt block listing this channel's own best-performing titles, so new titles learn from real view data."""
+    try:
+        from .growth_ledger import top_titles
+        formats = ("shorts", "teaser") if format_name in ("shorts", "teaser") else ("longform",)
+        best = top_titles(formats, n=5)
+    except Exception:  # noqa: BLE001 - optional signal; never block a script over it
+        return ""
+    if not best:
+        return ""
+    lines = "\n".join(f'- "{r["title"]}" ({r["views"]} views)' for r in best)
+    return f"""
+WHAT ALREADY WORKS ON THIS CHANNEL - these real titles got the most views here:
+{lines}
+Study what they share (a specific person/place/number, a strange concrete detail, an unresolved gap) and give this video's
+title the same pull. Never copy or lightly reword them, and stay on this video's topic.
+"""
+
+
 def generate_script(topic: str, config: PipelineConfig, source: "dict | None" = None) -> Script:
     """Ask Gemini to write a full scene-by-scene script for one video.
 
@@ -543,7 +575,7 @@ HOOK CRAFT (the first 15 seconds decide whether anyone watches; most of this cha
 - The whole hook scene is 35 words or fewer. Scene 2 must ESCALATE (new twist), never explain the hook.
 - Concrete beats abstract: "a table set for dinner, clocks stopped" beats "a mysterious disappearance".
 {shorts_rules}
-TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
+{_winning_titles_block(config.video.format)}TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
 Each is 35-65 characters, specific, and never states an unproven claim as fact.
 
 RETENTION ENGINEERING - DO NOT SKIP THESE:
@@ -647,7 +679,15 @@ already here.
 ---
 {_draft_text(best_data)}
 ---"""
-            retry_data = _call_gemini(reinforced_prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
+            try:
+                retry_data = _call_gemini(reinforced_prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
+            except Exception as exc:  # noqa: BLE001 - a failed retry must never throw away the draft we already have
+                # Every failed longform run on 2026-11-04..06 died HERE (MAX_TOKENS / a 503 that outlasted the
+                # backoff) while already holding a usable first draft. Keep the best draft and move on - the
+                # extension pass below and quality_check.py still enforce the length bar.
+                logger.warning("Length retry %d failed (%s) - keeping the best draft so far (%d words).",
+                               attempt, str(exc)[:300], best_word_count)
+                break
             retry_word_count = sum(len(s["narration"].split()) for s in retry_data["scenes"])
             if retry_word_count > best_word_count:
                 logger.info("Retry %d produced %d words (up from %d).", attempt, retry_word_count, best_word_count)
