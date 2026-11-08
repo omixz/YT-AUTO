@@ -181,23 +181,33 @@ def run(
     logger.info("Building %s visuals...", "illustrated" if format_name == "longform" else "stock")
     content_visuals = _build_content_visuals(script, content_scene_audio, config, work_dir)
 
-    logger.info("Building outro...")
     # No channel-branded intro card - the video opens directly on content.
-    if format_name == "teaser" and teaser_source:
+    outro_visual = outro_audio = None
+    if format_name == "shorts":
+        # No end card on daily Shorts: the last line loops back to the first, and a static 2s "Subscribe" card
+        # breaks that seamless replay (loops/rewatches are what push a Short in the feed). Teasers keep their
+        # "Full story" card - pointing at the longform is their whole job.
+        logger.info("Shorts: no outro card (seamless loop).")
+    elif format_name == "teaser" and teaser_source:
+        logger.info("Building outro...")
         outro_visual, outro_audio = branding.build_outro(config, work_dir, duration=2.5, heading="Full story", cta=teaser_source["title"])
     else:
+        logger.info("Building outro...")
         outro_visual, outro_audio = branding.build_outro(config, work_dir)
 
-    all_scene_audio = content_scene_audio + [outro_audio]
-    all_visuals = content_visuals + [outro_visual]
-
-    narration_path = tts.concat_audio(
-        [content_narration_path, outro_audio.audio_path],
-        work_dir / "narration_final.mp3",
-    )
+    if outro_audio is not None:
+        all_scene_audio = content_scene_audio + [outro_audio]
+        all_visuals = content_visuals + [outro_visual]
+        narration_path = tts.concat_audio(
+            [content_narration_path, outro_audio.audio_path],
+            work_dir / "narration_final.mp3",
+        )
+    else:
+        all_scene_audio, all_visuals, narration_path = list(content_scene_audio), list(content_visuals), content_narration_path
+    outro_seconds = outro_audio.duration if outro_audio is not None else 0.0
 
     logger.info("Building captions...")
-    on_screen_texts = [s.on_screen_text for s in script.scenes] + [""]
+    on_screen_texts = [s.on_screen_text for s in script.scenes] + ([""] if outro_audio is not None else [])
     ass_path = subtitles.build_ass(
         all_scene_audio, work_dir / "captions.ass", config.video.resolution,
         on_screen_texts=on_screen_texts, position=config.video.subtitle_position,
@@ -205,7 +215,7 @@ def run(
 
     logger.info("Building ambient sound effects...")
     ambience_path = sound_effects.build_ambience_track(
-        script.scenes, content_scene_audio, 0.0, outro_audio.duration, work_dir,
+        script.scenes, content_scene_audio, 0.0, outro_seconds, work_dir,
     )
 
     logger.info("Building transition sound effects...")
@@ -221,7 +231,7 @@ def run(
     else:
         total_duration = sum(a.duration for a in all_scene_audio)
         music_path = music.build_music_bed(total_duration, work_dir, scene_durations=scene_durations)
-    scene_roles = [s.role for s in script.scenes] + ["build"]
+    scene_roles = [s.role for s in script.scenes] + (["build"] if outro_audio is not None else [])
     video_path = assembler.build_video(
         all_visuals, all_scene_audio, narration_path, ass_path, config, work_dir,
         work_dir / "final.mp4", background_music=music_path, ambience_path=ambience_path,
