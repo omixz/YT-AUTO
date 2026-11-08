@@ -2302,5 +2302,41 @@
       ]
     },
     "teaser_for": "_NpLqqchJxY"
+  },
+  {
+    "video_id": "aIcB4c-rDUM",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "Why Did a 1928 Kidnapper Dress His Victim in New Clothes?",
+    "topic": "The 1928 kidnapping and baffling return of 4-year-old Barbara Gansert in Baltimore, Maryland, where a frantic mother opened her front door to find her missing daughter neatly dressed in brand-new clothes she had never owned, accompanied by a polite stranger who vanished into the fog before he could be questioned.",
+    "published_at": "2026-11-08",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 31.5,
+        "audio_seconds": 46.0
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 38.0,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "RETURNED IN NEW CLOTHES"
+      },
+      "tiktok_post_id": "6af0fa61d6bbae6fa116bbd2",
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)"
+      ]
+    }
   }
 ]
