@@ -2227,5 +2227,43 @@
       ]
     },
     "seed": "In nineteen fourteen, a mother held a boy she swore was her stolen son. She was wrong. That mistaken identity wasn't just a legal error. It was the beginning of a lifelong silent burden for everyone involved. To understand how this happened, we have to look back to a swamp in Louisiana three years earlier. Four-year-old Bobby Dunbar vanished during a family fishing trip near Swayze Lake in a flash. A massive frantic search immediately scoured the dense, alligator-infested swamplands day and night."
+  },
+  {
+    "video_id": "70Fbp43JRo0",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1934 Boy Whose Footprints Ended at a Cliff Edge",
+    "topic": "The 1934 disappearance of 4-year-old William Hopps Jr. from a logging camp near Port Angeles, Washington, where a desperate search party found tiny footprints leading directly to the edge of a sheer cliff overlooking a raging river, only for bloodhounds to lose the scent entirely in mid-air.",
+    "published_at": "2026-11-08",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 5 scenes (min 6)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 29.3,
+        "audio_seconds": 47.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 5,
+        "fallback_scenes": 0,
+        "seconds": 42.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SCENT LOST IN MID-AIR"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 18 words (aim for 14 or fewer)"
+      ]
+    }
   }
 ]
