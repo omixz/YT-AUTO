@@ -51,7 +51,7 @@ video:
   formats:
     shorts:
       enabled: true             # built with the same toon cartoon engine as longform; scheduled by its own cron in publish.yml
-      target_seconds: 40        # the model overshoots Shorts ~1.5x (a 55s target ran 83s in the dry-run); 40 lands around 55-60s
+      target_seconds: 35        # real Shorts ran 55-113s at a 40s target; 35s plus script_writer._tighten_short (cuts anything >20% over budget) aims for ~35-50s
       weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts crons force --format shorts
       daily_cap: 3              # Shorts average ~30x the views of a longform here (audience_insights.json: 166 vs 6) - 3 crons/day in publish.yml.
                                 # YouTube quota: 3 Shorts + 1 longform + 1 teaser = 5 uploads (~8,300 of 10,000 units/day).

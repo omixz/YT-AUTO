@@ -131,7 +131,7 @@ def test_teaser_prompt_demands_a_cliffhanger_and_includes_the_source(monkeypatch
     seen = {}
 
     def fake(prompt, name, schema, config, max_tokens):
-        seen["prompt"] = prompt
+        seen.setdefault("prompt", prompt)   # the writing prompt; a later tighten pass must not overwrite it
         return {"title": "T", "description": "d", "tags": ["a"], "scenes": [{"role": "hook", "narration": "w " * 200, "visual_keywords": ["k"]}]}
 
     monkeypatch.setattr(script_writer, "_call_gemini", fake)

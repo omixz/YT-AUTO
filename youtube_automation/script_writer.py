@@ -7,6 +7,7 @@ enough that a thin wrapper here is less to maintain than a full SDK.
 """
 from __future__ import annotations
 
+import json
 import logging
 import time
 from dataclasses import dataclass, field
@@ -488,6 +489,46 @@ title the same pull. Never copy or lightly reword them, and stay on this video's
 """
 
 
+SHORT_MAX_OVERSHOOT = 1.2   # a Short may run at most 20% over its word budget before it gets tightened
+
+
+def _tighten_short(data: dict, target_words: int, config: PipelineConfig, max_output_tokens: int) -> dict:
+    """Shorts kept coming back 1.5-2.5x their budget (55-113s against a 40s target), and a long Short loses the
+    completion/replay rate the Shorts feed ranks on. One Gemini pass cuts it to budget; the original is kept
+    unless the cut is genuinely shorter, still long enough, and keeps the same opening line."""
+    words = sum(len(s["narration"].split()) for s in data["scenes"])
+    if words <= round(target_words * SHORT_MAX_OVERSHOOT):
+        return data
+    first_line = data["scenes"][0]["narration"].strip()
+    ending = ("Keep the final unresolved cliffhanger and the call-to-action to the full video; never reveal the outcome."
+              if config.video.format == "teaser" else
+              "Keep the final scene's loop back to the opening and any call-to-action it ends with.")
+    prompt = f"""Tighten this vertical YouTube Short to about {target_words} words of narration total (it is {words}).
+Rules: keep scene 1's narration EXACTLY as written: "{first_line}". {ending} Cut background, repetition, filler and the weakest middle beats - never the
+strangest concrete facts. Fewer, punchier scenes are fine. Keep title, description, tags, thumbnail_text and
+title_options as they are. Every scene keeps its role, visual_keywords, on_screen_text, setting, action, mood and
+time_of_day. No markdown. Call {EMIT_SCRIPT} with the full result.
+
+CURRENT SCRIPT (JSON):
+{json.dumps(data, ensure_ascii=False)}"""
+    try:
+        cut = _call_gemini(prompt, EMIT_SCRIPT, SCRIPT_SCHEMA, config, max_output_tokens)
+        cut_words = sum(len(s["narration"].split()) for s in cut["scenes"])
+    except Exception as exc:  # noqa: BLE001 - a failed tighten keeps the original script
+        logger.warning("Shorts tighten pass failed (%s); keeping the %d-word script.", str(exc)[:200], words)
+        return data
+    min_words = round(target_words * MIN_TARGET_LENGTH_FRACTION)
+    if (len(cut["scenes"]) >= 3 and min_words <= cut_words < words
+            and cut["scenes"][0]["narration"].strip().split()[:4] == first_line.split()[:4]):
+        logger.info("Tightened Short from %d to %d words (budget %d).", words, cut_words, target_words)
+        for key in ("title", "description", "tags", "thumbnail_text", "title_options"):
+            if key in data:
+                cut[key] = data[key]
+        return cut
+    logger.warning("Shorts tighten pass not usable (%d words, %d scenes); keeping the original.", cut_words, len(cut["scenes"]))
+    return data
+
+
 def generate_script(topic: str, config: PipelineConfig, source: "dict | None" = None) -> Script:
     """Ask Gemini to write a full scene-by-scene script for one video.
 
@@ -707,6 +748,9 @@ already here.
                 best_word_count, attempt + 1,
             )
             data = _extend_to_length(data, topic, min_acceptable_words, config, max_output_tokens)
+
+    if config.video.format in ("shorts", "teaser"):
+        data = _tighten_short(data, target_words, config, max_output_tokens)
 
     data = _repair_roles(data)
 
