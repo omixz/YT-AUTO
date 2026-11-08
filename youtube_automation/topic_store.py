@@ -33,9 +33,31 @@ def _load_queue(path: Path) -> List[str]:
     return list(raw.get("topics") or [])
 
 
-def _save_queue(path: Path, topics: List[str]) -> None:
+def _load_priority(path: Path) -> List[str]:
+    if not path.exists():
+        return []
+    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return list(raw.get("priority") or [])
+
+
+def _save_queue(path: Path, topics: List[str], priority: "List[str] | None" = None) -> None:
+    """`priority` (optional) is the follow-up lane for breakout videos; it is kept as-is when not passed."""
+    if priority is None:
+        priority = _load_priority(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(yaml.safe_dump({"topics": topics}, sort_keys=False), encoding="utf-8")
+    data = {"priority": priority, "topics": topics} if priority else {"topics": topics}
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+
+def push_priority(config: PipelineConfig, niche_key: str, topics: List[str]) -> int:
+    """Queue follow-up topics ahead of the normal queue for this niche. Returns how many were added."""
+    queue_path = ROOT / config.topics.queue_file.format(niche=niche_key)
+    history = {t.lower() for t in _load_history(ROOT / config.topics.history_file.format(niche=niche_key))}
+    priority = _load_priority(queue_path)
+    known = history | {t.lower() for t in priority}
+    new = [t for t in topics if t and t.lower() not in known]
+    _save_queue(queue_path, _load_queue(queue_path), priority + new)
+    return len(new)
 
 
 def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] = None) -> str:
@@ -56,6 +78,17 @@ def next_topic(config: PipelineConfig, niche_key: str, override: Optional[str] =
 
     queue = _load_queue(queue_path)
     history = _load_history(history_path)
+
+    priority = _load_priority(queue_path)
+    if priority:
+        # Follow-ups to a breakout video go first, in order: no freshness re-ranking (it would penalise exactly the
+        # similarity to the winner that makes them worth making).
+        topic = priority.pop(0)
+        _save_queue(queue_path, queue, priority)
+        history.append(topic)
+        _save_history(history_path, history)
+        logger.info("Using a follow-up topic queued after a breakout video (%d more waiting).", len(priority))
+        return topic
 
     if not queue:
         if config.topics.use_trending:

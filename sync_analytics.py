@@ -31,6 +31,26 @@ def _describe(exc: Exception) -> str:
     return f"{type(exc).__name__}: {exc}{detail}".replace("\n", " ")
 
 
+def _queue_breakout_followups(config: PipelineConfig, logger) -> None:
+    """Doubles down on winners: each breakout video gets follow-up topics queued first in its niche."""
+    if not config.secrets.gemini_api_key:
+        logger.info("No GEMINI_API_KEY - skipping breakout follow-ups.")
+        return
+    from youtube_automation import topic_store
+    from youtube_automation.script_writer import brainstorm_followups
+    niches = {n.key: n for n in config.niches}
+    for rec in growth_ledger.breakout_videos():
+        niche = niches.get(rec.get("niche"))
+        if niche is None:
+            growth_ledger.set_fields(rec["video_id"], {"followups_queued": "niche_removed"})
+            continue
+        history = topic_store._load_history(growth_ledger.ROOT / config.topics.history_file.format(niche=niche.key))
+        topics = brainstorm_followups(config, niche.niche, rec["title"], int(rec["views"]), history)
+        added = topic_store.push_priority(config, niche.key, topics)
+        growth_ledger.set_fields(rec["video_id"], {"followups_queued": dt.date.today().isoformat()})
+        logger.info("Breakout %s (%d views, %s): queued %d follow-up topic(s).", rec["video_id"], rec["views"], niche.key, added)
+
+
 def main() -> None:
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
@@ -94,6 +114,11 @@ def main() -> None:
         logger.info("Audience insights: %s", json.dumps({k: insights[k] for k in ("videos", "overall")}))
     except Exception:
         logger.exception("Audience backfill/insights failed - continuing.")
+
+    try:
+        _queue_breakout_followups(config, logger)
+    except Exception:  # noqa: BLE001 - growth extra; never fails the sync
+        logger.exception("Queuing breakout follow-ups failed - continuing.")
 
     if failures:
         for vid, why in failures:

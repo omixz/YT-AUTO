@@ -883,6 +883,34 @@ enough, it's fine to return fewer than {count} rather than force a weak or trivi
     return topics
 
 
+def brainstorm_followups(config: PipelineConfig, niche: str, winner_title: str, winner_views: int,
+                         existing: List[str], count: int = 3) -> List[str]:
+    """Topics that repeat a breakout video's winning formula: same niche, same hook pattern, different stories
+    (plus one that goes deeper into the winner's own story). Viral channels grow by doubling down on what hit."""
+    schema = {"type": "object", "properties": {"topics": {"type": "array", "items": {"type": "string"}}}, "required": ["topics"]}
+    used_list = "\n".join(f"- {t}" for t in existing[-60:]) or "(none yet)"
+    prompt = f"""Channel niche: {niche}
+
+This video BROKE OUT on our channel ({winner_views} views - many times our typical video):
+"{winner_title}"
+
+Suggest {count} new video topics that repeat what made it work. First work out its formula in your head: the kind of
+protagonist (an ordinary or unlikely person? a famous one caught off guard?), the hook shape (a tiny cause with a
+massive consequence? a mystery with a chilling detail?), the era/region and the emotional stakes. Then:
+- Topic 1: a deeper or untold angle of the SAME real story (what happened next, the person nobody remembers in it,
+  the detail that changes how it reads) - a genuinely new video, not a retelling.
+- The others: DIFFERENT real stories with the same formula, equally specific and surprising.
+Each topic is one sentence with a clear named anchor (person, place, date) and one concrete, visual moment.
+Only real, verifiable history; never state an unproven claim as fact.
+
+Already-used topics (do not repeat these or close variants):
+{used_list}
+
+Call {EMIT_TOPICS} with the result."""
+    data = _call_gemini(prompt, EMIT_TOPICS, schema, config, max_output_tokens=1200)
+    return [t.strip() for t in data.get("topics", []) if isinstance(t, str) and t.strip()][:count]
+
+
 def brainstorm_topics(config: PipelineConfig, existing: List[str], count: int = 5) -> List[str]:
     """Ask Gemini for fresh topic ideas that avoid what's already been made."""
     schema = {
