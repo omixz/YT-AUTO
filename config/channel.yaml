@@ -1,9 +1,9 @@
 channel:
-  name: "My Faceless Channel"
+  name: "FactsProvider"
   audience: "curious adults who scroll shorts and watch longform"   # default; a niche below can override this
   tone: "dramatic, high-stakes, suspenseful, no filler"              # default; a niche below can override this
   language: "en"
-  subscribe_cta: "for more {niche} every week"   # {niche} filled in from whichever niche was picked; shown on the outro card
+  subscribe_cta: "for a new story every day"   # {niche} filled in from whichever niche was picked; shown on the outro card
 
 # One channel, multiple niches. Every run, niche_selector.py picks one
 # (niche, format) pair - weighted by past performance once enough data
@@ -52,7 +52,9 @@ video:
     shorts:
       enabled: true             # built with the same toon cartoon engine as longform; scheduled by its own cron in publish.yml
       target_seconds: 40        # the model overshoots Shorts ~1.5x (a 55s target ran 83s in the dry-run); 40 lands around 55-60s
-      weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts cron forces --format shorts
+      weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts crons force --format shorts
+      daily_cap: 3              # Shorts average ~30x the views of a longform here (audience_insights.json: 166 vs 6) - 3 crons/day in publish.yml.
+                                # YouTube quota: 3 Shorts + 1 longform + 1 teaser = 5 uploads (~8,300 of 10,000 units/day).
     teaser:
       enabled: true             # cliffhanger Short built from your newest public longform; ends by sending viewers to it (own cron, own daily cap, own stats - separate from the daily Shorts)
       target_seconds: 40
@@ -67,7 +69,10 @@ video:
       # changes. gemini-3.5-flash's real output ceiling is 65,536 tokens,
       # confirmed against Google's published model card - comfortably
       # covers a 20-minute script.
-      target_seconds: 1200
+      # 600s = 10 min (was 1200). Real data: longform keeps only ~17% of viewers (~3 min watched) at 20 min,
+      # so the back half is watched by nobody. 10 min still clears the 8-minute mid-roll ad threshold for
+      # monetization, makes each script far less likely to hit Gemini's output limit, and halves render time.
+      target_seconds: 600
       weight: 1.0
 
 teaser:

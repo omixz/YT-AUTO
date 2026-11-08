@@ -469,6 +469,25 @@ EXISTING NARRATION:
     return data
 
 
+def _winning_titles_block(format_name: str) -> str:
+    """Prompt block listing this channel's own best-performing titles, so new titles learn from real view data."""
+    try:
+        from .growth_ledger import top_titles
+        formats = ("shorts", "teaser") if format_name in ("shorts", "teaser") else ("longform",)
+        best = top_titles(formats, n=5)
+    except Exception:  # noqa: BLE001 - optional signal; never block a script over it
+        return ""
+    if not best:
+        return ""
+    lines = "\n".join(f'- "{r["title"]}" ({r["views"]} views)' for r in best)
+    return f"""
+WHAT ALREADY WORKS ON THIS CHANNEL - these real titles got the most views here:
+{lines}
+Study what they share (a specific person/place/number, a strange concrete detail, an unresolved gap) and give this video's
+title the same pull. Never copy or lightly reword them, and stay on this video's topic.
+"""
+
+
 def generate_script(topic: str, config: PipelineConfig, source: "dict | None" = None) -> Script:
     """Ask Gemini to write a full scene-by-scene script for one video.
 
@@ -556,7 +575,7 @@ HOOK CRAFT (the first 15 seconds decide whether anyone watches; most of this cha
 - The whole hook scene is 35 words or fewer. Scene 2 must ESCALATE (new twist), never explain the hook.
 - Concrete beats abstract: "a table set for dinner, clocks stopped" beats "a mysterious disappearance".
 {shorts_rules}
-TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
+{_winning_titles_block(config.video.format)}TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
 Each is 35-65 characters, specific, and never states an unproven claim as fact.
 
 RETENTION ENGINEERING - DO NOT SKIP THESE:
