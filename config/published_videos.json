@@ -2265,5 +2265,42 @@
         "first sentence is 18 words (aim for 14 or fewer)"
       ]
     }
+  },
+  {
+    "video_id": "rT1td6GQsgk",
+    "niche": "unsolved_mysteries",
+    "format": "teaser",
+    "title": "The 1914 Mystery of the Boy Who Wasn't Bobby Dunbar",
+    "topic": "The 1914 aftermath of the Bobby Dunbar case, where the boy mistakenly identified as Bobby grew up carrying the quiet, lifelong burden of a stolen identity until modern descendants finally uncovered the truth.",
+    "published_at": "2026-11-08",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 23.4,
+        "audio_seconds": 47.8
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 36.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "WHO WAS HE?"
+      },
+      "tiktok_post_id": "6af0e2bdd6bbae6fa10f6bb4",
+      "hook_warnings": [
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    },
+    "teaser_for": "_NpLqqchJxY"
   }
 ]
