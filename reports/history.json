@@ -1806,5 +1806,51 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "0_m6AVtIJFA",
+    "published_at": "2026-11-01",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "The Extremist Tailor Who Declared Himself King of M\u00fcnster",
+    "stats": {
+      "views": 27,
+      "minutes_watched": 3.0,
+      "avg_view_duration_s": 41.0,
+      "avg_view_percentage": 54.84,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 17,
+        "YT_SEARCH": 8,
+        "YT_CHANNEL": 2,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "jK3G58-JU4w",
+    "published_at": "2026-11-01",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1979 Amityville Horror Hoax: How Investigator Stephen Kaplan Questioned the Lie",
+    "stats": {
+      "views": 39,
+      "minutes_watched": 42.0,
+      "avg_view_duration_s": 118.0,
+      "avg_view_percentage": 9.96,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SUBSCRIBER": 16,
+        "RELATED_VIDEO": 14,
+        "YT_SEARCH": 8,
+        "NO_LINK_OTHER": 1
+      }
+    }
   }
 ]

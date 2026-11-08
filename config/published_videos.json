@@ -1109,7 +1109,8 @@
       }
     },
     "views": 950,
-    "avg_view_pct": 14.6
+    "avg_view_pct": 14.6,
+    "followups_queued": "2026-11-08"
   },
   {
     "video_id": "pf_fDWX5buY",
@@ -1315,7 +1316,8 @@
       }
     },
     "views": 473,
-    "avg_view_pct": 53.8
+    "avg_view_pct": 53.8,
+    "followups_queued": "2026-11-08"
   },
   {
     "video_id": "BEIKayOwEOU",
@@ -1699,7 +1701,8 @@
       "tiktok_post_id": "6ae543c8ceb491e585ceed4b"
     },
     "views": 314,
-    "avg_view_pct": 100.9
+    "avg_view_pct": 100.9,
+    "followups_queued": "2026-11-08"
   },
   {
     "video_id": "_85fADO6jTs",
@@ -1743,7 +1746,7 @@
     "title": "The Extremist Tailor Who Declared Himself King of M\u00fcnster",
     "topic": "The M\u00fcnster Rebellion of 1534: An extremist tailor named John of Leiden seizes control of a German city, declares himself the King of the New Jerusalem, outlaws private property, forces polygamy under pain of death, and starves his citizens before being publicly tortured with red-hot tongs and left in hanging iron cages.",
     "published_at": "2026-11-01",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1767,7 +1770,9 @@
         "text": "THE TAILOR KING OF TERROR"
       },
       "tiktok_post_id": "6ae68aea37c1acd2a0dcbbcf"
-    }
+    },
+    "views": 27,
+    "avg_view_pct": 54.8
   },
   {
     "video_id": "jK3G58-JU4w",
@@ -1776,7 +1781,7 @@
     "title": "The 1979 Amityville Horror Hoax: How Investigator Stephen Kaplan Questioned the Lie",
     "topic": "The 1979 Amityville Horror Hoax: The chilling moment investigator Stephen Kaplan confronted the Lutz family's paranormal claims, exposing a manufactured haunting built on financial desperation and a true crime tragedy.",
     "published_at": "2026-11-01",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1800,7 +1805,9 @@
         "text": "THE HOAX EXPOSED"
       },
       "tiktok_post_id": null
-    }
+    },
+    "views": 39,
+    "avg_view_pct": 10.0
   },
   {
     "video_id": "PGS4-2-gzXg",
