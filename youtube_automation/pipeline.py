@@ -277,7 +277,12 @@ def run(
         # not have it auto-publish later unattended - only schedule the
         # optimal slot on the normal (passed-gate) path, and only when the
         # caller hasn't already pinned a specific publish_at themselves.
-        effective_publish_at = publish_at
+        # An explicit --publish-at must not apply to a gate-failed video either: the uploader turns publishAt into
+        # "private now, PUBLIC at that time", which would auto-release exactly the video a human was meant to review.
+        effective_publish_at = publish_at if passed_quality_gate else None
+        if publish_at and not passed_quality_gate:
+            logger.warning("Ignoring publish_at=%s: the quality gate failed, so this video stays %s for review.",
+                           publish_at, effective_privacy)
         if effective_publish_at is None and passed_quality_gate and not publish_now:
             effective_publish_at = scheduling.next_optimal_publish_time()
             logger.info("Scheduling publish for the next optimal slot: %s", effective_publish_at)
@@ -339,7 +344,7 @@ def run(
             logger.warning("Direct YouTube upload failed (%s) - trying the Buffer fallback...", exc)
             video_url = media_host.upload_public(video_path, f"{run_id}.mp4", config)
             buffer_post_id = buffer_publisher.publish_video(
-                video_url, script.title, script.description, config, publish_at=effective_publish_at,
+                video_url, script.title, description, config, publish_at=effective_publish_at,
                 privacy_status=effective_privacy, category_id=config.upload.category_id,
                 made_for_kids=config.upload.made_for_kids,
             )

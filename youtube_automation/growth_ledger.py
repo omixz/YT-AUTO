@@ -59,7 +59,8 @@ def record_published(
         "format": format_name,
         "title": title,
         "topic": topic,
-        "published_at": dt.date.today().isoformat(),
+        # UTC, same clock daily_counts() uses for the one-a-day cap (a local-date stamp could miscount near midnight).
+        "published_at": dt.datetime.now(dt.timezone.utc).date().isoformat(),
         "scored": False,
         "privacy_status": privacy_status,
         "passed_quality_gate": passed_quality_gate,
@@ -153,7 +154,7 @@ def needs_audience(config: PipelineConfig, limit: int = 40) -> List[dict]:
     """Public, mature videos whose views/retention were never looked up (newest first); failures are retried."""
     today = dt.date.today()
     out = [r for r in _load(ROOT / LEDGER_PATH)
-           if is_scorable(r) and "avg_view_pct" not in r
+           if is_scorable(r) and r.get("avg_view_pct") is None
            and (today - dt.date.fromisoformat(r["published_at"])).days >= config.growth.maturity_days]
     return sorted(out, key=lambda r: r["published_at"], reverse=True)[:limit]
 

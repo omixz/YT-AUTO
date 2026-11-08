@@ -49,6 +49,41 @@ _MAX_UPLOAD_RETRIES = 8
 _MAX_BACKOFF_SECONDS = 60
 
 
+_TAGS_MAX_CHARS = 500          # YouTube's limit on all tags combined; over it the WHOLE upload fails (400 invalidTags)
+_DESCRIPTION_MAX_BYTES = 5000  # YouTube's description limit (bytes, UTF-8)
+
+
+def _clean_text(text: str) -> str:
+    """YouTube rejects '<' and '>' anywhere in a title or description (400 invalidTitle / invalidDescription)."""
+    return (text or "").replace("<", "").replace(">", "")
+
+
+def clean_title(title: str) -> str:
+    return " ".join(_clean_text(title).split())[:100] or "Untitled"
+
+
+def clean_description(description: str) -> str:
+    data = _clean_text(description).encode("utf-8")[:_DESCRIPTION_MAX_BYTES]
+    return data.decode("utf-8", "ignore")
+
+
+def clean_tags(tags: List[str]) -> List[str]:
+    """Dedupes (case-insensitively), strips characters YouTube rejects, and keeps the combined length under 500.
+    YouTube counts a tag containing a space as if it were quoted (+2) and each separating comma (+1)."""
+    out, seen, total = [], set(), 0
+    for tag in tags:
+        t = " ".join(_clean_text(str(tag)).replace(",", " ").split())
+        if not t or t.lower() in seen or len(t) > 100:
+            continue
+        cost = len(t) + (2 if " " in t else 0) + (1 if out else 0)
+        if total + cost > _TAGS_MAX_CHARS:
+            continue
+        out.append(t)
+        seen.add(t.lower())
+        total += cost
+    return out
+
+
 def upload_video(
     video_path: Path,
     title: str,
@@ -78,9 +113,9 @@ def upload_video(
 
     body = {
         "snippet": {
-            "title": title[:100],
-            "description": description,
-            "tags": list(dict.fromkeys((tags or []) + config.upload.default_tags)),
+            "title": clean_title(title),
+            "description": clean_description(description),
+            "tags": clean_tags(list(tags or []) + list(config.upload.default_tags or [])),
             "categoryId": config.upload.category_id,
         },
         "status": status,

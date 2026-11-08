@@ -57,7 +57,13 @@ def main() -> None:
             continue
 
         growth_ledger.apply_score(config, record["niche"], record["format"], stats.score)
-        growth_ledger.mark_scored(record["video_id"], {"views": stats.views, "avg_view_pct": (analytics.fetch_audience_metrics(record["video_id"], published, config, window_days=config.growth.maturity_days) or {}).get("avg_view_pct")})
+        extra = {"views": stats.views}
+        audience = analytics.fetch_audience_metrics(record["video_id"], published, config, window_days=config.growth.maturity_days)
+        if audience and audience.get("avg_view_pct") is not None:
+            # Only write it when known: storing avg_view_pct=None made needs_audience() ("avg_view_pct" not in r)
+            # treat the video as done, so a failed lookup was never retried.
+            extra["avg_view_pct"] = audience["avg_view_pct"]
+        growth_ledger.mark_scored(record["video_id"], extra)
         logger.info(
             "Scored %s (%s/%s): score=%.1f (views=%d, minutes_watched=%.1f, subs_gained=%d)",
             record["video_id"], record["niche"], record["format"], stats.score,
