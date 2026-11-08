@@ -40,5 +40,15 @@ def test_daily_cap_counts(tmp_path, monkeypatch):
 
 
 def test_music_is_quieter_than_before():
+    # The setting is now actually applied in the mix (it used to be ignored, so music played at 0 dB).
+    from youtube_automation.assembler import _build_mix_command
     from youtube_automation.config import PipelineConfig
-    assert PipelineConfig.load("config/channel.yaml").video.music_volume_db <= -22
+    db = PipelineConfig.load("config/channel.yaml").video.music_volume_db
+    assert -16 <= db <= -6
+    from pathlib import Path
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        m = Path(d) / "m.wav"
+        m.write_bytes(b"x")
+        cmd = _build_mix_command(Path("v.mp4"), Path("n.mp3"), m, None, None, Path("o.mp4"), music_db=db)
+    assert f"volume={db:.1f}dB" in " ".join(cmd)

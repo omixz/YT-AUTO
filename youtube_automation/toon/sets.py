@@ -50,7 +50,8 @@ _SKY = {
     "snow": ((165, 192, 222), (238, 244, 250)), "desert": ((238, 188, 118), (252, 228, 172)),
     "ruins": ((128, 112, 112), (226, 160, 118)), "mythic": ((160, 132, 226), (255, 216, 192)),
     "ancient": ((150, 200, 240), (252, 232, 190)), "dungeon": ((20, 20, 30), (40, 40, 52)),
-    "battlefield": ((108, 100, 98), (208, 170, 130)),
+    "battlefield": ((108, 100, 98), (208, 170, 130)), "jungle": ((120, 190, 170), (220, 240, 200)),
+    "library": ((60, 40, 30), (90, 64, 44)), "church": ((70, 66, 80), (120, 110, 120)), "tavern": ((60, 40, 30), (96, 66, 44)),
 }
 _DEFAULT_SKY = ((104, 182, 238), (224, 242, 252))
 _DUSK_SKY = ((70, 58, 130), (252, 156, 92))
@@ -248,6 +249,48 @@ def palm(c, x, gy, s, o):
         c.drawPath(fr, stroke((70, 150, 84), 6 * s))
 
 
+def tent(c, x, gy, s, o, canvas_col=(150, 140, 104)):
+    inked(c, poly_path([(x - 52 * s, gy), (x, gy - 60 * s), (x + 52 * s, gy)]), canvas_col, o)
+    inked(c, poly_path([(x - 12 * s, gy), (x, gy - 34 * s), (x + 12 * s, gy)]), shade(canvas_col, -0.45), o * 0.8)
+    c.drawLine(x, gy - 60 * s, x, gy - 74 * s, stroke(INK, 3 * s))
+
+
+def lamppost(c, x, gy, s, o, tod="day"):
+    c.drawLine(x, gy, x, gy - 120 * s, stroke(INK, 7 * s + o))
+    c.drawLine(x, gy, x, gy - 120 * s, stroke((56, 60, 72), 5 * s))
+    if tod != "day":
+        glow(c, x, gy - 126 * s, 60 * s, (255, 214, 130), 150)
+    inked(c, poly_path([(x - 10 * s, gy - 118 * s), (x + 10 * s, gy - 118 * s), (x + 7 * s, gy - 136 * s), (x - 7 * s, gy - 136 * s)]),
+          (255, 226, 140) if tod != "day" else (210, 214, 220), o * 0.8)
+
+
+def stall(c, x, gy, s, o, cloth=(190, 70, 64)):
+    c.drawRect(skia.Rect(x - 40 * s, gy - 30 * s, x + 40 * s, gy), fill((150, 106, 70)))
+    c.drawRect(skia.Rect(x - 40 * s, gy - 30 * s, x + 40 * s, gy), stroke(INK, o))
+    for k in (-36, 36):
+        c.drawLine(x + k * s, gy - 30 * s, x + k * s, gy - 70 * s, stroke(INK, 4 * s))
+    for i in range(4):   # striped awning
+        inked(c, poly_path([(x - 46 * s + i * 23 * s, gy - 70 * s), (x - 23 * s + i * 23 * s, gy - 70 * s),
+                            (x - 23 * s + i * 23 * s, gy - 58 * s), (x - 46 * s + i * 23 * s, gy - 58 * s)]),
+              cloth if i % 2 == 0 else (244, 236, 220), o * 0.6)
+    for k in range(4):
+        inked_circle(c, x + (-24 + k * 16) * s, gy - 36 * s, 6 * s, [(230, 160, 60), (120, 170, 70), (200, 60, 50), (240, 210, 90)][k], o * 0.5)
+
+
+def barrel(c, x, gy, s, o):
+    inked(c, poly_path([(x - 16 * s, gy), (x - 19 * s, gy - 20 * s), (x - 16 * s, gy - 40 * s), (x + 16 * s, gy - 40 * s),
+                        (x + 19 * s, gy - 20 * s), (x + 16 * s, gy)]), (142, 98, 60), o)
+    for yy in (10, 30):
+        c.drawLine(x - 18 * s, gy - yy * s, x + 18 * s, gy - yy * s, stroke((80, 80, 90), 3 * s))
+
+
+def bushes(c, x, gy, s, o, leaf=(52, 120, 64)):
+    for dx, r in ((-26, 20), (0, 28), (26, 20)):
+        inked_circle(c, x + dx * s, gy - r * s * 0.7, r * s, leaf, o)
+    for dx in (-30, -10, 14, 32):   # hanging vines
+        c.drawLine(x + dx * s, gy - 40 * s, x + dx * s, gy - 4 * s, stroke((40, 100, 50), 2.4 * s))
+
+
 # ---- layer builders ----------------------------------------------------------------------------
 
 _EXTERIOR_PROPS = {  # setting -> (far prop list, mid prop list)
@@ -260,9 +303,13 @@ _EXTERIOR_PROPS = {  # setting -> (far prop list, mid prop list)
     "mythic": (["clouds"], [temple]), "default2": (["hills"], [tree]),
     "battlefield": (["smokehills"], [deadtree, sandbags, wire, sandbags]), "shipdeck": (["horizon_wide"], [liner]),
     "island": (["horizon_wide"], [palm, palm, crates]),
+    "village": (["hills"], [house, stall, house, tree, barrel]), "jungle": (["hills"], [palm, bushes, tree, bushes, palm]),
+    "camp": (["hills"], [tent, tent, crates, barrel]), "street": (["skyline"], [building, lamppost, building, lamppost]),
 }
-INTERIOR = {"indoor", "dungeon", "courtroom", "warroom"}
-_EXTRA_GROUND = {"battlefield": (96, 82, 62), "warroom": (104, 76, 52), "shipdeck": (156, 120, 84), "island": (232, 214, 160)}
+INTERIOR = {"indoor", "dungeon", "courtroom", "warroom", "library", "church", "tavern"}
+_EXTRA_GROUND = {"battlefield": (96, 82, 62), "warroom": (104, 76, 52), "shipdeck": (156, 120, 84), "island": (232, 214, 160),
+                 "village": (176, 150, 104), "jungle": (78, 110, 62), "camp": (140, 124, 92), "street": (120, 118, 124),
+                 "library": (120, 84, 56), "church": (150, 140, 130), "tavern": (110, 76, 50)}
 
 
 def _hills(sf: _Surf, gy: float, base: Color, amp: float, seed: int, o=0):
@@ -291,7 +338,8 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
     lights: List[Tuple[float, float, Color, float]] = []
     particles = {"snow": "snow", "ruins": "embers", "desert": "dust", "mythic": "sparkles", "water": "birds",
                  "harbor": "birds", "dungeon": "dust", "courtroom": "dust", "indoor": "dust",
-                 "battlefield": "embers", "shipdeck": "birds", "island": "birds", "warroom": "dust"}.get(setting, "motes")
+                 "battlefield": "embers", "shipdeck": "birds", "island": "birds", "warroom": "dust",
+                 "jungle": "fireflies", "camp": "embers", "library": "dust", "church": "motes", "tavern": "dust", "village": "birds"}.get(setting, "motes")
     if tod == "night" and not interior:
         particles = "fireflies"
 
@@ -357,8 +405,8 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
         layers.append(Layer(far.image(), 0.22))
         # mid props
         mid = _Surf(LW, h)
-        n = 6 if setting not in {"palace", "government", "ancient", "water", "mythic", "shipdeck", "island"} else 3
-        leaf = tint({"snow": (62, 118, 96), "forest": (66, 140, 78), "ruins": (110, 120, 76), "mountain": (74, 128, 88)}.get(setting, (92, 168, 96)), tod)
+        n = 11 if setting == "jungle" else 6 if setting not in {"palace", "government", "ancient", "water", "mythic", "shipdeck", "island"} else 3
+        leaf = tint({"snow": (62, 118, 96), "forest": (66, 140, 78), "jungle": (40, 120, 60), "ruins": (110, 120, 76), "mountain": (74, 128, 88)}.get(setting, (92, 168, 96)), tod)
         wall = tint((238, 222, 190), tod)
         stone = tint((226, 214, 192), tod)
         for i in range(n):
@@ -398,6 +446,16 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
                 mid.rep(lambda xx: liner(mid.c, xx, gy - 10, sc * 0.9, 3.5), x)
             elif fn is palm:
                 mid.rep(lambda xx: palm(mid.c, xx, gy - 6, sc, 3.5), x)
+            elif fn is tent:
+                mid.rep(lambda xx: tent(mid.c, xx, gy - 4, sc, 3.5, tint((150, 140, 104), tod)), x)
+            elif fn is lamppost:
+                mid.rep(lambda xx: lamppost(mid.c, xx, gy - 4, sc, 3.5, tod), x)
+            elif fn is stall:
+                mid.rep(lambda xx: stall(mid.c, xx, gy - 4, sc, 3.5, tint(rng.choice([(190, 70, 64), (70, 110, 170), (80, 140, 90)]), tod)), x)
+            elif fn is barrel:
+                mid.rep(lambda xx: barrel(mid.c, xx, gy - 4, sc, 3.5), x)
+            elif fn is bushes:
+                mid.rep(lambda xx: bushes(mid.c, xx, gy - 4, sc, 3.5, tint((52, 120, 64), tod)), x)
         layers.append(Layer(mid.image(), 0.55))
         if tod != "day":
             lights += [(w * f, gy - 90 * s, (255, 214, 120), 70 * s) for f in (0.15, 0.55, 0.85)] if tod == "night" and setting in {"city", "harbor", "government", "default"} else []
@@ -433,7 +491,8 @@ def build_set(setting: str, tod: str, w: int, h: int, rng: random.Random) -> Sce
 
 
 def _build_interior(setting, tod, LW, h, gy, s, ground, layers, lights, rng):
-    wall_c = {"dungeon": (78, 80, 92), "courtroom": (150, 112, 74), "indoor": (214, 196, 168), "warroom": (122, 98, 72)}[setting]
+    wall_c = {"dungeon": (78, 80, 92), "courtroom": (150, 112, 74), "indoor": (214, 196, 168), "warroom": (122, 98, 72),
+              "library": (104, 72, 50), "church": (176, 168, 156), "tavern": (126, 88, 58)}[setting]
     wall_c = tint(wall_c, "night" if tod == "night" else "day")
     wl = _Surf(LW, h)
     wl.c.drawRect(skia.Rect(0, 0, LW, gy), skia.Paint(Shader=vgradient(shade(wall_c, 0.1), shade(wall_c, -0.15), 0, gy)))
@@ -472,6 +531,46 @@ def _build_interior(setting, tod, LW, h, gy, s, ground, layers, lights, rng):
             for j in range(4):
                 inked_circle(wl.c, mx - 100 * s + j * 66 * s, gy * (0.28 + 0.06 * (j % 2)), 7 * s, (210, 60, 52), 2.5)
             lights.append((mx % LW, gy * 0.08, (255, 214, 130), 120 * s))
+    elif setting == "library":   # floor-to-ceiling shelves of coloured book spines
+        spines = [(150, 50, 50), (60, 90, 140), (70, 120, 80), (180, 140, 60), (110, 70, 120), (200, 190, 160)]
+        shelf_h = 70 * s or 70
+        y = gy * 0.08
+        while y + shelf_h < gy * 0.95:
+            wl.c.drawRect(skia.Rect(0, y + shelf_h - 8 * s, LW, y + shelf_h), fill(shade(wall_c, -0.3)))
+            bx = 0.0
+            while bx < LW:
+                bw = rng.uniform(10, 20) * s
+                bh = rng.uniform(0.6, 0.92) * (shelf_h - 10 * s)
+                wl.c.drawRect(skia.Rect(bx, y + shelf_h - 8 * s - bh, bx + bw - 2, y + shelf_h - 8 * s), fill(rng.choice(spines)))
+                bx += bw
+            y += shelf_h
+        for i in range(3):
+            lights.append((((i + 0.5) * LW / 3) % LW, gy * 0.12, (255, 214, 140), 130 * s))
+    elif setting == "church":    # pointed stained-glass windows between stone pillars
+        glass = [(200, 60, 60), (60, 100, 190), (240, 200, 80), (70, 150, 90), (150, 80, 170)]
+        for i in range(5):
+            bx = (i + 0.5) * LW / 5
+            top, bot = gy * 0.12, gy * 0.66
+            win = poly_path([(bx - 46 * s, bot), (bx - 46 * s, top + 50 * s), (bx, top), (bx + 46 * s, top + 50 * s), (bx + 46 * s, bot)])
+            wl.c.drawPath(win, fill((30, 30, 50)))
+            for r in range(6):
+                for k in range(3):
+                    cx_, cy_ = bx - 30 * s + k * 30 * s, top + 60 * s + r * (bot - top - 70 * s) / 6
+                    wl.c.drawRect(skia.Rect(cx_ - 13 * s, cy_, cx_ + 13 * s, cy_ + (bot - top - 70 * s) / 6 - 4 * s), fill(rng.choice(glass)))
+            wl.c.drawPath(win, stroke(INK, 6))
+            column(wl.c, bx + LW / 10, gy, gy * 0.9, 30 * s, 3.5, shade(wall_c, 0.15))
+            lights.append((bx % LW, gy * 0.4, (255, 236, 190), 120 * s))
+    elif setting == "tavern":    # timber beams, barrels and warm lamps
+        for i in range(7):
+            bx = (i + 0.5) * LW / 7
+            wl.c.drawRect(skia.Rect(bx - 12 * s, 0, bx + 12 * s, gy), fill(shade(wall_c, -0.3)))
+        wl.c.drawRect(skia.Rect(0, gy * 0.1, LW, gy * 0.16), fill(shade(wall_c, -0.35)))
+        for i in range(6):
+            bx = (i + 0.3) * LW / 6
+            barrel(wl.c, bx, gy, 3.4 * s, 3.5)
+            barrel(wl.c, bx + 76 * s, gy, 3.4 * s, 3.5)
+            barrel(wl.c, bx + 38 * s, gy - 136 * s, 3.4 * s, 3.5)
+            lights.append(((bx + LW / 12) % LW, gy * 0.3, (255, 180, 90), 110 * s))
     else:
         for i in range(4):
             bx = (i + 0.5) * LW / 4

@@ -16,13 +16,22 @@ _WALK = ("march", "walked", "walk ", "journey", "travel", "fled", "escape", "sai
 _QUESTION = ("?", "mystery", "mysterious", "unknown", "unexplained", "strange", "why ", "how did", "nobody knows", "no one knows", "puzzle", "vanish", "disappear")
 _FEAR = ("fear", "afraid", "terror", "horrif", "panic", "dread", "scream", "flee", "danger", "trap", "doomed", "ambush")
 _JOY = ("treasure", "gold", "discover", "triumph", "victory", "glory", "won ", "celebrat", "crowned", "found ")
-VALID_SETTINGS = ['ancient', 'battlefield', 'city', 'courtroom', 'default', 'desert', 'dungeon', 'forest', 'government', 'harbor', 'indoor', 'island', 'mountain', 'mythic', 'palace', 'ruins', 'shipdeck', 'snow', 'warroom', 'water']
+VALID_SETTINGS = ['ancient', 'battlefield', 'camp', 'church', 'city', 'courtroom', 'default', 'desert', 'dungeon', 'forest', 'government',
+                  'harbor', 'indoor', 'island', 'jungle', 'library', 'mountain', 'mythic', 'palace', 'ruins', 'shipdeck', 'snow',
+                  'street', 'tavern', 'village', 'warroom', 'water']
 VALID_ACTIONS = {"talk", "walk", "fight", "crowd", "shock"}
 _SETTING_HINTS = (  # fallback only, for scenes the model did not direct; checked before the legacy resolver
     ("battlefield", ("trench", "battlefield", "no man's land", "frontline", "front line", "shelling", "bombardment", "artillery", "offensive", "stormed")),
     ("warroom", ("headquarters", "general staff", "war room", "map table", "command post", "briefing", "war council", "supreme command")),
     ("shipdeck", ("cruise", "ocean liner", "aboard", "passenger", "on deck", "ship's deck", "stateroom")),
     ("island", ("island", "beach", "castaway", "shipwreck", "shoreline")),
+    ("library", ("library", "archive", "manuscript", "scholar", "study ", "university")),
+    ("church", ("church", "cathedral", "monastery", "chapel", "monk", "abbey", "mass ")),
+    ("tavern", ("tavern", " inn ", " pub ", "saloon", "alehouse")),
+    ("jungle", ("jungle", "rainforest", "amazon")),
+    ("camp", ("camp ", "encampment", "tents", "base camp", "bivouac")),
+    ("village", ("village", "peasant", "farmhouse", "hamlet", "market square")),
+    ("street", ("street", "alley", "sidewalk", "avenue")),
 )
 _RIVALS = ["pirate", "knight", "viking", "samurai", "gladiator", "general", "assassin", "roman"]
 
@@ -45,6 +54,7 @@ class SceneDirection:
     shot: str = "medium"                 # wide | medium | close
     hero: Optional[object] = None        # toon.character.Look for the on-screen character
     rival_look: Optional[object] = None
+    companions: List[object] = field(default_factory=list)   # other cast members on screen with the hero (0-2)
     cta: str = ""                      # "" | "early" (pop-up reminder ~3.4s, in the first 10-20s) | "final" (stays to the end)
     cta_t: float = 0.6                 # seconds into the scene when the card appears
     callouts: List[Tuple[float, str]] = field(default_factory=list)   # (time_in_scene, label) number/date cards
@@ -54,7 +64,17 @@ def _has(text: str, words) -> bool:
     return any(w in text for w in words)
 
 
-def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirection]:
+def _cast_index(names, wanted: str) -> int:
+    w = (wanted or "").strip().lower()
+    if not w:
+        return -1
+    for i, n in enumerate(names):
+        if n == w or (w in n or n in w) and min(len(n), len(w)) >= 3:
+            return i
+    return -1
+
+
+def direct(scenes, durations: List[float], title: str = "", characters: Optional[list] = None) -> List[SceneDirection]:
     import zlib
     from .. import procedural_illustration as P
     from . import casting
@@ -63,7 +83,13 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
     era = casting.detect_era(scenes, title)
     mil_share = sum(casting.is_military(sc.narration) for sc in scenes) / max(1, len(scenes))
     crng = random.Random(zlib.crc32((title or scenes[0].narration).encode()))
-    cast = casting.build_cast(era, crng, mil_share)
+    story = title + " " + " ".join(sc.narration for sc in scenes)
+    specs = [c for c in (characters or []) if isinstance(c, dict) and c.get("name")]
+    if specs:   # the script named the real people: their gender/skin/age/role are honoured exactly
+        cast = casting.build_cast_from_specs(specs, era, story)
+    else:       # one regional skin palette for everyone; the lead's gender follows the narration's pronouns
+        cast = casting.build_regional_cast(era, crng, mil_share, story)
+    names = [str(c.get("name", "")).strip().lower() for c in specs]
     last_hero = -1
     _THEMED = ("pharaoh", "viking", "pirate", "samurai", "gladiator", "caesar", "knight")
     settings = P._resolve_settings_for_video(scenes)
@@ -109,20 +135,46 @@ def direct(scenes, durations: List[float], title: str = "") -> List[SceneDirecti
             emotes.append((0.9, "sparkle"))
         if role == "insight":
             emotes.append((min(1.2, durations[i] * 0.3), "bulb"))
-        # --- who is on screen: a recurring cast member (protagonist most often), never the same twice in a row
-        hero_idx = 0 if rng.random() < 0.38 else rng.randrange(len(cast))
-        if hero_idx == last_hero:
-            hero_idx = (hero_idx + 1) % len(cast)
+        # --- who is on screen
+        from dataclasses import replace as _replace
+        said_on = [n for n in (getattr(scene, "on_screen", None) or []) if isinstance(n, str)]
+        picked = [k for k in (_cast_index(names, n) for n in said_on) if k >= 0]
+        picked = list(dict.fromkeys(picked))
+        if picked:                       # the script said exactly who is in this scene
+            hero_idx = picked[0]
+        else:                            # fallback: the protagonist most often, and never the wrong gender for the scene
+            want_f = casting.scene_gender(scene.narration)
+            pool = [k for k, c in enumerate(cast) if want_f is None or c.female == want_f] or list(range(len(cast)))
+            hero_idx = 0 if (0 in pool and rng.random() < 0.55) else rng.choice(pool)
+            if hero_idx == last_hero and len(pool) > 1:
+                hero_idx = pool[(pool.index(hero_idx) + 1) % len(pool)]
         last_hero = hero_idx
         hero = cast[hero_idx]
         themed = next((w for w in _THEMED if w in text), "")
-        if themed and era in {"ancient", "medieval"}:
-            hero = Look.from_archetype(P._resolve_character_archetype(scene), P._CHARACTER_ARCHETYPES, rng)
+        if themed and era in {"ancient", "medieval"} and not specs:
+            # themed costume, but the SAME person: keep skin, gender and hair (this used to re-roll the skin tone)
+            costume = Look.from_archetype(P._resolve_character_archetype(scene), P._CHARACTER_ARCHETYPES, rng)
+            hero = _replace(costume, skin=hero.skin, hair=hero.hair, female=hero.female, hair_style=hero.hair_style,
+                            build=hero.build, height=hero.height, facial="" if hero.female else costume.facial,
+                            beard=costume.beard and not hero.female)
+        prop = casting.prop_for(scene.narration + " " + " ".join(scene.visual_keywords), era, getattr(scene, "prop", "") or "")
+        if prop:
+            hero = _replace(hero, prop=prop)
+        # companions: who else is in the shot (none in fights/crowds, which already have their own extra people)
+        companions = []
+        if action not in {"fight", "crowd"}:
+            if picked:
+                companions = [cast[k] for k in picked[1:3]]
+            elif casting.mentions_group(scene.narration) or rng.random() < 0.3:
+                others = [k for k in range(len(cast)) if k != hero_idx]
+                companions = [cast[k] for k in rng.sample(others, min(len(others), 2 if casting.mentions_group(scene.narration) else 1))]
         rival_look = casting.random_look(era, random.Random(2000 + i), military=True, female=False)
+        rival_look.skin = cast[-1].skin   # same people as the story, never a random skin tone
         shot = "close" if (role == "hook" or mood == "shocked") else "wide" if action == "walk" else "medium" if action in {"fight", "crowd"} else ["medium", "wide", "medium", "close"][i % 4]
         out.append(SceneDirection(index=i, setting=(directed_setting or hinted or settings[i]), archetype=archetype, rival=rival, mood=mood,
                                   action=action, camera=camera, tod=tod, role=role, seed=i, emotes=emotes,
-                                  mascot=True, era=era, shot=shot, hero=hero, rival_look=rival_look))   # Pip is the narrator: present in every scene
+                                  mascot=True, era=era, shot=shot, hero=hero, rival_look=rival_look,
+                                  companions=companions if shot != "close" else []))   # Pip is the narrator: present in every scene
     # Like/subscribe reminders: an early pop-up (viewers decide to subscribe in the first seconds - longform at ~12s,
     # Shorts at ~8s, always inside the first 10-20s window for longform) plus one that stays to the end.
     if out:

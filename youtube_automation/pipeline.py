@@ -63,7 +63,8 @@ def _build_content_visuals(script, content_scene_audio: List[SceneAudio], config
             # The toon engine does its own finishing (vignette, time-of-day tint), so no cinematic pass.
             # It renders any frame size, so longform (16:9) and Shorts (9:16) share one engine.
             paths = toon_render.generate_all_clips(script.scenes, durations, config, work_dir,
-                                                   title=script.title, scene_audio=content_scene_audio)
+                                                   title=script.title, scene_audio=content_scene_audio,
+                                                   characters=getattr(script, "characters", None))
             _engine_used[0] = "toon"
         except Exception:
             logger.exception("Toon engine failed outright; falling back for this video.")
@@ -255,7 +256,8 @@ def run(
         try:
             from .toon import thumbnail as toon_thumbnail
             thumb_path = toon_thumbnail.render(script.scenes, [a.duration for a in content_scene_audio], script.title,
-                                               work_dir / "thumbnail.jpg", script.thumbnail_text)
+                                               work_dir / "thumbnail.jpg", script.thumbnail_text,
+                                               characters=getattr(script, "characters", None))
             thumb_style = "toon"
         except Exception:
             logger.exception("Toon thumbnail failed; falling back to the frame-based thumbnail.")

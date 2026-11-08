@@ -24,6 +24,10 @@ HAIR_COLORS = [(40, 30, 28), (86, 58, 36), (120, 76, 42), (150, 110, 60), (190, 
 _BEARDED = {"viking", "norse", "odin", "thor", "scholar", "pharaoh", "caesar", "priest", "pirate", "general"}
 _SWORDS = {"sword", "gladius", "katana", "cutlass", "khopesh", "obsidian_sword", "macuahuitl", "dagger"}
 _STAFFS = {"staff", "crook_flail", "vine_staff", "spear", "trident"}
+_UPRIGHT = {"torch"}                 # held up, flame on top
+# Everything draw_character can put in a hand (the script's `prop` field is validated against this).
+PROPS = sorted(_SWORDS | _STAFFS | _UPRIGHT | {"lantern", "axe", "hammer", "scroll", "compass", "rifle", "pistol", "book", "letter",
+                                               "map", "telescope", "shield", "bag"})
 
 
 @dataclass
@@ -441,8 +445,12 @@ def _draw_headwear(canvas, look: Look, cx, cy, r, u, o):
 
 def _draw_prop(canvas, prop: str, hx, hy, dx, dy, u, o):
     """Prop pointing along (dx, dy) from the hand."""
-    if prop in _STAFFS:
+    if prop in _STAFFS or prop in _UPRIGHT:
         dx, dy = 0.10 * (1 if dx >= 0 else -1), -1.0   # upright, slight cant
+    elif prop == "lantern":
+        dx, dy = 0.0, 1.0                              # hangs straight down from the hand
+    elif prop in {"book", "letter", "map", "shield", "bag"}:
+        dx, dy = (1.0 if dx >= 0 else -1.0), -0.15     # held flat in front, readable at a glance
     n = math.hypot(dx, dy) or 1.0
     dx, dy = dx / n, dy / n
     px, py = -dy, dx
@@ -476,6 +484,52 @@ def _draw_prop(canvas, prop: str, hx, hy, dx, dy, u, o):
             inked_oval(canvas, *at(a, 0), 3.2 * u, 7.4 * u, (214, 190, 140), o * 0.8)
         for k in (-3, 0, 3):
             canvas.drawLine(*at(7, k), *at(21, k), stroke((120, 96, 70), 1.0 * u))
+    elif prop == "rifle":
+        # long rifle/musket: wooden stock behind the hand, dark steel barrel in front, bayonet-less
+        inked(canvas, poly_path([at(-22, -3), at(4, -3.5), at(8, 4), at(-22, 6)]), (122, 84, 52), o * 0.8)
+        inked(canvas, poly_path([at(4, -3.2), at(58, -2.0), at(58, 1.2), at(6, 2.4)]), (62, 64, 72), o * 0.8)
+        canvas.drawLine(*at(20, 2.6), *at(24, 6.5), stroke(INK, 2.4 * u))
+    elif prop == "pistol":
+        inked(canvas, poly_path([at(0, -2.6), at(20, -2.6), at(20, 2.0), at(0, 2.0)]), (66, 68, 78), o * 0.7)
+        inked(canvas, poly_path([at(0, 1.0), at(6, 1.0), at(3, 10), at(-3, 9)]), (110, 78, 50), o * 0.7)
+    elif prop == "book":
+        inked(canvas, poly_path([at(-2, -12), at(20, -12), at(20, 12), at(-2, 12)]), (132, 40, 44), o * 0.8)
+        canvas.drawLine(*at(2, -12), *at(2, 12), stroke((220, 190, 110), 2.0 * u))
+        inked(canvas, poly_path([at(20, -10), at(23, -10), at(23, 10), at(20, 10)]), (246, 236, 214), o * 0.5)
+    elif prop == "letter":
+        inked(canvas, poly_path([at(0, -9), at(22, -9), at(22, 9), at(0, 9)]), (248, 244, 232), o * 0.7)
+        for k in (-4, 0, 4):
+            canvas.drawLine(*at(4, k), *at(18, k), stroke((120, 120, 140), 1.2 * u))
+        inked_circle(canvas, *at(11, 6), 2.2 * u, (190, 40, 46), o * 0.4)
+    elif prop == "map":
+        inked(canvas, poly_path([at(-4, -13), at(26, -13), at(26, 13), at(-4, 13)]), (236, 216, 162), o * 0.8)
+        pth = skia.Path()
+        pth.moveTo(*at(0, 8))
+        pth.lineTo(*at(8, 0)); pth.lineTo(*at(14, 5)); pth.lineTo(*at(22, -7))
+        canvas.drawPath(pth, stroke((190, 50, 50), 1.8 * u))
+        canvas.drawLine(*at(20, -9), *at(24, -5), stroke((190, 50, 50), 1.8 * u))
+        canvas.drawLine(*at(24, -9), *at(20, -5), stroke((190, 50, 50), 1.8 * u))
+    elif prop == "telescope":
+        inked(canvas, poly_path([at(0, -3), at(22, -4), at(22, 4), at(0, 3)]), (196, 160, 70), o * 0.7)
+        inked(canvas, poly_path([at(22, -5), at(40, -6), at(40, 6), at(22, 5)]), (172, 132, 58), o * 0.7)
+    elif prop == "torch":
+        canvas.drawLine(*at(-14, 0), *at(30, 0), stroke(INK, 5.4 * u))
+        canvas.drawLine(*at(-14, 0), *at(30, 0), stroke((120, 84, 52), 3.2 * u))
+        art.glow(canvas, *at(38, 0), 26 * u, (255, 170, 60), 150)
+        inked(canvas, poly_path([at(30, -5), at(46, 0), at(30, 5)]), (255, 150, 50), o * 0.5)
+        inked(canvas, poly_path([at(31, -2.5), at(41, 0), at(31, 2.5)]), (255, 230, 120), 0)
+    elif prop == "lantern":
+        canvas.drawLine(*at(0, 0), *at(10, 0), stroke(INK, 2.4 * u))
+        art.glow(canvas, *at(20, 0), 30 * u, (255, 206, 110), 140)
+        inked(canvas, poly_path([at(10, -7), at(30, -7), at(30, 7), at(10, 7)]), (255, 214, 120), o * 0.7)
+        canvas.drawLine(*at(10, 0), *at(30, 0), stroke(INK, 1.6 * u))
+    elif prop == "shield":
+        inked_circle(canvas, *at(10, 0), 16 * u, (150, 60, 50), o * 0.8)
+        inked_circle(canvas, *at(10, 0), 5 * u, (214, 190, 110), o * 0.5)
+    elif prop == "bag":
+        inked_circle(canvas, *at(10, 4), 10 * u, (150, 116, 70), o * 0.7)
+        inked_circle(canvas, *at(10, 4), 3.4 * u, (240, 200, 80), o * 0.4)
+        canvas.drawLine(*at(4, -6), *at(16, -6), stroke(INK, 2.4 * u))
     elif prop == "compass":
         inked_circle(canvas, *at(8, 0), 7 * u, (222, 190, 90), o * 0.8)
         canvas.drawLine(*at(8, 0), *at(13, -3), stroke((190, 40, 50), 1.6 * u))
