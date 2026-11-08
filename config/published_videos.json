@@ -2149,5 +2149,39 @@
       "hook_warnings": []
     },
     "teaser_for": "c8rmXw9WMTk"
+  },
+  {
+    "video_id": "XPXi4eVEsDw",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Man Who Parachuted Into a Storm With $200,000 and Disappeared",
+    "topic": "The 1971 D.B. Cooper Hijacking: The ultimate unsolved American mystery where a polite man in a suit parachuted into a howling Northwest storm with $200,000 in ransom money and vanished forever.",
+    "published_at": "2026-11-08",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 23.9,
+        "audio_seconds": 65.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 33.7,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "VANISHED INTO THIN AIR"
+      },
+      "tiktok_post_id": "6aefca429214322f6825c28e",
+      "hook_warnings": []
+    }
   }
 ]
