@@ -2414,5 +2414,40 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     }
+  },
+  {
+    "video_id": "XSKq9pMSNSc",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Final Radio Transmission of Flight 19 That Shocked the Navy",
+    "topic": "The 1948 Flight 19 Radio Mystery: The Final, Haunting Transmission of Five Navy Torpedo Bombers That Disappeared in the Bermuda Triangle While Chasing a Strange, Glowing Horizon",
+    "published_at": "2026-11-09",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 170.8,
+        "audio_seconds": 535.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 60,
+        "fallback_scenes": 0,
+        "seconds": 297.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THEY DISAPPEARED INTO NOTHING"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    },
+    "seed": "Five Navy bombers vanished over the Atlantic, but their final radio transmission defies all known physics. And the reason why will change how you see the Bermuda Triangle forever. But here is the twist that makes this tragedy so haunting: Taylor was not even supposed to lead this flight. To understand this vanishing, we have to go back to December fifth, nineteen forty five, at Naval Air Station Fort Lauderdale. Five Avenger torpedo bombers sat on the tarmac, fueled and ready for a routine navigation training exercise known as Navigation Problem Number One. At the controls of the lead plane sat Lieutenant Charles Taylor, an experienced combat pilot with thousands of flying hours under his be"
   }
 ]
