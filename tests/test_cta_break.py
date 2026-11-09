@@ -33,9 +33,9 @@ def test_break_is_inserted_once_and_never_into_tiny_or_hookless_scripts():
     assert not insert_cta_break(_script(), "  ")
 
 
-def test_only_longform_enables_the_break():
+def test_every_format_enables_the_break():
     f = PipelineConfig.load().video.formats
-    assert f["longform"].cta_break and not f["shorts"].cta_break and not f["teaser"].cta_break
+    assert f["longform"].cta_break and f["shorts"].cta_break and f["teaser"].cta_break
     assert PipelineConfig.load().video.cta_break_text == TEXT
 
 
