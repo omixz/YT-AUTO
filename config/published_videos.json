@@ -1816,7 +1816,7 @@
     "title": "The Surgeon Who Amputated at 300mph: The Bloody 300% Mortality Operation",
     "topic": "The Surgeon Who Amputated at 300mph: The Bloody 300% Mortality Operation That Changed Medicine Forever",
     "published_at": "2026-11-02",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1840,7 +1840,10 @@
         "text": "300% MORTALITY?"
       },
       "tiktok_post_id": "6ae7e618779ee9f13cc70773"
-    }
+    },
+    "views": 136,
+    "avg_view_pct": 45.8,
+    "followups_queued": "2026-11-09"
   },
   {
     "video_id": "a3UlCA13_bM",
@@ -1849,7 +1852,7 @@
     "title": "Why the 1982 Chicago Tylenol Murders Remain Completely Unsolved",
     "topic": "The 1982 Chicago Tylenol Murders: The terrifying unsolved poisoning spree where an unknown killer laced supermarket capsules with potassium cyanide, forcing a panic that permanently changed how the world packages medicine.",
     "published_at": "2026-11-02",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1874,7 +1877,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 3,
+    "avg_view_pct": 8.1
   },
   {
     "video_id": "n0en0lZWNkY",

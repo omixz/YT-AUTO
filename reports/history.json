@@ -1852,5 +1852,52 @@
         "NO_LINK_OTHER": 1
       }
     }
+  },
+  {
+    "video_id": "PGS4-2-gzXg",
+    "published_at": "2026-11-02",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "The Surgeon Who Amputated at 300mph: The Bloody 300% Mortality Operation",
+    "stats": {
+      "views": 136,
+      "minutes_watched": 44.0,
+      "avg_view_duration_s": 38.0,
+      "avg_view_percentage": 45.75,
+      "likes": 2,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 1,
+      "traffic_sources": {
+        "SHORTS": 109,
+        "YT_SEARCH": 19,
+        "YT_OTHER_PAGE": 5,
+        "YT_CHANNEL": 2,
+        "EXT_URL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "a3UlCA13_bM",
+    "published_at": "2026-11-02",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "Why the 1982 Chicago Tylenol Murders Remain Completely Unsolved",
+    "stats": {
+      "views": 3,
+      "minutes_watched": 2.0,
+      "avg_view_duration_s": 80.0,
+      "avg_view_percentage": 8.08,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SUBSCRIBER": 1,
+        "YT_SEARCH": 1,
+        "RELATED_VIDEO": 1
+      }
+    }
   }
 ]
