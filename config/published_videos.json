@@ -2372,5 +2372,42 @@
       "tiktok_post_id": "6af1163951492b796e6ece8b",
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "kdjFRSFPgA0",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1900 Eilean Mor Lighthouse Disappearance Mystery",
+    "topic": "The 1938 Eilean Mor Lighthouse Mystery: Three Keepers Who Vanished Without a Trace While Their Dining Table Remained Set for a Meal That Was Never Eaten",
+    "published_at": "2026-11-09",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 20.0,
+        "audio_seconds": 42.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 30.0,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "MEAL NEVER EATEN"
+      },
+      "tiktok_post_id": "6af122b6229bf05dafe7b89e",
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)",
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    }
   }
 ]
