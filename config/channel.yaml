@@ -74,6 +74,7 @@ video:
       # 600s = 10 min (was 1200). Real data: longform keeps only ~17% of viewers (~3 min watched) at 20 min,
       # so the back half is watched by nobody. 10 min still clears the 8-minute mid-roll ad threshold for
       # monetization, makes each script far less likely to hit Gemini's output limit, and halves render time.
+      cta_break: true           # ~2s beat right after the hook: "Before we continue, like and subscribe." + the like/subscribe card
       target_seconds: 600
       weight: 1.0
 

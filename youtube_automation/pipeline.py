@@ -19,7 +19,7 @@ from . import (
     visuals, youtube_uploader,
 )
 from .config import ROOT, VERTICAL_FORMATS, PipelineConfig
-from .script_writer import generate_script
+from .script_writer import generate_script, insert_cta_break
 from .tts import SceneAudio
 from .visuals import VisualAsset
 
@@ -173,6 +173,10 @@ def run(
         if text_passed:
             break
         logger.warning("Script quality gate failed (attempt %d/%d): %s", attempt, max_attempts, "; ".join(text_reasons))
+
+    fmt_cfg = config.video.formats.get(format_name)
+    if getattr(fmt_cfg, "cta_break", False) and insert_cta_break(script, config.video.cta_break_text):
+        logger.info("Inserted the like-and-subscribe beat after the hook: \"%s\"", config.video.cta_break_text)
 
     logger.info("Synthesizing narration...")
     content_scene_audio, content_narration_path = tts.synthesize_script(
@@ -405,7 +409,8 @@ def run(
                 niche_key, format_name, video_id, title=script.title, topic=topic,
                 privacy_status=effective_privacy, passed_quality_gate=passed_quality_gate,
                 quality_gate_reasons=quality_reasons,
-                seed=(" ".join(sc.narration for sc in script.scenes[:5])[:700] if format_name == "longform" else ""),
+                # the teaser retells THE STORY: the like-and-subscribe beat must never end up in its seed text
+                seed=(" ".join([sc.narration for sc in script.scenes if sc.kind != "cta_break"][:5])[:700] if format_name == "longform" else ""),
                 teaser_for=(teaser_source["video_id"] if teaser_source else None),
                 render={"voice": manifest.get("voice"), "animation": manifest.get("animation"), "thumbnail": manifest.get("thumbnail"), "tiktok_post_id": manifest.get("tiktok_post_id"), "hook_warnings": manifest.get("hook_warnings")},
             )
