@@ -219,6 +219,7 @@ class Scene:
     time_of_day: str = ""   # day | dusk | night
     on_screen: List[str] = field(default_factory=list)   # names from Script.characters visible in this scene (main first)
     prop: str = ""          # what the main person holds (validated against the era by toon/casting.py)
+    kind: str = ""          # "" for story scenes; "cta_break" for the inserted like-and-subscribe beat (never part of the story)
 
 
 @dataclass
@@ -513,6 +514,24 @@ WHAT ALREADY WORKS ON THIS CHANNEL - these real titles got the most views here:
 Study what they share (a specific person/place/number, a strange concrete detail, an unresolved gap) and give this video's
 title the same pull. Never copy or lightly reword them, and stay on this video's topic.
 """
+
+
+def insert_cta_break(script: "Script", text: str) -> bool:
+    """Puts a short spoken like-and-subscribe beat right after the hook (a scene of its own, so it gets voiced, captioned
+    and drawn like any other). It copies the hook's setting/people so the picture does not jump. Idempotent; returns
+    whether it inserted anything. Only meaningful for a script that starts with its hook and has a story after it."""
+    scenes = script.scenes
+    if len(scenes) < 3 or scenes[0].role != "hook" or not text.strip():
+        return False
+    if any(getattr(s, "kind", "") == "cta_break" for s in scenes):
+        return False
+    hook = scenes[0]
+    scenes.insert(1, Scene(
+        narration=text.strip(), visual_keywords=list(hook.visual_keywords), role="build",
+        setting=hook.setting, action="talk", mood="neutral", time_of_day=hook.time_of_day,
+        on_screen=list(hook.on_screen), prop=hook.prop, kind="cta_break",
+    ))
+    return True
 
 
 SHORT_MAX_OVERSHOOT = 1.2   # a Short may run at most 20% over its word budget before it gets tightened

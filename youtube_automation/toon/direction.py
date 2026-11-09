@@ -177,11 +177,16 @@ def direct(scenes, durations: List[float], title: str = "", characters: Optional
                                   companions=companions if shot != "close" else []))   # Pip is the narrator: present in every scene
     # Like/subscribe reminders: an early pop-up (viewers decide to subscribe in the first seconds - longform at ~12s,
     # Shorts at ~8s, always inside the first 10-20s window for longform) plus one that stays to the end.
+    breaks = [k for k, sc in enumerate(scenes) if getattr(sc, "kind", "") == "cta_break" and k < len(out)]
+    for k in breaks:          # the dedicated like-and-subscribe beat: its card is up from the first moment
+        out[k].cta, out[k].cta_t, out[k].shot = "early", 0.15, "medium"
     if out:
         total = sum(durations)
         target = 8.0 if total <= 75 else 12.0      # <=75s of content = a Short
         start = 0.0
         for i, dur in enumerate(durations):
+            if breaks:                                             # the dedicated beat already asked; don't ask twice
+                break
             if start + dur > target and i < len(out) - 1:      # the scene that is on screen at `target`
                 out[i].cta = "early"
                 out[i].cta_t = min(max(0.4, target - start), max(0.4, dur - 3.6))

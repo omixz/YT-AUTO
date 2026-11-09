@@ -46,6 +46,7 @@ class FormatConfig:
     enabled: bool = True
     target_seconds: int = 60
     weight: float = 1.0
+    cta_break: bool = False     # insert a ~2s "before we continue, like and subscribe" beat right after the hook
     daily_cap: int = 1          # public uploads of this format per UTC day (attempts allowed: daily_cap + 1, so a gate-failed one can retry)
 
 
@@ -62,6 +63,7 @@ class VideoConfig:
     # Mutated per run by niche_selector's choice - see ChannelConfig.niche.
     format: str = "shorts"
     target_seconds: int = 60
+    cta_break_text: str = "Before we continue, like and subscribe."   # spoken in the cta_break scene (see FormatConfig.cta_break)
     min_scene_duration: int = 5
     max_scene_duration: int = 15
     target_scene_duration: int = 8
