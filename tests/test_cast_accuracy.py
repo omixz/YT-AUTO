@@ -62,7 +62,7 @@ def test_props_from_narration():
 
 def test_schema_props_are_all_drawable():
     enum = SCRIPT_SCHEMA["properties"]["scenes"]["items"]["properties"]["prop"]["enum"]
-    assert set(enum) - {""} <= set(PROPS)
+    assert set(enum) - {"none"} <= set(PROPS)
     assert "characters" in SCRIPT_SCHEMA["properties"]
 
 
@@ -72,3 +72,34 @@ def test_every_setting_builds(setting):
         for tod in ("day", "dusk", "night"):
             s = build_set(setting, tod, w, h, random.Random(1))
             assert s.layers and 0 < s.ground_y < h
+
+
+def test_no_schema_has_an_empty_enum_value():
+    """Gemini rejects the WHOLE request (400 'enum[0]: cannot be empty') if any enum contains "" - this broke every
+    run after the props feature shipped with "" as the 'no prop' choice."""
+    from youtube_automation import script_writer as sw
+
+    def walk(o, path):
+        if isinstance(o, dict):
+            assert "" not in o.get("enum", []), path
+            for k, v in o.items():
+                walk(v, f"{path}.{k}")
+        elif isinstance(o, list):
+            for i, v in enumerate(o):
+                walk(v, f"{path}[{i}]")
+
+    for name in dir(sw):
+        if name.endswith("SCHEMA"):
+            walk(getattr(sw, name), name)
+
+
+def test_prop_none_becomes_no_prop(monkeypatch):
+    import youtube_automation.script_writer as sw
+    from youtube_automation.config import PipelineConfig
+    cfg = PipelineConfig.load()
+    cfg.video.format, cfg.video.target_seconds = "shorts", 35
+    scene = {"role": "hook", "narration": "w " * 90, "visual_keywords": ["k"], "prop": "none"}
+    monkeypatch.setattr(sw, "_call_gemini", lambda *a, **k: {"title": "T", "description": "d", "tags": ["a"],
+                                                            "scenes": [scene, {**scene, "prop": "map", "role": "insight"}]})
+    s = sw.generate_script("x", cfg)
+    assert s.scenes[0].prop == "" and s.scenes[-1].prop == "map"

@@ -111,9 +111,9 @@ SCRIPT_SCHEMA = {
                     "time_of_day": {"type": "string", "enum": ["day", "dusk", "night"]},
                     "on_screen": {"type": "array", "items": {"type": "string"},
                                   "description": "Names (from `characters`) of the 1-3 people visible in this scene, the main one first."},
-                    "prop": {"type": "string", "enum": ["", "rifle", "pistol", "sword", "spear", "axe", "shield", "book", "letter", "map",
+                    "prop": {"type": "string", "enum": ["none", "rifle", "pistol", "sword", "spear", "axe", "shield", "book", "letter", "map",
                                                        "scroll", "torch", "lantern", "telescope", "bag", "compass"],
-                             "description": "What the main person holds, only if the narration involves it and it fits the era; else empty."},
+                             "description": "What the main person holds, only if the narration involves it and it fits the era; else none."},
                 },
                 "required": ["role", "narration", "visual_keywords"],
             },
@@ -794,7 +794,7 @@ already here.
             on_screen_text=s.get("on_screen_text", "") or "",
             setting=s.get("setting", "") or "", action=s.get("action", "") or "",
             mood=s.get("mood", "") or "", time_of_day=s.get("time_of_day", "") or "",
-            on_screen=[n for n in (s.get("on_screen") or []) if isinstance(n, str)][:3], prop=s.get("prop", "") or "",
+            on_screen=[n for n in (s.get("on_screen") or []) if isinstance(n, str)][:3], prop="" if (s.get("prop") or "none") == "none" else s["prop"],
         )
         for s in data["scenes"]
     ]

@@ -2338,5 +2338,39 @@
         "first sentence is 17 words (aim for 14 or fewer)"
       ]
     }
+  },
+  {
+    "video_id": "93da_pwMdRY",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1930 St Kilda Evacuation: Why Did They Leave Everything Set?",
+    "topic": "The 1930 St. Kilda Evacuation: The haunting final hours of an isolated Scottish island community as the last 36 residents packed their belongings, leaving behind a smoking peat fire and a bible open in an empty church.",
+    "published_at": "2026-11-09",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 36.3,
+        "audio_seconds": 63.4
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 53.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "ABANDONED IN 1930"
+      },
+      "tiktok_post_id": "6af1163951492b796e6ece8b",
+      "hook_warnings": []
+    }
   }
 ]
