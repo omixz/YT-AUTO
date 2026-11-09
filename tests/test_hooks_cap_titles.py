@@ -52,3 +52,18 @@ def test_music_is_quieter_than_before():
         m.write_bytes(b"x")
         cmd = _build_mix_command(Path("v.mp4"), Path("n.mp3"), m, None, None, Path("o.mp4"), music_db=db)
     assert f"volume={db:.1f}dB" in " ".join(cmd)
+
+
+def test_sfx_volume_is_actually_applied_to_ambience_and_transitions():
+    from pathlib import Path
+    import tempfile
+    from youtube_automation.assembler import _build_mix_command
+    from youtube_automation.config import PipelineConfig
+    db = PipelineConfig.load("config/channel.yaml").video.sfx_volume_db
+    assert -24 <= db <= -10
+    with tempfile.TemporaryDirectory() as d:
+        a, t = Path(d) / "a.wav", Path(d) / "t.wav"
+        a.write_bytes(b"x"); t.write_bytes(b"x")
+        cmd = " ".join(_build_mix_command(Path("v.mp4"), Path("n.mp3"), None, a, t, Path("o.mp4"), sfx_db=db))
+    assert cmd.count(f"volume={db:.1f}dB") == 2   # ambience and transitions
+    assert "volume=-12dB" not in cmd

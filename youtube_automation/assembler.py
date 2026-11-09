@@ -176,7 +176,7 @@ _NORM = f"aresample={_OUT_SAMPLE_RATE},aformat=sample_fmts=fltp:channel_layouts=
 
 
 def _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path,
-                       music_db: float = 0.0):
+                       music_db: float = 0.0, sfx_db: float = 0.0):
     inputs = ["-i", str(burned), "-i", str(narration_path)]
     parts = []
     idx = 2
@@ -211,11 +211,13 @@ def _build_mix_command(burned, narration_path, background_music, ambience_path, 
             parts.append(f"[m{i}][nsc{side}]sidechaincompress=threshold=-28dB:ratio=9:attack=8:release=260:makeup=1[music]")
             labels.append("[music]"); side += 1
         elif kind == "amb":
-            parts.append(f"[{i}:a]{_NORM}[a{i}]")
+            # sfx_db (config.video.sfx_volume_db) was never applied either: the ambience bed is ~-17 LUFS raw, as loud
+            # as the narration, and only the ducking under speech held it back.
+            parts.append(f"[{i}:a]{_NORM},volume={sfx_db:.1f}dB[a{i}]")
             parts.append(f"[a{i}][nsc{side}]sidechaincompress=threshold=-30dB:ratio=6:attack=5:release=300:makeup=1[amb]")
             labels.append("[amb]"); side += 1
         else:
-            parts.append(f"[{i}:a]{_NORM},volume=-12dB[trans]")
+            parts.append(f"[{i}:a]{_NORM},volume={sfx_db:.1f}dB[trans]")   # was a fixed -12 dB, louder than the beds around it
             labels.append("[trans]")
     # normalize=0: otherwise amix divides every input (narration included) by
     # the layer count and buries the beds.
@@ -288,6 +290,7 @@ def build_video(
     # This uses ffmpeg's sidechaincompress filter - the narration (input 1)
     # acts as the control signal to compress the music/ambience beds.
     cmd = _build_mix_command(burned, narration_path, background_music, ambience_path, transitions_path, out_path,
-                             music_db=float(getattr(config.video, "music_volume_db", 0.0)))
+                             music_db=float(getattr(config.video, "music_volume_db", 0.0)),
+                             sfx_db=float(getattr(config.video, "sfx_volume_db", 0.0)))
     run_ffmpeg(cmd)
     return out_path

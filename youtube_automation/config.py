@@ -55,7 +55,7 @@ class VideoConfig:
     fps: int = 30
     background_music: Optional[str] = None
     music_volume_db: float = -10.0   # gain applied to the music bed in assembler._build_mix_command
-    sfx_volume_db: float = -23.0
+    sfx_volume_db: float = -16.0   # gain applied to ambience + transition SFX in assembler._build_mix_command
     resolution_shorts: tuple = (1080, 1920)
     resolution_longform: tuple = (1920, 1080)
     formats: Dict[str, FormatConfig] = field(default_factory=dict)
