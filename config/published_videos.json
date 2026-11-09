@@ -2449,5 +2449,42 @@
       "hook_warnings": []
     },
     "seed": "Five Navy bombers vanished over the Atlantic, but their final radio transmission defies all known physics. And the reason why will change how you see the Bermuda Triangle forever. But here is the twist that makes this tragedy so haunting: Taylor was not even supposed to lead this flight. To understand this vanishing, we have to go back to December fifth, nineteen forty five, at Naval Air Station Fort Lauderdale. Five Avenger torpedo bombers sat on the tarmac, fueled and ready for a routine navigation training exercise known as Navigation Problem Number One. At the controls of the lead plane sat Lieutenant Charles Taylor, an experienced combat pilot with thousands of flying hours under his be"
+  },
+  {
+    "video_id": "ktvkusfrSl8",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "How Titanic's Baker Survived Freezing Water Drunk on Whiskey",
+    "topic": "The 1912 Last Voyage of the Titanic's Chief Baker, Charles Joughin, Who Survived Hours in Freezing Atlantic Waters After Drinking a Lethal Amount of Whiskey That Somehow Kept His Blood Warm",
+    "published_at": "2026-11-09",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 84 words of narration (min 90)",
+      "only 5 scenes (min 6)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 30.8,
+        "audio_seconds": 42.5
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 41.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "DRANK TO SURVIVE?"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
