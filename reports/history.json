@@ -1899,5 +1899,46 @@
         "RELATED_VIDEO": 1
       }
     }
+  },
+  {
+    "video_id": "n0en0lZWNkY",
+    "published_at": "2026-11-03",
+    "niche": "ancient_civilizations",
+    "format": "shorts",
+    "title": "What a Carthaginian Mother Hid From the Roman Siege",
+    "stats": {
+      "views": 9,
+      "minutes_watched": 3.0,
+      "avg_view_duration_s": 30.0,
+      "avg_view_percentage": 53.37,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 8,
+        "YT_CHANNEL": 1
+      }
+    }
+  },
+  {
+    "video_id": "gtROaFCNqv8",
+    "published_at": "2026-11-03",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Secret Truth Behind the 1962 Alcatraz Escape",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 3.0,
+      "avg_view_duration_s": 215.0,
+      "avg_view_percentage": 20.51,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 1
+      }
+    }
   }
 ]

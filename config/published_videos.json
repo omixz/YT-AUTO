@@ -1888,7 +1888,7 @@
     "title": "What a Carthaginian Mother Hid From the Roman Siege",
     "topic": "The brutal reality of a Carthaginian mother in the besieged city of Carthage who stood before the temple furnace clutching her family's last bronze heirloom, faced with the agonizing choice of melting it down for defensive spear-points or breaking sacred law to hide it for her children's future.",
     "published_at": "2026-11-03",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1915,7 +1915,9 @@
       "hook_warnings": [
         "first sentence names nothing specific (no person/place/number)"
       ]
-    }
+    },
+    "views": 9,
+    "avg_view_pct": 53.4
   },
   {
     "video_id": "gtROaFCNqv8",
@@ -1924,7 +1926,7 @@
     "title": "The Secret Truth Behind the 1962 Alcatraz Escape",
     "topic": "The 1962 Escape from Alcatraz: The meticulous, chilling prison break where inmates Frank Morris and the Anglin brothers vanished into the freezing San Francisco Bay using papier-m\u00e2ch\u00e9 heads and a makeshift raincoat raft.",
     "published_at": "2026-11-03",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1952,7 +1954,9 @@
         "first sentence is 17 words (aim for 14 or fewer)",
         "first sentence names nothing specific (no person/place/number)"
       ]
-    }
+    },
+    "views": 1,
+    "avg_view_pct": 20.5
   },
   {
     "video_id": "4C5RREQdf-w",
