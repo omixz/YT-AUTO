@@ -113,7 +113,7 @@ upload:
   category_id: "27"            # 27 = Education, see https://developers.google.com/youtube/v3/docs/videoCategories
   default_tags: ["facts", "education"]
   made_for_kids: false
-  crosspost_tiktok: true       # probe passed (draft accepted by Buffer). Every PUBLIC Short is also posted to TikTok. TikTok exists to feed YouTube.
+  crosspost_tiktok: false      # 2026-11: TikTok now carries Retrofit promos instead (retrofit_promo.py + .github/workflows/retrofit_promo.yml). History Shorts stay on YouTube only.
   tiktok_hashtags: "#history #storytime #didyouknow #fyp"
 
 quality:
