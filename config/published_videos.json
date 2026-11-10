@@ -2486,5 +2486,40 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "vudOxwz2A0s",
+    "niche": "unsolved_mysteries",
+    "format": "teaser",
+    "title": "The Mystery of Flight 19 Final Radio Transmission",
+    "topic": "The 1948 Flight 19 Radio Mystery: The Final, Haunting Transmission of Five Navy Torpedo Bombers That Disappeared in the Bermuda Triangle While Chasing a Strange, Glowing Horizon",
+    "published_at": "2026-11-10",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 29.2,
+        "audio_seconds": 54.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 33.9,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE FINAL TRANSMISSION"
+      },
+      "tiktok_post_id": "6af266d905af22d726f79a8f",
+      "hook_warnings": []
+    },
+    "teaser_for": "XSKq9pMSNSc"
   }
 ]
