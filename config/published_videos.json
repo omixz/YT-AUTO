@@ -2600,5 +2600,43 @@
         "first sentence is 21 words (aim for 14 or fewer)"
       ]
     }
+  },
+  {
+    "video_id": "yP9x-segrs4",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "How Steven Stayner Survived 7 Years Kidnapped and Saved a Toddler",
+    "topic": "The 1975 terrifying case of Steven Stayner, a seven-year-old boy kidnapped in California who endured seven years of captivity before he bravely grabbed a five-year-old toddler also targeted by his abductor and escaped into the wilderness to find help",
+    "published_at": "2026-11-10",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 146.5,
+        "audio_seconds": 506.7
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 53,
+        "fallback_scenes": 0,
+        "seconds": 226.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SEVEN YEARS A CAPTIVE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 22 words (aim for 14 or fewer)",
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    },
+    "seed": "A seven year old boy vanished into thin air, only to return seven years later with a secret that shocked the world. And the reason why this case remains one of the most haunting survival stories in American history goes far beyond a simple kidnapping. Before we understand the daring escape, we have to look back at the ordinary, sunny afternoon in Merced, California, where everything changed forever. In 1975, Steven Stayner was just a normal seven-year-old walking home from school, entirely unaware of the danger waiting just around the corner. A stranger named Kenneth Parnell pulled up slowly alongside him, offering a friendly smile and a completely harmless-sounding ride home from school."
   }
 ]
