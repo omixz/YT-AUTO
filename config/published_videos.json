@@ -2558,5 +2558,43 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "_wO_uRZa6rg",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1977 Submarine Spy Who Walked Out and Disappeared",
+    "topic": "The 1977 Disappearance of Sneaky Pete: The Legendary Submarine Spy Who Walked Out of a Maximum-Security Base Carrying Only a Briefcase and Vanished Into Thin Air",
+    "published_at": "2026-11-10",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 5 scenes (min 6)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 36.1,
+        "audio_seconds": 50.1
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 51.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "WALKED OUT & VANISHED"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 21 words (aim for 14 or fewer)"
+      ]
+    }
   }
 ]
