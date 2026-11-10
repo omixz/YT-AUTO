@@ -2677,5 +2677,39 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     }
+  },
+  {
+    "video_id": "jeUVuCTdzAc",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 5 Days Amelia Earhart Broadcasted From the Jungle",
+    "topic": "The chilling 1937 mystery of Amelia Earhart's final hours, focusing specifically on the urgent, desperate distress calls picked up by amateur radio operators across the Pacific for days after her plane went down, begging for rescue before suddenly going silent forever",
+    "published_at": "2026-11-10",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 27.5,
+        "audio_seconds": 51.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 46.9,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SHE KEPT CALLING"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
