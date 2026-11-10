@@ -1,0 +1,66 @@
+name: Retrofit TikTok (daily, automatic)
+
+# Replaces the history Shorts that used to be cross-posted to TikTok
+# (upload.crosspost_tiktok is now false). Once a day: pick the next game
+# from Retrofit's live recipe feed, render a narrated vertical video, host
+# it, and post it to TikTok via Buffer. Fully hands-off.
+on:
+  schedule:
+    - cron: "37 20 * * *"   # 20:37 UTC daily (US afternoon/evening)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build the video but don't post it"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # commit config/retrofit_promo_history.json + GitHub Release media hosting
+
+concurrency:
+  group: repo-state
+  cancel-in-progress: false
+
+jobs:
+  promo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+      - name: Make and post today's Retrofit TikTok
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_TIKTOK_CHANNEL_ID: ${{ secrets.BUFFER_TIKTOK_CHANNEL_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+          MEDIA_HOST_BUCKET: ${{ secrets.MEDIA_HOST_BUCKET }}
+          MEDIA_HOST_ACCESS_KEY: ${{ secrets.MEDIA_HOST_ACCESS_KEY }}
+          MEDIA_HOST_SECRET_KEY: ${{ secrets.MEDIA_HOST_SECRET_KEY }}
+          MEDIA_HOST_ENDPOINT_URL: ${{ secrets.MEDIA_HOST_ENDPOINT_URL }}
+          MEDIA_HOST_REGION: ${{ secrets.MEDIA_HOST_REGION }}
+          MEDIA_HOST_PUBLIC_BASE_URL: ${{ secrets.MEDIA_HOST_PUBLIC_BASE_URL }}
+          IN_DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          if [ "$IN_DRY_RUN" = "true" ]; then python retrofit_promo.py --dry-run; else python retrofit_promo.py; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: retrofit-promo-${{ github.run_id }}
+          path: output/retrofit_promo/
+          retention-days: 14
+      - name: Commit promo history
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          [ -f config/retrofit_promo_history.json ] && git add config/retrofit_promo_history.json
+          git diff --cached --quiet || git commit -m "chore: record today's Retrofit TikTok"
+          git pull --rebase origin main
+          git push

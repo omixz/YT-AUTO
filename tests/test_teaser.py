@@ -163,6 +163,7 @@ def test_outro_card_can_point_at_the_longform(tmp_path):
 
 def test_teasers_are_cross_posted_to_tiktok(monkeypatch):
     cfg = _cfg()
+    cfg.upload.crosspost_tiktok = True   # exercises the mechanism; the shipped config turns it off (see test below)
     cfg.secrets.buffer_api_key, cfg.secrets.buffer_tiktok_channel_id = "k", "c"
     monkeypatch.setattr(crosspost.media_host, "upload_public", lambda *a, **k: "https://x/y.mp4")
     got = {}
@@ -172,3 +173,8 @@ def test_teasers_are_cross_posted_to_tiktok(monkeypatch):
     assert crosspost.tiktok(cfg, format_name="teaser", **kw) == "post1"
     assert "The Alcatraz Escape" in got["cap"]
     assert crosspost.tiktok(cfg, format_name="longform", **kw) is None
+
+
+def test_shipped_config_keeps_history_off_tiktok():
+    """TikTok carries Retrofit promos now (retrofit_promo.py); history Shorts must not be cross-posted."""
+    assert _cfg().upload.crosspost_tiktok is False
