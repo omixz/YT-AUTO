@@ -2521,5 +2521,42 @@
       "hook_warnings": []
     },
     "teaser_for": "XSKq9pMSNSc"
+  },
+  {
+    "video_id": "dhQqeUcN_dI",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Chilling Secret Behind the 1959 Dyatlov Pass Mystery",
+    "topic": "The 1959 Dyatlov Pass Mystery: The Cryptic Final Photos Developed From a Camera Found in the Snow, Showing an Eerie, Glowing Orb Floating Above the Doomed Hikers' Tent",
+    "published_at": "2026-11-10",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 80 words of narration (min 90)",
+      "only 5 scenes (min 6)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 25.5,
+        "audio_seconds": 41.4
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 48.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "GLOWING ORB IN THE SNOW"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
