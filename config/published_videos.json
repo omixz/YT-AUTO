@@ -2638,5 +2638,44 @@
       ]
     },
     "seed": "A seven year old boy vanished into thin air, only to return seven years later with a secret that shocked the world. And the reason why this case remains one of the most haunting survival stories in American history goes far beyond a simple kidnapping. Before we understand the daring escape, we have to look back at the ordinary, sunny afternoon in Merced, California, where everything changed forever. In 1975, Steven Stayner was just a normal seven-year-old walking home from school, entirely unaware of the danger waiting just around the corner. A stranger named Kenneth Parnell pulled up slowly alongside him, offering a friendly smile and a completely harmless-sounding ride home from school."
+  },
+  {
+    "video_id": "qNzHDnYmb2M",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "Why 60 People Lied About the Murder of Ken Rex McElroy",
+    "topic": "The 1981 bizarre death of Ken Rex McElroy, a notorious town bully shot dead in broad daylight in Skidmore, Missouri, while sitting in his truck surrounded by 60 townspeople\u2014none of whom saw a thing or are willing to name the shooter to this day",
+    "published_at": "2026-11-10",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 5 scenes (min 6)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 26.1,
+        "audio_seconds": 45.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 40.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "60 WITNESSES. ZERO ANSWERS."
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)",
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    }
   }
 ]
