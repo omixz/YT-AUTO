@@ -2783,5 +2783,42 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "-gUM-63pMdU",
+    "niche": "unsolved_mysteries",
+    "format": "teaser",
+    "title": "Why Steven Stayner's 7-Year Captivity Shocked America",
+    "topic": "The 1975 terrifying case of Steven Stayner, a seven-year-old boy kidnapped in California who endured seven years of captivity before he bravely grabbed a five-year-old toddler also targeted by his abductor and escaped into the wilderness to find help",
+    "published_at": "2026-11-11",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 29.0,
+        "audio_seconds": 50.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 34.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "VANISHED FOR 7 YEARS"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 20 words (aim for 14 or fewer)"
+      ]
+    },
+    "teaser_for": "yP9x-segrs4"
   }
 ]
