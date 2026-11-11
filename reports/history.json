@@ -1940,5 +1940,28 @@
         "RELATED_VIDEO": 1
       }
     }
+  },
+  {
+    "video_id": "4C5RREQdf-w",
+    "published_at": "2026-11-04",
+    "niche": "dark_history",
+    "format": "shorts",
+    "title": "Why the Sun Turned Blood-Red in 1783",
+    "stats": {
+      "views": 10,
+      "minutes_watched": 2.0,
+      "avg_view_duration_s": 24.0,
+      "avg_view_percentage": 49.13,
+      "likes": -1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 8,
+        "YT_CHANNEL": 1,
+        "EXT_URL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]

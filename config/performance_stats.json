@@ -439,9 +439,9 @@
     }
   },
   "dark_history:shorts": {
-    "samples": 3,
-    "total_score": 176.1,
-    "avg_score": 58.699999999999996,
+    "samples": 4,
+    "total_score": 181.1,
+    "avg_score": 45.275,
     "history": [
       {
         "date": "2026-11-04",
@@ -454,14 +454,18 @@
       {
         "date": "2026-11-09",
         "score": 151.6
+      },
+      {
+        "date": "2026-11-11",
+        "score": 5.0
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 58.699999999999996
+        "avg_score": 45.275
       },
       "30d": {
-        "avg_score": 58.699999999999996
+        "avg_score": 45.275
       }
     }
   }

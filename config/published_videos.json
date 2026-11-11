@@ -1965,7 +1965,7 @@
     "title": "Why the Sun Turned Blood-Red in 1783",
     "topic": "The Mountain That Rained Glass: The Forgotten 1783 Eruption That Choked Europe in Blood-Red Fog",
     "published_at": "2026-11-04",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -1992,7 +1992,9 @@
       "hook_warnings": [
         "hook opens with throat-clearing instead of the event itself"
       ]
-    }
+    },
+    "views": 10,
+    "avg_view_pct": 49.1
   },
   {
     "video_id": "_qTUzsqOeeM",
