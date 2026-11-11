@@ -2711,5 +2711,41 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "zWGfTbdrzqI",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Woman Who Vanished From a Locked Room in 1911",
+    "topic": "The haunting 1911 disappearance of Amy Ayling from a mental health facility in England, where her locked room was found completely empty except for her winter coat neatly draped over the foot of the bed and her boots still standing upright by the door as if she stepped right out of her skin",
+    "published_at": "2026-11-11",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 24.7,
+        "audio_seconds": 43.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 29.7,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SHE VANISHED FROM A LOCKED ROOM"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "hook opens with throat-clearing instead of the event itself"
+      ]
+    }
   }
 ]
