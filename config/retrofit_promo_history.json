@@ -4,5 +4,11 @@
     "hook": "Your PC is too fast for Max Payne.",
     "at": "20261110-1348",
     "buffer_post": "6af3209bab43be49698a9745"
+  },
+  {
+    "id": "max-payne-2",
+    "hook": "Your PC is too fast for Max Payne 2.",
+    "at": "20261111-0052",
+    "buffer_post": "6af3bc3f0b1f930b45521e34"
   }
 ]
