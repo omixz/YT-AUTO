@@ -2749,5 +2749,39 @@
         "hook opens with throat-clearing instead of the event itself"
       ]
     }
+  },
+  {
+    "video_id": "jchsbL6zeFg",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "How a Socialite Vanished on Fifth Avenue in 1910",
+    "topic": "The 1910 disappearance of Dorothy Arnold, a wealthy New York socialite who walked into a busy Fifth Avenue bookstore in broad daylight, told a friend she was heading home to write a novel, and vanished completely into the afternoon crowd without leaving a single trace",
+    "published_at": "2026-11-11",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 31.9,
+        "audio_seconds": 43.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 38.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "WALKED IN. VANISHED."
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
