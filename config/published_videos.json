@@ -2894,5 +2894,42 @@
         "first sentence is 18 words (aim for 14 or fewer)"
       ]
     }
+  },
+  {
+    "video_id": "9wV9pdIQLgQ",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "Johnny Gosch: The Paperboy Who Vanished and The Midnight Visitor",
+    "topic": "The haunting 1982 disappearance of Johnny Gosch, a 12-year-old paperboy in Des Moines, Iowa, who vanished during his morning route, leaving behind his heavy canvas delivery bag on a street corner and a sleeping city, before his mother received a terrifying middle-of-the-night knock years later from a bruised young man claiming to be her long-lost son.",
+    "published_at": "2026-11-12",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 223.0,
+        "audio_seconds": 497.5
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 70,
+        "fallback_scenes": 0,
+        "seconds": 327.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE MIDNIGHT KNOCK"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "A heavy canvas delivery bag sat abandoned on an empty Des Moines street corner in September 1982. Inside was the Sunday paper, but twelve-year-old Johnny Gosch was gone without a single trace. What makes this disappearance one of America's most haunting cold cases isn't just that a child vanished. It is what happened years later in the dead of night that shocked everyone involved. Before we look at that terrifying midnight knock, we have to return to the quiet Iowa neighborhood."
   }
 ]
