@@ -2854,5 +2854,43 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "n2F0L7iES50",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Terrifying 1978 Disappearance of Pilot Frederick Valentich",
+    "topic": "The terrifying 1978 disappearance of Frederick Valentich, a 20-year-old Australian pilot who radioed air traffic control to report a strange, elongated green craft hovering above his plane before his frantic, broken transmissions were drowned out by a bizarre metallic scraping sound, leaving behind an empty sky and an open mic.",
+    "published_at": "2026-11-12",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 86 words of narration (min 90)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 25.3,
+        "audio_seconds": 47.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 31.0,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE GREEN UFO DISAPPEARANCE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 18 words (aim for 14 or fewer)"
+      ]
+    }
   }
 ]
