@@ -10,5 +10,11 @@
     "hook": "Your PC is too fast for Max Payne 2.",
     "at": "20261111-0052",
     "buffer_post": "6af3bc3f0b1f930b45521e34"
+  },
+  {
+    "id": "gta-3",
+    "hook": "Your PC is too fast for Grand Theft Auto III.",
+    "at": "20261112-0200",
+    "buffer_post": "6af51db93d8c751bfd09ee4c"
   }
 ]
