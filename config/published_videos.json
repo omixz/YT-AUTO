@@ -2820,5 +2820,39 @@
       ]
     },
     "teaser_for": "yP9x-segrs4"
+  },
+  {
+    "video_id": "QRok1c-3p5M",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Jamison Family Mystery: $32,000 Left Behind",
+    "topic": "The chilling 1991 case of the Jamison family, who packed all their money and dog into a pickup truck, drove deep into the remote mountains of Oklahoma to look at a plot of land, and mysteriously abandoned their vehicle with their cell phones, wallets, and pet trapped inside, only for their skeletal remains to be found years later lying side-by-side on a remote hillside with a cryptic, unsolved final text message on their phone.",
+    "published_at": "2026-11-12",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 26.2,
+        "audio_seconds": 48.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 38.9,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "$32,000 LEFT BEHIND"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
