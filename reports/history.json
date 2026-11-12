@@ -1963,5 +1963,28 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "_qTUzsqOeeM",
+    "published_at": "2026-11-05",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "How One Soviet Clerk Accidentally Stopped World War 3 in 1960",
+    "stats": {
+      "views": 14,
+      "minutes_watched": 2.0,
+      "avg_view_duration_s": 23.0,
+      "avg_view_percentage": 32.97,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 9,
+        "SHORTS": 4,
+        "YT_CHANNEL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]

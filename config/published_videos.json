@@ -2003,7 +2003,7 @@
     "title": "How One Soviet Clerk Accidentally Stopped World War 3 in 1960",
     "topic": "How a forgotten Soviet intercept operator named Vasili Chuikov during the 1960 U-2 spy plane crisis chose to bypass protocol and hold his fire, unknowingly sparing Francis Gary Powers from instant vaporization and preventing an immediate Cold War escalation.",
     "published_at": "2026-11-05",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2028,7 +2028,9 @@
       },
       "tiktok_post_id": "6aebe37bff03f6944a1aae50",
       "hook_warnings": []
-    }
+    },
+    "views": 14,
+    "avg_view_pct": 33.0
   },
   {
     "video_id": "tqFi6NGQ0OI",
