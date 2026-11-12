@@ -56,8 +56,7 @@ video:
       cta_break: true           # ~2s "Before we continue, like and subscribe." beat right after the hook (like longform)
       target_seconds: 35        # real Shorts ran 55-113s at a 40s target; 35s plus script_writer._tighten_short (cuts anything >20% over budget) aims for ~35-50s
       weight: 0.0               # 0 = the daily longform bandit never picks it; the Shorts crons force --format shorts
-      daily_cap: 3              # Shorts average ~30x the views of a longform here (audience_insights.json: 166 vs 6) - 3 crons/day in publish.yml.
-                                # YouTube quota: 3 Shorts + 1 longform + 1 teaser = 5 uploads (~8,300 of 10,000 units/day).
+      daily_cap: 1              # back to 1 Short/day: 3/day + teaser + longform (5 uploads) coincided with falling views. Raise only if views recover.
     teaser:
       cta_break: true           # same ~2s like-and-subscribe beat after the hook
       enabled: true             # cliffhanger Short built from your newest public longform; ends by sending viewers to it (own cron, own daily cap, own stats - separate from the daily Shorts)

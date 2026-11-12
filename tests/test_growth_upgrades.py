@@ -5,12 +5,12 @@ from youtube_automation import growth_ledger, pipeline, script_writer
 from youtube_automation.config import PipelineConfig
 
 
-def test_shorts_allow_three_a_day_longform_one():
+def test_one_short_and_one_longform_a_day():
     cfg = PipelineConfig.load()
-    assert cfg.video.formats["shorts"].daily_cap == 3
-    assert not pipeline._over_daily_cap(cfg, "shorts", 2, 2)
-    assert pipeline._over_daily_cap(cfg, "shorts", 3, 3)
-    assert pipeline._over_daily_cap(cfg, "shorts", 1, 4)      # attempts cap = daily_cap + 1
+    assert cfg.video.formats["shorts"].daily_cap == 1
+    assert not pipeline._over_daily_cap(cfg, "shorts", 0, 1)
+    assert pipeline._over_daily_cap(cfg, "shorts", 1, 1)
+    assert pipeline._over_daily_cap(cfg, "shorts", 0, 2)      # attempts cap = daily_cap + 1
     assert pipeline._over_daily_cap(cfg, "longform", 1, 1)
     assert not pipeline._over_daily_cap(cfg, "longform", 0, 1)  # one retry after a gate-failed private upload
 
