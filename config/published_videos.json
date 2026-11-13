@@ -2967,5 +2967,40 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "zH4M3gXaHlM",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "He Vanished in 5 Minutes: The Unsolved Steven Damman Cold Case",
+    "topic": "The 1965 disappearance of Steven Damman, a two-year-old toddler who was left in his stroller outside a Long Island grocery store for just five minutes, only to vanish into thin air, leaving behind a heartbroken family and a decades-long mystery that took a shocking turn when a man came forward decades later claiming he was the stolen child.",
+    "published_at": "2026-11-13",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 140.1,
+        "audio_seconds": 451.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 55,
+        "fallback_scenes": 0,
+        "seconds": 260.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "GONE IN 5 MINUTES"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    },
+    "seed": "Two-year-old Steven Damman vanished in just five minutes. And the reason why his case haunts investigators to this day will change how you see missing children cases forever. But that is only the beginning of the nightmare. Decades later, a man stepped forward claiming he was the stolen toddler, and his DNA test brought an even more terrifying truth to light. The year was 1965 on Long Island, New York. A young mother named Marilyn Damman walked to the local store with her two children. Steven was just two years old, sitting comfortably in his stroller alongside his seven-month-old sister Pamela. It was a routine trip, the kind thousands of mothers made every single day without a second thoug"
   }
 ]
