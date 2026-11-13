@@ -2931,5 +2931,39 @@
       ]
     },
     "seed": "A heavy canvas delivery bag sat abandoned on an empty Des Moines street corner in September 1982. Inside was the Sunday paper, but twelve-year-old Johnny Gosch was gone without a single trace. What makes this disappearance one of America's most haunting cold cases isn't just that a child vanished. It is what happened years later in the dead of night that shocked everyone involved. Before we look at that terrifying midnight knock, we have to return to the quiet Iowa neighborhood."
+  },
+  {
+    "video_id": "CJazBpHh5Bo",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1953 Disappearance of Ranger Ray Jones",
+    "topic": "The bizarre 1953 disappearance of forest ranger Ray Jones, who walked into the dense, foggy timberlands of Washington State's Olympic Peninsula to check a remote trail, only for search parties to find his heavy service boots neatly placed side-by-side in the middle of a muddy logging road\u2014unlaced, unweathered, and entirely empty.",
+    "published_at": "2026-11-13",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 18.7,
+        "audio_seconds": 43.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 33.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "BOOTS LEFT BEHIND"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
