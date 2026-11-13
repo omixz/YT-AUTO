@@ -1986,5 +1986,28 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "tqFi6NGQ0OI",
+    "published_at": "2026-11-06",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "Why Captain Scott Died Just 34 Days Too Late",
+    "stats": {
+      "views": 26,
+      "minutes_watched": 3.0,
+      "avg_view_duration_s": 13.0,
+      "avg_view_percentage": 23.77,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 11,
+        "SHORTS": 10,
+        "YT_CHANNEL": 4,
+        "EXT_URL": 1
+      }
+    }
   }
 ]
