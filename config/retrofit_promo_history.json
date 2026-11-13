@@ -16,5 +16,11 @@
     "hook": "Your PC is too fast for Grand Theft Auto III.",
     "at": "20261112-0200",
     "buffer_post": "6af51db93d8c751bfd09ee4c"
+  },
+  {
+    "id": "gta-vc",
+    "hook": "Your PC is too fast for Grand Theft Auto: Vice City.",
+    "at": "20261113-0127",
+    "buffer_post": "6af66774fb90ccefdd0fe95e"
   }
 ]
