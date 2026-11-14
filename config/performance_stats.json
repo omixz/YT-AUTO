@@ -274,43 +274,21 @@
     "repaired_private_zeros": 2
   },
   "world_wars:longform": {
-    "samples": 7,
-    "total_score": 67.99999999999999,
-    "avg_score": 9.714285714285712,
+    "samples": 8,
+    "total_score": 85.6,
+    "avg_score": 10.7,
     "history": [
       {
-        "date": "2026-10-08",
-        "score": 13.6
-      },
-      {
-        "date": "2026-10-08",
-        "score": 37.4
-      },
-      {
-        "date": "2026-10-08",
-        "score": 10.3
-      },
-      {
-        "date": "2026-10-08",
-        "score": 6.5
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
+        "date": "2026-11-14",
+        "score": 17.6
       }
     ],
     "windows": {
-      "7d": {},
+      "7d": {
+        "avg_score": 17.6
+      },
       "30d": {
-        "avg_score": 9.685714285714285
+        "avg_score": 17.6
       }
     },
     "repaired_private_zeros": 2
@@ -366,9 +344,9 @@
     }
   },
   "world_wars:shorts": {
-    "samples": 5,
-    "total_score": 542.1999999999999,
-    "avg_score": 108.43999999999998,
+    "samples": 6,
+    "total_score": 564.0999999999999,
+    "avg_score": 94.01666666666665,
     "history": [
       {
         "date": "2026-10-30",
@@ -389,14 +367,18 @@
       {
         "date": "2026-11-13",
         "score": 8.6
+      },
+      {
+        "date": "2026-11-14",
+        "score": 21.9
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 13.5
+        "avg_score": 15.25
       },
       "30d": {
-        "avg_score": 108.43999999999998
+        "avg_score": 94.01666666666665
       }
     }
   },
@@ -474,6 +456,25 @@
       },
       "30d": {
         "avg_score": 45.275
+      }
+    }
+  },
+  "world_wars:teaser": {
+    "samples": 1,
+    "total_score": 862.0,
+    "avg_score": 862.0,
+    "history": [
+      {
+        "date": "2026-11-14",
+        "score": 862.0
+      }
+    ],
+    "windows": {
+      "7d": {
+        "avg_score": 862.0
+      },
+      "30d": {
+        "avg_score": 862.0
       }
     }
   }

@@ -1,8 +1,8 @@
 {
-  "videos": 54,
+  "videos": 57,
   "overall": {
-    "avg_views": 45.4,
-    "avg_view_pct": 39.6
+    "avg_views": 54.5,
+    "avg_view_pct": 40.3
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -36,21 +36,26 @@
       "videos": 17
     },
     "world_wars": {
-      "avg_views": 222.7,
-      "avg_view_pct": 23.6,
-      "videos": 7
+      "avg_views": 221.4,
+      "avg_view_pct": 32.4,
+      "videos": 10
     }
   },
   "by_format": {
     "longform": {
-      "avg_views": 6.5,
-      "avg_view_pct": 16.4,
-      "videos": 36
+      "avg_views": 6.7,
+      "avg_view_pct": 16.0,
+      "videos": 37
     },
     "shorts": {
-      "avg_views": 123.3,
-      "avg_view_pct": 85.9,
-      "videos": 18
+      "avg_views": 118.9,
+      "avg_view_pct": 85.3,
+      "videos": 19
+    },
+    "teaser": {
+      "avg_views": 600.0,
+      "avg_view_pct": 83.0,
+      "videos": 1
     }
   },
   "by_thumbnail_style": {
@@ -60,35 +65,35 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 81.1,
-      "avg_view_pct": 57.1,
-      "videos": 28
+      "avg_views": 94.4,
+      "avg_view_pct": 56.7,
+      "videos": 31
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 49.6,
-      "avg_view_pct": 42.1,
-      "videos": 41
+      "avg_views": 49.4,
+      "avg_view_pct": 42.9,
+      "videos": 42
     },
     "year": {
-      "avg_views": 32.2,
-      "avg_view_pct": 31.5,
-      "videos": 13
+      "avg_views": 69.0,
+      "avg_view_pct": 33.0,
+      "videos": 15
     }
   },
   "by_title_is_question": {
     "statement": {
-      "avg_views": 45.4,
-      "avg_view_pct": 39.6,
-      "videos": 54
+      "avg_views": 54.5,
+      "avg_view_pct": 40.3,
+      "videos": 57
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 59.8,
-      "avg_view_pct": 49.5,
-      "videos": 35
+      "avg_views": 72.3,
+      "avg_view_pct": 49.7,
+      "videos": 38
     },
     "<=50": {
       "avg_views": 6.8,

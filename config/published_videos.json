@@ -2075,7 +2075,7 @@
     "title": "The Forger Who Fooled the Gestapo to Save Thousands",
     "topic": "The painter who forged Hitler\\'s signature to save thousands: How a Dutch art forger in occupied Amsterdam faked Nazi transit papers so convincingly that the Gestapo used his forgeries to route French resistance fighters to safety.",
     "published_at": "2026-11-07",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2100,7 +2100,9 @@
       },
       "tiktok_post_id": "6aee81f8af7e526d43f318bf",
       "hook_warnings": []
-    }
+    },
+    "views": 39,
+    "avg_view_pct": 73.1
   },
   {
     "video_id": "c8rmXw9WMTk",
@@ -2109,7 +2111,7 @@
     "title": "The Unauthorized Torpedo That Forced Tokyo's Hand in December 1941",
     "topic": "The rogue submarine commander who accidentally started the Pacific War: How Dutch Lieutenant Commander A.A. Mulder sank a Japanese ship off Malaya hours *before* Pearl Harbor, forcing Tokyo\\'s hand and altering the global timeline of WWII.",
     "published_at": "2026-11-07",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2135,7 +2137,9 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     },
-    "seed": "Hours before Pearl Harbor burned, a Dutch submarine fired the torpedo that started the Pacific War. That lone attack violated strict allied neutrality orders and caught everyone by surprise. But that is only the beginning of a much stranger story of operational isolation and command friction. Lieutenant Commander A.A. Mulder was commanding the HNLMS O-16 in the South China Sea during a period of immense regional tension. The Netherlands was officially neutral at that precise moment in December nineteen forty one, trying desperately to avoid drawing the wrath of the rising empire in Tokyo. Yet Mulder held orders of his own, sealed and waiting for the moment of invasion, drafted by commanders "
+    "seed": "Hours before Pearl Harbor burned, a Dutch submarine fired the torpedo that started the Pacific War. That lone attack violated strict allied neutrality orders and caught everyone by surprise. But that is only the beginning of a much stranger story of operational isolation and command friction. Lieutenant Commander A.A. Mulder was commanding the HNLMS O-16 in the South China Sea during a period of immense regional tension. The Netherlands was officially neutral at that precise moment in December nineteen forty one, trying desperately to avoid drawing the wrath of the rising empire in Tokyo. Yet Mulder held orders of his own, sealed and waiting for the moment of invasion, drafted by commanders ",
+    "views": 16,
+    "avg_view_pct": 3.2
   },
   {
     "video_id": "wGO20HT-0LM",
@@ -2144,7 +2148,7 @@
     "title": "The Unauthorized Torpedo That Stunned Tokyo in 1941",
     "topic": "The rogue submarine commander who accidentally started the Pacific War: How Dutch Lieutenant Commander A.A. Mulder sank a Japanese ship off Malaya hours *before* Pearl Harbor, forcing Tokyo\\'s hand and altering the global timeline of WWII.",
     "published_at": "2026-11-07",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2170,7 +2174,10 @@
       "tiktok_post_id": "6aef8d53004e4879a77b61ac",
       "hook_warnings": []
     },
-    "teaser_for": "c8rmXw9WMTk"
+    "teaser_for": "c8rmXw9WMTk",
+    "views": 600,
+    "avg_view_pct": 83.0,
+    "followups_queued": "2026-11-14"
   },
   {
     "video_id": "XPXi4eVEsDw",

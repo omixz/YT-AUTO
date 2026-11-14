@@ -2009,5 +2009,77 @@
         "EXT_URL": 1
       }
     }
+  },
+  {
+    "video_id": "VXzijUYlVJc",
+    "published_at": "2026-11-07",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Forger Who Fooled the Gestapo to Save Thousands",
+    "stats": {
+      "views": 39,
+      "minutes_watched": 9.0,
+      "avg_view_duration_s": 36.0,
+      "avg_view_percentage": 73.06,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 31,
+        "YT_CHANNEL": 5,
+        "YT_OTHER_PAGE": 2,
+        "YT_SEARCH": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "c8rmXw9WMTk",
+    "published_at": "2026-11-07",
+    "niche": "world_wars",
+    "format": "longform",
+    "title": "The Unauthorized Torpedo That Forced Tokyo's Hand in December 1941",
+    "stats": {
+      "views": 16,
+      "minutes_watched": 8.0,
+      "avg_view_duration_s": 36.0,
+      "avg_view_percentage": 3.16,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 10,
+        "YT_SEARCH": 3,
+        "YT_CHANNEL": 2,
+        "EXT_URL": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "wGO20HT-0LM",
+    "published_at": "2026-11-07",
+    "niche": "world_wars",
+    "format": "teaser",
+    "title": "The Unauthorized Torpedo That Stunned Tokyo in 1941",
+    "stats": {
+      "views": 600,
+      "minutes_watched": 326.0,
+      "avg_view_duration_s": 55.0,
+      "avg_view_percentage": 83.01,
+      "likes": 19,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 3,
+      "traffic_sources": {
+        "SHORTS": 570,
+        "YT_OTHER_PAGE": 17,
+        "YT_SEARCH": 10,
+        "YT_CHANNEL": 3,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]
