@@ -3043,5 +3043,42 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "bM3IvFOBli4",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Bizarre 1976 Parking Garage Disappearance of Ray Richardson",
+    "topic": "The bizarre 1976 disappearance of Ray Richardson, a security guard who stepped out of his patrol car to check an empty parking garage in Syracuse, New York, and left behind a running vehicle, a half-eaten sandwich, and an open security logbook, never to be seen or heard from again.",
+    "published_at": "2026-11-14",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 172.5,
+        "audio_seconds": 544.8
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 65,
+        "fallback_scenes": 0,
+        "seconds": 365.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "LEFT HIS CAR RUNNING"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "A running patrol car, a half eaten sandwich, and an open security logbook left behind in Syracuse. But that is only the beginning of a strange mystery that has baffled investigators for decades. In October of nineteen seventy six, forty three year old Ray Richardson worked as a night watchman. He was assigned to patrol the Atrium parking garage in downtown Syracuse, New York. It was a routine shift until a chilling discovery was made by his colleagues."
   }
 ]
