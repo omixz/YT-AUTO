@@ -3002,5 +3002,39 @@
       "hook_warnings": []
     },
     "seed": "Two-year-old Steven Damman vanished in just five minutes. And the reason why his case haunts investigators to this day will change how you see missing children cases forever. But that is only the beginning of the nightmare. Decades later, a man stepped forward claiming he was the stolen toddler, and his DNA test brought an even more terrifying truth to light. The year was 1965 on Long Island, New York. A young mother named Marilyn Damman walked to the local store with her two children. Steven was just two years old, sitting comfortably in his stroller alongside his seven-month-old sister Pamela. It was a routine trip, the kind thousands of mothers made every single day without a second thoug"
+  },
+  {
+    "video_id": "oM7vu0TRLDc",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "The 1917 Telegram Deception That Shocked Washington",
+    "topic": "How a single intercepted telegram in 1917, sent by German Foreign Minister Arthur Zimmermann, tricked the British codebreakers of Room 40 into orchestrating a masterclass of deception to drag the United States into World War I.",
+    "published_at": "2026-11-14",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 35.7,
+        "audio_seconds": 53.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 45.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE FAKE LEAK THAT STARTED A WAR"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
