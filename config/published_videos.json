@@ -2186,7 +2186,7 @@
     "title": "The Man Who Parachuted Into a Storm With $200,000 and Disappeared",
     "topic": "The 1971 D.B. Cooper Hijacking: The ultimate unsolved American mystery where a polite man in a suit parachuted into a howling Northwest storm with $200,000 in ransom money and vanished forever.",
     "published_at": "2026-11-08",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2211,7 +2211,10 @@
       },
       "tiktok_post_id": "6aefca429214322f6825c28e",
       "hook_warnings": []
-    }
+    },
+    "views": 292,
+    "avg_view_pct": 26.3,
+    "followups_queued": "2026-11-15"
   },
   {
     "video_id": "_NpLqqchJxY",
@@ -2220,7 +2223,7 @@
     "title": "The 1914 Bobby Dunbar Case: How DNA Questioned a Century-Old Stolen Identity",
     "topic": "The 1914 aftermath of the Bobby Dunbar case, where the boy mistakenly identified as Bobby grew up carrying the quiet, lifelong burden of a stolen identity until modern descendants finally uncovered the truth.",
     "published_at": "2026-11-08",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2248,7 +2251,9 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     },
-    "seed": "In nineteen fourteen, a mother held a boy she swore was her stolen son. She was wrong. That mistaken identity wasn't just a legal error. It was the beginning of a lifelong silent burden for everyone involved. To understand how this happened, we have to look back to a swamp in Louisiana three years earlier. Four-year-old Bobby Dunbar vanished during a family fishing trip near Swayze Lake in a flash. A massive frantic search immediately scoured the dense, alligator-infested swamplands day and night."
+    "seed": "In nineteen fourteen, a mother held a boy she swore was her stolen son. She was wrong. That mistaken identity wasn't just a legal error. It was the beginning of a lifelong silent burden for everyone involved. To understand how this happened, we have to look back to a swamp in Louisiana three years earlier. Four-year-old Bobby Dunbar vanished during a family fishing trip near Swayze Lake in a flash. A massive frantic search immediately scoured the dense, alligator-infested swamplands day and night.",
+    "views": 2,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "70Fbp43JRo0",
@@ -2295,7 +2300,7 @@
     "title": "The 1914 Mystery of the Boy Who Wasn't Bobby Dunbar",
     "topic": "The 1914 aftermath of the Bobby Dunbar case, where the boy mistakenly identified as Bobby grew up carrying the quiet, lifelong burden of a stolen identity until modern descendants finally uncovered the truth.",
     "published_at": "2026-11-08",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2323,7 +2328,9 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     },
-    "teaser_for": "_NpLqqchJxY"
+    "teaser_for": "_NpLqqchJxY",
+    "views": 38,
+    "avg_view_pct": 36.2
   },
   {
     "video_id": "aIcB4c-rDUM",
@@ -2332,7 +2339,7 @@
     "title": "Why Did a 1928 Kidnapper Dress His Victim in New Clothes?",
     "topic": "The 1928 kidnapping and baffling return of 4-year-old Barbara Gansert in Baltimore, Maryland, where a frantic mother opened her front door to find her missing daughter neatly dressed in brand-new clothes she had never owned, accompanied by a polite stranger who vanished into the fog before he could be questioned.",
     "published_at": "2026-11-08",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2359,7 +2366,10 @@
       "hook_warnings": [
         "first sentence is 17 words (aim for 14 or fewer)"
       ]
-    }
+    },
+    "views": 127,
+    "avg_view_pct": 50.6,
+    "followups_queued": "2026-11-15"
   },
   {
     "video_id": "93da_pwMdRY",
