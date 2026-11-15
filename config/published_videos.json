@@ -3126,5 +3126,42 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     }
+  },
+  {
+    "video_id": "gJ_NBWcsDY4",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "How a 1972 Campfire Unearthed D.B. Cooper's Missing Cash",
+    "topic": "The 1972 aftermath of the D.B. Cooper hijacking, focusing on the moment an eight-year-old boy digging in the sandy banks of the Columbia River uncovered a rotting packet of rotting ransom bills that blew the cold case wide open.",
+    "published_at": "2026-11-15",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 188.8,
+        "audio_seconds": 573.0
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 63,
+        "fallback_scenes": 0,
+        "seconds": 371.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "$5,800 IN THE SAND"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 20 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "An eight-year-old boy in 1972 dug his hands into a muddy riverbank and pulled out a fortune in rotting cash. But that discovery was just the beginning of a strange puzzle that investigators never expected to encounter on the river. Years earlier, a mysterious man hijacked a commercial flight and vanished into the freezing November night. He demanded two hundred thousand dollars in ransom and four parachutes before letting everyone go unharmed. Then he jumped out the rear airstair door into the pitch-black wilderness of the Pacific Northwest."
   }
 ]
