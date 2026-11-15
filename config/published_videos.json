@@ -3080,5 +3080,41 @@
       ]
     },
     "seed": "A running patrol car, a half eaten sandwich, and an open security logbook left behind in Syracuse. But that is only the beginning of a strange mystery that has baffled investigators for decades. In October of nineteen seventy six, forty three year old Ray Richardson worked as a night watchman. He was assigned to patrol the Atrium parking garage in downtown Syracuse, New York. It was a routine shift until a chilling discovery was made by his colleagues."
+  },
+  {
+    "video_id": "yBrTRrm7cHM",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1945 Christmas Fire Where Five Children Vanished",
+    "topic": "The chilling 1945 Sodder family Christmas Eve fire in Fayetteville, West Virginia, where a massive blaze burned down a family home, but when the ashes cooled, the bodies of five missing children were entirely gone\u2014sparking a decades-long desperate search fueled by a cryptic photograph mailed to the grieving parents years later.",
+    "published_at": "2026-11-15",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 23.0,
+        "audio_seconds": 58.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 44.3,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "BODIES VANISHED WITHOUT A TRACE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    }
   }
 ]
