@@ -28,5 +28,11 @@
     "hook": "Your PC is too fast for Grand Theft Auto: San Andreas.",
     "at": "20261114-0100",
     "buffer_post": "6af7b2c0bb36d00909dc0614"
+  },
+  {
+    "id": "fallout-3",
+    "hook": "Your PC is too fast for Fallout 3.",
+    "at": "20261115-0011",
+    "buffer_post": "6af8f8c576c23bf1c74b0a1e"
   }
 ]
