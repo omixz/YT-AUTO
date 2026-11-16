@@ -34,5 +34,11 @@
     "hook": "Your PC is too fast for Fallout 3.",
     "at": "20261115-0011",
     "buffer_post": "6af8f8c576c23bf1c74b0a1e"
+  },
+  {
+    "id": "fallout-nv",
+    "hook": "Your PC is too fast for Fallout: New Vegas.",
+    "at": "20261116-0020",
+    "buffer_post": "6afa4c41d7e5fee6388d26ac"
   }
 ]
