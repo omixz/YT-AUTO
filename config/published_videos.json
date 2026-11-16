@@ -3206,5 +3206,42 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "ccdKCmkR_Oc",
+    "niche": "world_wars",
+    "format": "longform",
+    "title": "The 17-Year-Old Girl Who Fought Disguised in WWI Trenches",
+    "topic": "The forgotten ride of Sofija Jovanovi\u0107, the 17-year-old Serbian volunteer who picked up the discarded rifle of a fallen officer during the 1912 artillery barrage of the First Balkan War and went on to fight in the trenches of WWI disguised as a male soldier.",
+    "published_at": "2026-11-16",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 242.5,
+        "audio_seconds": 556.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 48,
+        "fallback_scenes": 0,
+        "seconds": 381.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE 17-YEAR-OLD SOLDIER"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 24 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "A seventeen year old girl picked up a dead officer s rifle in 1912 and became one of history s most feared frontline soldiers. Most histories gloss over her name, but her combat record in World War I defies everything we thought we knew about the trenches. But that is only half the story, because her deception fooled an entire army for years. To understand how she reached the front, we have to travel back to the artillery barrage that shook Belgrade to its foundations. Let us examine the exact moment the war arrived at her doorstep. Sofija Jovanovi\u0107 was just seventeen when Ottoman shells began raining down on her hometown. The streets erupted into absolute chaos as civilians scrambled for an"
   }
 ]
