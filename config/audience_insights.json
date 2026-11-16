@@ -1,8 +1,8 @@
 {
-  "videos": 61,
+  "videos": 64,
   "overall": {
-    "avg_views": 58.5,
-    "avg_view_pct": 39.5
+    "avg_views": 56.0,
+    "avg_view_pct": 38.6
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -31,9 +31,9 @@
       "videos": 1
     },
     "unsolved_mysteries": {
-      "avg_views": 45.9,
-      "avg_view_pct": 24.1,
-      "videos": 21
+      "avg_views": 40.9,
+      "avg_view_pct": 23.7,
+      "videos": 24
     },
     "world_wars": {
       "avg_views": 221.4,
@@ -43,14 +43,14 @@
   },
   "by_format": {
     "longform": {
-      "avg_views": 6.6,
-      "avg_view_pct": 15.6,
-      "videos": 38
+      "avg_views": 6.7,
+      "avg_view_pct": 15.5,
+      "videos": 39
     },
     "shorts": {
-      "avg_views": 127.5,
-      "avg_view_pct": 80.8,
-      "videos": 21
+      "avg_views": 116.8,
+      "avg_view_pct": 76.0,
+      "videos": 23
     },
     "teaser": {
       "avg_views": 319.0,
@@ -65,40 +65,40 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 96.7,
-      "avg_view_pct": 53.4,
-      "videos": 35
+      "avg_views": 89.6,
+      "avg_view_pct": 50.9,
+      "videos": 38
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 55.0,
-      "avg_view_pct": 42.5,
-      "videos": 43
+      "avg_views": 54.0,
+      "avg_view_pct": 41.8,
+      "videos": 44
     },
     "year": {
-      "avg_views": 66.8,
-      "avg_view_pct": 32.3,
-      "videos": 18
+      "avg_views": 60.5,
+      "avg_view_pct": 31.7,
+      "videos": 20
     }
   },
   "by_title_is_question": {
     "question": {
-      "avg_views": 127.0,
-      "avg_view_pct": 50.6,
-      "videos": 1
+      "avg_views": 65.5,
+      "avg_view_pct": 46.4,
+      "videos": 2
     },
     "statement": {
-      "avg_views": 57.3,
-      "avg_view_pct": 39.3,
-      "videos": 60
+      "avg_views": 55.7,
+      "avg_view_pct": 38.4,
+      "videos": 62
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 78.2,
-      "avg_view_pct": 48.9,
-      "videos": 41
+      "avg_views": 73.3,
+      "avg_view_pct": 47.0,
+      "videos": 44
     },
     "<=50": {
       "avg_views": 6.8,

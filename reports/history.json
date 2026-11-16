@@ -2170,5 +2170,71 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "93da_pwMdRY",
+    "published_at": "2026-11-09",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1930 St Kilda Evacuation: Why Did They Leave Everything Set?",
+    "stats": {
+      "views": 4,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 26.0,
+      "avg_view_percentage": 42.17,
+      "likes": 2,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 2,
+        "SHORTS": 2,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "kdjFRSFPgA0",
+    "published_at": "2026-11-09",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1900 Eilean Mor Lighthouse Disappearance Mystery",
+    "stats": {
+      "views": 4,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 4.0,
+      "avg_view_percentage": 9.35,
+      "likes": -1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 2,
+        "SHORTS": 2,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "XSKq9pMSNSc",
+    "published_at": "2026-11-09",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Final Radio Transmission of Flight 19 That Shocked the Navy",
+    "stats": {
+      "views": 11,
+      "minutes_watched": 12.0,
+      "avg_view_duration_s": 65.0,
+      "avg_view_percentage": 12.22,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 7,
+        "NO_LINK_OTHER": 3,
+        "EXT_URL": 1
+      }
+    }
   }
 ]
