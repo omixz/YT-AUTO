@@ -3243,5 +3243,39 @@
       ]
     },
     "seed": "A seventeen year old girl picked up a dead officer s rifle in 1912 and became one of history s most feared frontline soldiers. Most histories gloss over her name, but her combat record in World War I defies everything we thought we knew about the trenches. But that is only half the story, because her deception fooled an entire army for years. To understand how she reached the front, we have to travel back to the artillery barrage that shook Belgrade to its foundations. Let us examine the exact moment the war arrived at her doorstep. Sofija Jovanovi\u0107 was just seventeen when Ottoman shells began raining down on her hometown. The streets erupted into absolute chaos as civilians scrambled for an"
+  },
+  {
+    "video_id": "UwAQh2mic50",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1959 Cabin Mystery Where Everyone Vanished Mid-Meal",
+    "topic": "The 1959 chilling case of the Amitiza cabin massacre, where a remote family in the deep timberlands of Canada vanished overnight, leaving behind a dinner table with steaming bowls of stew, unwashed spoons, and an unlit kerosene lamp awaiting a family that never returned.",
+    "published_at": "2026-11-17",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 20.5,
+        "audio_seconds": 49.7
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 29.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "DINNER WAS WARM"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
