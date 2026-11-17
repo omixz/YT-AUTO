@@ -3277,5 +3277,40 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "qKFAdZcZZ1M",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1934 Maryland Farmhouse Trunk: Inside the Secret Adoption Ring Ledger",
+    "topic": "The 1934 follow-up to the Barbara Gansert kidnapping, where investigators tracked the mysterious stranger's trail to an abandoned farmhouse in Maryland, uncovering a hidden trunk filled with hundreds of tailored children's outfits and a ledger detailing a bizarre adoption ring.",
+    "published_at": "2026-11-17",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 179.4,
+        "audio_seconds": 559.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 52,
+        "fallback_scenes": 0,
+        "seconds": 290.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE 1934 TRUNK SECRET"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    },
+    "seed": "A locked iron trunk in a Maryland farmhouse held hundreds of tailored children's outfits in 1934. And the reason why will change how you see the era forever. What investigators found inside that trunk went far beyond a simple kidnapping investigation. But that is only half the story of what was hidden in those rural woods. The trail began months earlier with the baffling disappearance of young Barbara Gansert from her home. Her parents were beside themselves with grief as days turned into agonizing weeks of silence. Police had searched every corner of the city without finding a single trace of her whereabouts. Every alleyway, train station, and local park yielded nothing. Then an anonymous t"
   }
 ]
