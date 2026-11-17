@@ -40,5 +40,11 @@
     "hook": "Your PC is too fast for Fallout: New Vegas.",
     "at": "20261116-0020",
     "buffer_post": "6afa4c41d7e5fee6388d26ac"
+  },
+  {
+    "id": "oblivion",
+    "hook": "Your PC is too fast for The Elder Scrolls IV: Oblivion.",
+    "at": "20261117-0307",
+    "buffer_post": "6afbc50885dca6b14a18d709"
   }
 ]
