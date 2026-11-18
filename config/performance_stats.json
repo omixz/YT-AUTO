@@ -222,9 +222,9 @@
     "repaired_private_zeros": 8
   },
   "unsolved_mysteries:longform": {
-    "samples": 21,
-    "total_score": 443.8000000000002,
-    "avg_score": 21.133333333333344,
+    "samples": 22,
+    "total_score": 444.00000000000017,
+    "avg_score": 20.18181818181819,
     "history": [
       {
         "date": "2026-10-24",
@@ -265,14 +265,18 @@
       {
         "date": "2026-11-16",
         "score": 25.1
+      },
+      {
+        "date": "2026-11-18",
+        "score": 0.2
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 8.925
+        "avg_score": 8.5
       },
       "30d": {
-        "avg_score": 23.59
+        "avg_score": 21.463636363636365
       }
     },
     "repaired_private_zeros": 2
@@ -298,9 +302,9 @@
     "repaired_private_zeros": 2
   },
   "unsolved_mysteries:shorts": {
-    "samples": 7,
-    "total_score": 837.0999999999999,
-    "avg_score": 119.58571428571427,
+    "samples": 10,
+    "total_score": 878.9999999999999,
+    "avg_score": 87.89999999999999,
     "history": [
       {
         "date": "2026-10-28",
@@ -329,14 +333,26 @@
       {
         "date": "2026-11-16",
         "score": 0.4
+      },
+      {
+        "date": "2026-11-18",
+        "score": 31.0
+      },
+      {
+        "date": "2026-11-18",
+        "score": 6.800000000000001
+      },
+      {
+        "date": "2026-11-18",
+        "score": 4.1
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 65.17499999999998
+        "avg_score": 43.22857142857142
       },
       "30d": {
-        "avg_score": 119.58571428571427
+        "avg_score": 87.89999999999999
       }
     }
   },
@@ -499,21 +515,29 @@
     }
   },
   "unsolved_mysteries:teaser": {
-    "samples": 1,
-    "total_score": 15.8,
-    "avg_score": 15.8,
+    "samples": 3,
+    "total_score": 76.30000000000001,
+    "avg_score": 25.433333333333337,
     "history": [
       {
         "date": "2026-11-15",
         "score": 15.8
+      },
+      {
+        "date": "2026-11-18",
+        "score": 17.1
+      },
+      {
+        "date": "2026-11-18",
+        "score": 43.4
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 15.8
+        "avg_score": 25.433333333333337
       },
       "30d": {
-        "avg_score": 15.8
+        "avg_score": 25.433333333333337
       }
     }
   }

@@ -2527,7 +2527,7 @@
     "title": "The Mystery of Flight 19 Final Radio Transmission",
     "topic": "The 1948 Flight 19 Radio Mystery: The Final, Haunting Transmission of Five Navy Torpedo Bombers That Disappeared in the Bermuda Triangle While Chasing a Strange, Glowing Horizon",
     "published_at": "2026-11-10",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2553,7 +2553,9 @@
       "tiktok_post_id": "6af266d905af22d726f79a8f",
       "hook_warnings": []
     },
-    "teaser_for": "XSKq9pMSNSc"
+    "teaser_for": "XSKq9pMSNSc",
+    "views": 51,
+    "avg_view_pct": 51.5
   },
   {
     "video_id": "dhQqeUcN_dI",
@@ -2637,7 +2639,7 @@
     "title": "How Steven Stayner Survived 7 Years Kidnapped and Saved a Toddler",
     "topic": "The 1975 terrifying case of Steven Stayner, a seven-year-old boy kidnapped in California who endured seven years of captivity before he bravely grabbed a five-year-old toddler also targeted by his abductor and escaped into the wilderness to find help",
     "published_at": "2026-11-10",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2666,7 +2668,9 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     },
-    "seed": "A seven year old boy vanished into thin air, only to return seven years later with a secret that shocked the world. And the reason why this case remains one of the most haunting survival stories in American history goes far beyond a simple kidnapping. Before we understand the daring escape, we have to look back at the ordinary, sunny afternoon in Merced, California, where everything changed forever. In 1975, Steven Stayner was just a normal seven-year-old walking home from school, entirely unaware of the danger waiting just around the corner. A stranger named Kenneth Parnell pulled up slowly alongside him, offering a friendly smile and a completely harmless-sounding ride home from school."
+    "seed": "A seven year old boy vanished into thin air, only to return seven years later with a secret that shocked the world. And the reason why this case remains one of the most haunting survival stories in American history goes far beyond a simple kidnapping. Before we understand the daring escape, we have to look back at the ordinary, sunny afternoon in Merced, California, where everything changed forever. In 1975, Steven Stayner was just a normal seven-year-old walking home from school, entirely unaware of the danger waiting just around the corner. A stranger named Kenneth Parnell pulled up slowly alongside him, offering a friendly smile and a completely harmless-sounding ride home from school.",
+    "views": 2,
+    "avg_view_pct": 3.1
   },
   {
     "video_id": "qNzHDnYmb2M",
@@ -2714,7 +2718,7 @@
     "title": "The 5 Days Amelia Earhart Broadcasted From the Jungle",
     "topic": "The chilling 1937 mystery of Amelia Earhart's final hours, focusing specifically on the urgent, desperate distress calls picked up by amateur radio operators across the Pacific for days after her plane went down, begging for rescue before suddenly going silent forever",
     "published_at": "2026-11-10",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2739,7 +2743,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 50,
+    "avg_view_pct": 53.0
   },
   {
     "video_id": "zWGfTbdrzqI",
@@ -2748,7 +2754,7 @@
     "title": "The Woman Who Vanished From a Locked Room in 1911",
     "topic": "The haunting 1911 disappearance of Amy Ayling from a mental health facility in England, where her locked room was found completely empty except for her winter coat neatly draped over the foot of the bed and her boots still standing upright by the door as if she stepped right out of her skin",
     "published_at": "2026-11-11",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2775,7 +2781,9 @@
       "hook_warnings": [
         "hook opens with throat-clearing instead of the event itself"
       ]
-    }
+    },
+    "views": 48,
+    "avg_view_pct": 18.6
   },
   {
     "video_id": "jchsbL6zeFg",
@@ -2784,7 +2792,7 @@
     "title": "How a Socialite Vanished on Fifth Avenue in 1910",
     "topic": "The 1910 disappearance of Dorothy Arnold, a wealthy New York socialite who walked into a busy Fifth Avenue bookstore in broad daylight, told a friend she was heading home to write a novel, and vanished completely into the afternoon crowd without leaving a single trace",
     "published_at": "2026-11-11",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2809,7 +2817,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 21,
+    "avg_view_pct": 21.6
   },
   {
     "video_id": "-gUM-63pMdU",
@@ -2818,7 +2828,7 @@
     "title": "Why Steven Stayner's 7-Year Captivity Shocked America",
     "topic": "The 1975 terrifying case of Steven Stayner, a seven-year-old boy kidnapped in California who endured seven years of captivity before he bravely grabbed a five-year-old toddler also targeted by his abductor and escaped into the wilderness to find help",
     "published_at": "2026-11-11",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2846,7 +2856,9 @@
         "first sentence is 20 words (aim for 14 or fewer)"
       ]
     },
-    "teaser_for": "yP9x-segrs4"
+    "teaser_for": "yP9x-segrs4",
+    "views": 94,
+    "avg_view_pct": 50.6
   },
   {
     "video_id": "QRok1c-3p5M",

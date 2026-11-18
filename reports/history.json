@@ -2236,5 +2236,138 @@
         "EXT_URL": 1
       }
     }
+  },
+  {
+    "video_id": "vudOxwz2A0s",
+    "published_at": "2026-11-10",
+    "niche": "unsolved_mysteries",
+    "format": "teaser",
+    "title": "The Mystery of Flight 19 Final Radio Transmission",
+    "stats": {
+      "views": 51,
+      "minutes_watched": 6.0,
+      "avg_view_duration_s": 29.0,
+      "avg_view_percentage": 51.51,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 47,
+        "YT_SEARCH": 2,
+        "SUBSCRIBER": 1,
+        "EXT_URL": 1
+      }
+    }
+  },
+  {
+    "video_id": "yP9x-segrs4",
+    "published_at": "2026-11-10",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "How Steven Stayner Survived 7 Years Kidnapped and Saved a Toddler",
+    "stats": {
+      "views": 2,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 15.0,
+      "avg_view_percentage": 3.1,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 1,
+        "RELATED_VIDEO": 1
+      }
+    }
+  },
+  {
+    "video_id": "jeUVuCTdzAc",
+    "published_at": "2026-11-10",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 5 Days Amelia Earhart Broadcasted From the Jungle",
+    "stats": {
+      "views": 50,
+      "minutes_watched": 13.0,
+      "avg_view_duration_s": 27.0,
+      "avg_view_percentage": 53.03,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 41,
+        "YT_SEARCH": 9,
+        "NO_LINK_OTHER": 0,
+        "SUBSCRIBER": 0
+      }
+    }
+  },
+  {
+    "video_id": "zWGfTbdrzqI",
+    "published_at": "2026-11-11",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Woman Who Vanished From a Locked Room in 1911",
+    "stats": {
+      "views": 48,
+      "minutes_watched": 1.0,
+      "avg_view_duration_s": 8.0,
+      "avg_view_percentage": 18.6,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 45,
+        "YT_SEARCH": 3,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "jchsbL6zeFg",
+    "published_at": "2026-11-11",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "How a Socialite Vanished on Fifth Avenue in 1910",
+    "stats": {
+      "views": 21,
+      "minutes_watched": 1.0,
+      "avg_view_duration_s": 9.0,
+      "avg_view_percentage": 21.58,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 20,
+        "YT_SEARCH": 1
+      }
+    }
+  },
+  {
+    "video_id": "-gUM-63pMdU",
+    "published_at": "2026-11-11",
+    "niche": "unsolved_mysteries",
+    "format": "teaser",
+    "title": "Why Steven Stayner's 7-Year Captivity Shocked America",
+    "stats": {
+      "views": 94,
+      "minutes_watched": 17.0,
+      "avg_view_duration_s": 26.0,
+      "avg_view_percentage": 50.56,
+      "likes": 4,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 85,
+        "YT_SEARCH": 8,
+        "YT_OTHER_PAGE": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
   }
 ]
