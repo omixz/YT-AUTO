@@ -107,6 +107,19 @@ def _trend_score(stats: dict, niche_key: str, format_name: str) -> float:
     if data.get("samples", 0) < 5:
         return 0.0
     
+    # A 7-day window holding one or two videos is noise, not a trend: world_wars Shorts (best raw views on the
+    # channel) had one weak week-old Short drag its score ~40% below unsolved_mysteries, so the forced Shorts cron
+    # picked unsolved_mysteries almost every day from Nov 9. Only trust the trend once the window has 3+ videos.
+    hist = data.get("history", [])
+    if hist:
+        try:
+            latest = max(datetime.strptime(h["date"], "%Y-%m-%d") for h in hist)
+            recent = sum(1 for h in hist if (latest - datetime.strptime(h["date"], "%Y-%m-%d")).days < 7)
+        except (KeyError, ValueError, TypeError):
+            recent = 0
+        if recent < 3:
+            return 0.0
+
     # Check if we have windowed scores
     windows = data.get("windows", {})
     if not windows:

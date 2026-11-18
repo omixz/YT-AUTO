@@ -116,8 +116,8 @@ upload:
   tiktok_hashtags: "#history #storytime #didyouknow #fyp"
 
 quality:
-  min_words: 90                # below this, a script reads as too thin to be "produced content" (shorts baseline; longform naturally clears this)
-  min_scenes: 6
+  min_words: 70                # was 90/6: _tighten_short cuts Shorts to ~80-90 words and 5 scenes on purpose, so 7 finished Shorts
+  min_scenes: 4                # (Nov 8-16) went PRIVATE over "only 84 words"/"only 5 scenes". Longform clears this by miles anyway.
   require_hook_and_insight: true   # first scene must be role=hook, last must be role=insight
   fallback_privacy_status: private # used only when on_gate_failure is "private"
   min_length_fraction: 0.60        # was hard-coded 0.75. The model writes ~2000 words against the 3100-word / 20-min target (2 of the last 3 mythology videos went private at 0.68); 0.60 = 12 min, still mid-roll eligible, and still catches truncated scripts

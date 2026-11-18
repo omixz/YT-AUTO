@@ -661,7 +661,13 @@ HOOK CRAFT (the first 15 seconds decide whether anyone watches; most of this cha
 - The whole hook scene is 35 words or fewer. Scene 2 must ESCALATE (new twist), never explain the hook.
 - Concrete beats abstract: "a table set for dinner, clocks stopped" beats "a mysterious disappearance".
 {shorts_rules}
-{_winning_titles_block(config.video.format)}TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
+{_winning_titles_block(config.video.format)}PROVEN TITLE SHAPE ON THIS CHANNEL (from real view data - use it unless the topic truly can't fit):
+"The [unexpected person/object] Who/That [did one specific thing] [huge consequence]". Winners:
+"The 18-Year-Old Farm Girl Who Accidentally Started WWI" (950 views), "The Unauthorized Torpedo That Stunned
+Tokyo in 1941" (600), "How Patton's Freak Traffic Accident Altered the Cold War" (473). The smaller and more
+ordinary the trigger, and the bigger the consequence, the better. NEVER START a title with a year or
+"The [year]..." (those averaged half the views); a year may go at the END if it adds stakes.
+TITLES: also fill `title_options` with 3 DIFFERENT title angles (curiosity gap, a specific number or name, an unanswered question).
 Each is 35-65 characters, specific, and never states an unproven claim as fact.
 
 RETENTION ENGINEERING - DO NOT SKIP THESE:
