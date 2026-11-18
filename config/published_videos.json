@@ -3358,5 +3358,43 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "7YGnV9NT9aw",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1964 West Point Cadet Who Met George And Vanished Forever",
+    "topic": "The bizarre 1964 case of 7-year-old Richard Colvin Cox, a West Point cadet who vanished after walking into a sleepy Massachusetts diner with an unidentified man known only as \"George,\" leaving behind a pristine dorm room and a final cryptic letter warning his fianc\u00e9e that if he didn't return, she should look for a man wearing a military ring.",
+    "published_at": "2026-11-18",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 208.0,
+        "audio_seconds": 480.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 59,
+        "fallback_scenes": 0,
+        "seconds": 296.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE CADET WHO VANISHED"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "hook opens with throat-clearing instead of the event itself",
+        "first sentence is 24 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "In 1964, a West Point cadet walked into a Massachusetts diner, met a man named George, and vanished off the face of the earth. But that is only the beginning of a rabbit hole that baffled federal investigators for decades. Richard Colvin Cox was twenty-one years old, bright, ambitious, and seemingly on the path to a promising military career. He had transferred to the United States Military Academy at West Point from Mansfield State College in Pennsylvania. By all accounts, Cox was adjusting to the notoriously rigorous demands of cadet life."
   }
 ]
