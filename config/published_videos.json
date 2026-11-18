@@ -3312,5 +3312,39 @@
       "hook_warnings": []
     },
     "seed": "A locked iron trunk in a Maryland farmhouse held hundreds of tailored children's outfits in 1934. And the reason why will change how you see the era forever. What investigators found inside that trunk went far beyond a simple kidnapping investigation. But that is only half the story of what was hidden in those rural woods. The trail began months earlier with the baffling disappearance of young Barbara Gansert from her home. Her parents were beside themselves with grief as days turned into agonizing weeks of silence. Police had searched every corner of the city without finding a single trace of her whereabouts. Every alleyway, train station, and local park yielded nothing. Then an anonymous t"
+  },
+  {
+    "video_id": "xAi1s8B07ZQ",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1957 Disappearance That Shocked Illinois",
+    "topic": "The chilling 1957 disappearance of 6-year-old Maria Ridulph in Sycamore, Illinois, who was last seen playing under a streetlamp with a friendly neighborhood teenager in a crisp red coat, only to vanish into the winter night before her skeletal remains were found decades later in a remote snow-dusted field.",
+    "published_at": "2026-11-18",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 33.5,
+        "audio_seconds": 43.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 48.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE 1957 DISAPPEARANCE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
