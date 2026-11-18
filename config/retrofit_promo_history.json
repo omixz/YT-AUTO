@@ -46,5 +46,11 @@
     "hook": "Your PC is too fast for The Elder Scrolls IV: Oblivion.",
     "at": "20261117-0307",
     "buffer_post": "6afbc50885dca6b14a18d709"
+  },
+  {
+    "id": "skyrim-le",
+    "hook": "Your PC is too fast for The Elder Scrolls V: Skyrim.",
+    "at": "20261118-0246",
+    "buffer_post": "6afd119a39777dd13e0e7a67"
   }
 ]
