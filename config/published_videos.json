@@ -3396,5 +3396,41 @@
       ]
     },
     "seed": "In 1964, a West Point cadet walked into a Massachusetts diner, met a man named George, and vanished off the face of the earth. But that is only the beginning of a rabbit hole that baffled federal investigators for decades. Richard Colvin Cox was twenty-one years old, bright, ambitious, and seemingly on the path to a promising military career. He had transferred to the United States Military Academy at West Point from Mansfield State College in Pennsylvania. By all accounts, Cox was adjusting to the notoriously rigorous demands of cadet life."
+  },
+  {
+    "video_id": "3QClO8_MnZ4",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Assassin Who Found His Target While Eating a Sandwich",
+    "topic": "The fateful dinner party of Gavrilo Princip: The astonishingly mundane moment in a Sarajevo cafe where the assassin sat eating a sandwich just minutes after his initial plot failed, only for Archduke Franz Ferdinand's driver to take a wrong turn right outside the window.",
+    "published_at": "2026-11-19",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 85 words of narration (min 90)"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 17.3,
+        "audio_seconds": 39.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 28.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE WRONG TURN THAT STARTED WWI"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
