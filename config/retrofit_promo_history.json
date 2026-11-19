@@ -52,5 +52,11 @@
     "hook": "Your PC is too fast for The Elder Scrolls V: Skyrim.",
     "at": "20261118-0246",
     "buffer_post": "6afd119a39777dd13e0e7a67"
+  },
+  {
+    "id": "morrowind",
+    "hook": "Your PC is too fast for The Elder Scrolls III: Morrowind.",
+    "at": "20261119-0207",
+    "buffer_post": "6afe59efb16549e9b818a3f4"
   }
 ]
