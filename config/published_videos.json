@@ -2867,7 +2867,7 @@
     "title": "The Jamison Family Mystery: $32,000 Left Behind",
     "topic": "The chilling 1991 case of the Jamison family, who packed all their money and dog into a pickup truck, drove deep into the remote mountains of Oklahoma to look at a plot of land, and mysteriously abandoned their vehicle with their cell phones, wallets, and pet trapped inside, only for their skeletal remains to be found years later lying side-by-side on a remote hillside with a cryptic, unsolved final text message on their phone.",
     "published_at": "2026-11-12",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2892,7 +2892,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 6,
+    "avg_view_pct": 15.7
   },
   {
     "video_id": "n2F0L7iES50",
@@ -2939,7 +2941,7 @@
     "title": "Johnny Gosch: The Paperboy Who Vanished and The Midnight Visitor",
     "topic": "The haunting 1982 disappearance of Johnny Gosch, a 12-year-old paperboy in Des Moines, Iowa, who vanished during his morning route, leaving behind his heavy canvas delivery bag on a street corner and a sleeping city, before his mother received a terrifying middle-of-the-night knock years later from a bruised young man claiming to be her long-lost son.",
     "published_at": "2026-11-12",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -2967,7 +2969,9 @@
         "first sentence is 17 words (aim for 14 or fewer)"
       ]
     },
-    "seed": "A heavy canvas delivery bag sat abandoned on an empty Des Moines street corner in September 1982. Inside was the Sunday paper, but twelve-year-old Johnny Gosch was gone without a single trace. What makes this disappearance one of America's most haunting cold cases isn't just that a child vanished. It is what happened years later in the dead of night that shocked everyone involved. Before we look at that terrifying midnight knock, we have to return to the quiet Iowa neighborhood."
+    "seed": "A heavy canvas delivery bag sat abandoned on an empty Des Moines street corner in September 1982. Inside was the Sunday paper, but twelve-year-old Johnny Gosch was gone without a single trace. What makes this disappearance one of America's most haunting cold cases isn't just that a child vanished. It is what happened years later in the dead of night that shocked everyone involved. Before we look at that terrifying midnight knock, we have to return to the quiet Iowa neighborhood.",
+    "views": 9,
+    "avg_view_pct": 24.2
   },
   {
     "video_id": "CJazBpHh5Bo",

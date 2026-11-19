@@ -1,8 +1,8 @@
 {
-  "videos": 70,
+  "videos": 72,
   "overall": {
-    "avg_views": 55.0,
-    "avg_view_pct": 38.2
+    "avg_views": 53.7,
+    "avg_view_pct": 37.7
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -31,9 +31,9 @@
       "videos": 1
     },
     "unsolved_mysteries": {
-      "avg_views": 41.6,
-      "avg_view_pct": 25.6,
-      "videos": 30
+      "avg_views": 39.5,
+      "avg_view_pct": 25.2,
+      "videos": 32
     },
     "world_wars": {
       "avg_views": 221.4,
@@ -43,14 +43,14 @@
   },
   "by_format": {
     "longform": {
-      "avg_views": 6.6,
-      "avg_view_pct": 15.2,
-      "videos": 40
+      "avg_views": 6.7,
+      "avg_view_pct": 15.4,
+      "videos": 41
     },
     "shorts": {
-      "avg_views": 107.9,
-      "avg_view_pct": 70.8,
-      "videos": 26
+      "avg_views": 104.1,
+      "avg_view_pct": 68.8,
+      "videos": 27
     },
     "teaser": {
       "avg_views": 195.8,
@@ -65,16 +65,16 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 83.4,
-      "avg_view_pct": 48.5,
-      "videos": 44
+      "avg_views": 80.1,
+      "avg_view_pct": 47.2,
+      "videos": 46
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 53.6,
-      "avg_view_pct": 41.6,
-      "videos": 48
+      "avg_views": 51.8,
+      "avg_view_pct": 40.8,
+      "videos": 50
     },
     "year": {
       "avg_views": 58.1,
@@ -89,21 +89,21 @@
       "videos": 2
     },
     "statement": {
-      "avg_views": 54.7,
-      "avg_view_pct": 37.9,
-      "videos": 68
+      "avg_views": 53.4,
+      "avg_view_pct": 37.4,
+      "videos": 70
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 71.7,
-      "avg_view_pct": 46.3,
-      "videos": 47
+      "avg_views": 70.4,
+      "avg_view_pct": 45.8,
+      "videos": 48
     },
     "<=50": {
-      "avg_views": 15.1,
-      "avg_view_pct": 20.4,
-      "videos": 12
+      "avg_views": 14.4,
+      "avg_view_pct": 20.0,
+      "videos": 13
     },
     ">70": {
       "avg_views": 27.3,

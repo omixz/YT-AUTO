@@ -2369,5 +2369,47 @@
         "NO_LINK_OTHER": 0
       }
     }
+  },
+  {
+    "video_id": "QRok1c-3p5M",
+    "published_at": "2026-11-12",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The Jamison Family Mystery: $32,000 Left Behind",
+    "stats": {
+      "views": 6,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 7.0,
+      "avg_view_percentage": 15.67,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 4,
+        "YT_SEARCH": 2
+      }
+    }
+  },
+  {
+    "video_id": "9wV9pdIQLgQ",
+    "published_at": "2026-11-12",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "Johnny Gosch: The Paperboy Who Vanished and The Midnight Visitor",
+    "stats": {
+      "views": 9,
+      "minutes_watched": 10.0,
+      "avg_view_duration_s": 120.0,
+      "avg_view_percentage": 24.22,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 7,
+        "YT_SEARCH": 2
+      }
+    }
   }
 ]
