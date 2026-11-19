@@ -3436,5 +3436,44 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "cBkpuf9HZpg",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1981 Disappearance of Dannette and Jeannette Milliken",
+    "topic": "The haunting 1981 disappearance of 16-year-old Dannette and 15-year-old Jeannette Milliken, two sisters who walked out of their Washington, D.C. home to go to the store in broad daylight, and simply evaporated from a crowded city street while carrying a handful of groceries.",
+    "published_at": "2026-11-19",
+    "scored": false,
+    "privacy_status": "private",
+    "passed_quality_gate": false,
+    "quality_gate_reasons": [
+      "only 927 words of narration, well under this 600s video's own target of ~1550 words (expected at least 930) - the model undershot the requested length rather than a hard generation failure"
+    ],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 124.0,
+        "audio_seconds": 398.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 47,
+        "fallback_scenes": 0,
+        "seconds": 191.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "WALKED OUT & VANISHED"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 20 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "Two sisters walked out of their Washington, D.C., home in broad daylight and simply vanished from a crowded city street. What makes this case terrifying isn't just that they disappeared. It's that despite hundreds of witnesses, nobody saw a single thing. And that is only the beginning of a bureaucratic nightmare full of missed red flags and lost evidence. To understand this mystery, we have to go back to May 14, 1981, on Clay Street in Northeast D.C. Sixteen-year-old Dannette Milliken and her fifteen-year-old sister Jeannette were typical teenagers of the era."
   }
 ]
