@@ -140,6 +140,8 @@ def soften_title(title: str) -> str:
 
 
 _WEAK_OPENERS = re.compile(r"^\s*(in\s+(the\s+year\s+)?\d{3,4}\b|welcome\b|today\b|have you ever\b|imagine\b|did you know\b|let'?s\b|picture this\b|this is the story\b|what if\b|hello\b|hey\b)", re.I)
+_PERSON_LED = re.compile(r"^(the |a |how |why )?[\w'’.-]+(?: [\w'’.-]+){0,4} (who|that) ", re.I)
+_YEAR_LED = re.compile(r"(?i)^(the |in )?\d{3,4}\b")
 _CURIOSITY = re.compile(r"\b(vanish|disappear|secret|last|never|impossible|mystery|why|how|who|what|lost|hidden|forbidden|silent|missing|final|strange|unsolved)", re.I)
 
 
@@ -165,6 +167,11 @@ def title_score(title: str) -> float:
     t = title.strip()
     score = 0.0
     score += 2.0 if re.search(r"\d", t) else 0.0                                   # a number/year is concrete
+    # Channel data (Shorts/teasers, Nov 2026): person/object-led "The X Who/That ..." titles averaged ~200 views vs ~95,
+    # and titles that LEAD with a year ("The 1930 St Kilda...", "The 1900 Eilean Mor...") averaged ~75 vs ~150.
+    m = _PERSON_LED.search(t)
+    score += (2.5 if m.group(2).lower() == "who" else 1.0) if m else 0.0   # a PERSON who... is the strongest shape
+    score -= 3.0 if _YEAR_LED.match(t) else 0.0
     score += 1.5 if len(re.findall(r"\b[A-Z][a-z]{2,}", t[1:])) >= 2 else 0.0         # proper nouns = specific
     score += 1.5 if _CURIOSITY.search(t) else 0.0
     score += 1.0 if 35 <= len(t) <= 65 else (-2.0 if len(t) > 75 else 0.0)

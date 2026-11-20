@@ -8,3 +8,5 @@ __pycache__/
 .pytest_cache/
 .venv/
 work/
+stories_token.json
+output/roblox_stories/

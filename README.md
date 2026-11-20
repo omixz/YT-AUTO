@@ -113,6 +113,27 @@ Three video types run side by side, each with its own cron, one-per-day cap, led
 
 How it works: `growth_ledger.pick_teaser_source()` takes the newest public, gate-passed longform from the last `teaser.window_days` days that has no public teaser yet (a failed/private teaser doesn't count, so it is retried). The longform's opening narration is saved in the ledger (`seed`) at publish time so the teaser tells the *same* story instead of inventing a new one. A teaser never consumes the niche topic queue. If there is nothing to tease the run exits cleanly (`skipped: no_longform_to_tease`) at zero cost. Run one by hand: `python run_pipeline.py --format teaser --dry-run`, or pick `teaser` in the workflow's `format` input. Tune it under `teaser:` in `config/channel.yaml`.
 
+## Roblox story Shorts (second format, own schedule)
+
+`roblox_stories.py` posts one AI "Roblox story" Short a day (`.github/workflows/roblox_stories.yml`, 18:41 UTC).
+Gemini writes an original first-person Roblox drama (110-170 words, hook first, twist ending, comment question,
+kid-safe rules), edge-tts narrates it, and word-by-word pop captions are burned in over obby parkour gameplay.
+It shares nothing with the history pipeline except the uploader: own config (`config/roblox_stories.yaml`),
+own history (`config/roblox_stories_history.json`).
+
+**Setup (once):**
+1. Make a second YouTube channel for it (YouTube > Settings > Add or manage your channels > Create a channel).
+   Posting kids' gaming stories on the history channel would confuse YouTube about who to recommend both to.
+2. Locally, with `client_secret.json` in the repo root: `python roblox_stories.py --auth` and pick the NEW
+   channel when Google asks. Then `base64 -w0 stories_token.json` and save it as the GitHub secret
+   `YOUTUBE_STORIES_TOKEN_B64`. Until that secret exists, each run builds the video (download it from the
+   run's artifacts) but posts nothing. To post on the history channel instead, set `channel: main`.
+3. Optional but recommended: record your OWN obby / Tower of Hell runs in Roblox (1-3 min clips, no music)
+   and put them in `assets/gameplay/` or host them and list the URLs in the `STORIES_GAMEPLAY_URLS` secret.
+   Without clips it uses a procedural blocky obby. Never use other people's gameplay (reused-content strikes).
+
+Try it: `python roblox_stories.py --dry-run` -> `output/roblox_stories/roblox_story.mp4`.
+
 ## Automating it (GitHub Actions)
 
 Two workflows:

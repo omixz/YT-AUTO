@@ -1,0 +1,29 @@
+# Daily AI "Roblox story" Shorts: an AI-written first-person Roblox drama, AI narration,
+# word-by-word captions, over obby parkour gameplay. Runs from .github/workflows/roblox_stories.yml,
+# completely separate from the history pipeline (its own history file, prompt, schedule and stats).
+
+enabled: true
+
+# Where the videos go:
+#   separate - its own YouTube channel (RECOMMENDED). Needs the YOUTUBE_STORIES_TOKEN_B64 secret
+#              (run `python roblox_stories.py --auth` once - see the README section). Until that secret
+#              exists the job still builds the video and keeps it as a workflow artifact, but posts nothing.
+#   main     - the history channel. Not recommended: a kids' gaming audience on a history channel
+#              confuses YouTube about who to show BOTH kinds of videos to.
+channel: separate
+
+privacy_status: public
+category_id: "20"          # 20 = Gaming
+made_for_kids: false       # these are written for a teen+ audience, not "made for kids" (YouTube COPPA setting)
+tags: ["roblox", "roblox story", "storytime", "roblox shorts", "obby", "brookhaven", "adopt me"]
+
+voice: en-US-AnaNeural     # edge-tts voice; young, clear voice is the norm for this format
+voice_rate: "+12%"
+min_words: 110
+max_words: 170
+
+# Real gameplay looks better than the procedural fallback. Record your OWN obby / tower runs in Roblox
+# (plain parkour, no music, 1-3 min each) and either drop them in assets/gameplay/*.mp4 or host them and
+# list the URLs in the STORIES_GAMEPLAY_URLS secret (comma-separated). Never use other people's footage:
+# reuploaded gameplay gets channels demonetised for reused content.
+gameplay_dir: assets/gameplay
