@@ -2980,7 +2980,7 @@
     "title": "The 1953 Disappearance of Ranger Ray Jones",
     "topic": "The bizarre 1953 disappearance of forest ranger Ray Jones, who walked into the dense, foggy timberlands of Washington State's Olympic Peninsula to check a remote trail, only for search parties to find his heavy service boots neatly placed side-by-side in the middle of a muddy logging road\u2014unlaced, unweathered, and entirely empty.",
     "published_at": "2026-11-13",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3005,7 +3005,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 95,
+    "avg_view_pct": 30.9
   },
   {
     "video_id": "zH4M3gXaHlM",
@@ -3014,7 +3016,7 @@
     "title": "He Vanished in 5 Minutes: The Unsolved Steven Damman Cold Case",
     "topic": "The 1965 disappearance of Steven Damman, a two-year-old toddler who was left in his stroller outside a Long Island grocery store for just five minutes, only to vanish into thin air, leaving behind a heartbroken family and a decades-long mystery that took a shocking turn when a man came forward decades later claiming he was the stolen child.",
     "published_at": "2026-11-13",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3040,7 +3042,9 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     },
-    "seed": "Two-year-old Steven Damman vanished in just five minutes. And the reason why his case haunts investigators to this day will change how you see missing children cases forever. But that is only the beginning of the nightmare. Decades later, a man stepped forward claiming he was the stolen toddler, and his DNA test brought an even more terrifying truth to light. The year was 1965 on Long Island, New York. A young mother named Marilyn Damman walked to the local store with her two children. Steven was just two years old, sitting comfortably in his stroller alongside his seven-month-old sister Pamela. It was a routine trip, the kind thousands of mothers made every single day without a second thoug"
+    "seed": "Two-year-old Steven Damman vanished in just five minutes. And the reason why his case haunts investigators to this day will change how you see missing children cases forever. But that is only the beginning of the nightmare. Decades later, a man stepped forward claiming he was the stolen toddler, and his DNA test brought an even more terrifying truth to light. The year was 1965 on Long Island, New York. A young mother named Marilyn Damman walked to the local store with her two children. Steven was just two years old, sitting comfortably in his stroller alongside his seven-month-old sister Pamela. It was a routine trip, the kind thousands of mothers made every single day without a second thoug",
+    "views": 4,
+    "avg_view_pct": 37.2
   },
   {
     "video_id": "oM7vu0TRLDc",

@@ -2411,5 +2411,49 @@
         "YT_SEARCH": 2
       }
     }
+  },
+  {
+    "video_id": "CJazBpHh5Bo",
+    "published_at": "2026-11-13",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1953 Disappearance of Ranger Ray Jones",
+    "stats": {
+      "views": 95,
+      "minutes_watched": 6.0,
+      "avg_view_duration_s": 13.0,
+      "avg_view_percentage": 30.95,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 1,
+      "traffic_sources": {
+        "SHORTS": 88,
+        "YT_SEARCH": 4,
+        "YT_OTHER_PAGE": 3,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "zH4M3gXaHlM",
+    "published_at": "2026-11-13",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "He Vanished in 5 Minutes: The Unsolved Steven Damman Cold Case",
+    "stats": {
+      "views": 4,
+      "minutes_watched": 8.0,
+      "avg_view_duration_s": 168.0,
+      "avg_view_percentage": 37.17,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 3,
+        "YT_SEARCH": 1
+      }
+    }
   }
 ]
