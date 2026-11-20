@@ -125,6 +125,11 @@ def _trend_score(stats: dict, niche_key: str, format_name: str) -> float:
     if not windows:
         return 0.0
     
+    # An empty 7-day window means "nothing posted lately", not "scores fell to zero" - that used to read as a -100%
+    # trend and halve the niche's score just for having been rested.
+    if "avg_score" not in windows.get("7d", {}):
+        return 0.0
+
     # Compare 7-day vs 30-day average
     recent_7 = windows.get("7d", {}).get("avg_score", 0.0)
     recent_30 = windows.get("30d", {}).get("avg_score", 0.0)

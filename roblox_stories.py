@@ -208,7 +208,7 @@ def render(story: dict, mp3: Path, words: List[Word], cfg: dict, out: Path, seed
     ass.write_text(build_ass(words, story.get("hook_text", ""), title_secs=min(2.8, secs)), encoding="utf-8")
     subs = f"subtitles={ass.as_posix()}:fontsdir={FONTS.as_posix()}"
     enc = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-r", str(FPS),
-           "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-movflags", "+faststart", "-t", f"{secs:.2f}"]
+           "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", "-movflags", "+faststart", "-t", f"{secs:.2f}"]
     clips = gameplay_clips(cfg)
     if clips:
         clip = random.Random(seed).choice(clips)

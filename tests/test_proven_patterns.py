@@ -31,3 +31,9 @@ def test_one_weak_recent_video_is_not_a_trend():
 def test_a_real_recent_window_still_counts():
     st = _stats(["2026-10-01", "2026-10-05", "2026-11-12", "2026-11-13", "2026-11-14"], [100, 100, 10, 10, 10])
     assert niche_selector._trend_score(st, "x", "shorts") < 0
+
+
+def test_an_empty_recent_window_is_not_a_crash():
+    st = _stats(["2026-10-01", "2026-10-05", "2026-10-09", "2026-10-11", "2026-10-12"], [100] * 5)
+    st["x:shorts"]["windows"]["7d"] = {}
+    assert niche_selector._trend_score(st, "x", "shorts") == 0.0
