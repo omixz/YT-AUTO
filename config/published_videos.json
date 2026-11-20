@@ -3475,5 +3475,39 @@
       ]
     },
     "seed": "Two sisters walked out of their Washington, D.C., home in broad daylight and simply vanished from a crowded city street. What makes this case terrifying isn't just that they disappeared. It's that despite hundreds of witnesses, nobody saw a single thing. And that is only the beginning of a bureaucratic nightmare full of missed red flags and lost evidence. To understand this mystery, we have to go back to May 14, 1981, on Clay Street in Northeast D.C. Sixteen-year-old Dannette Milliken and her fifteen-year-old sister Jeannette were typical teenagers of the era."
+  },
+  {
+    "video_id": "Qi8N6IUVRco",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1982 Hiker Who Walked Off the Face of the Earth",
+    "topic": "The 1982 mysterious disappearance of 20-year-old nurse Paula Welden from a Vermont hiking trail, where dozens of searchers walked right past her bootprints in the fresh mud before she vanished entirely into a dense forest, leaving behind an open dormitory room with her bed unmade and a half-written letter on her desk.",
+    "published_at": "2026-11-20",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 20.3,
+        "audio_seconds": 49.2
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 36.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SHE VANISHED INTO THIN AIR"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
