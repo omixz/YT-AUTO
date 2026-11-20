@@ -3513,5 +3513,42 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "wjp4h27wE2w",
+    "niche": "modern_history",
+    "format": "longform",
+    "title": "The Greenlandic Hunter Who Braved Radioactive Ice in 1968",
+    "topic": "The 1968 Thule Air Base B-52 crash: how a heroic Greenlandic local braved sub-zero Arctic blazes and lethal radioactive plutonium sludge on the sea ice to rescue freezing American airmen after a thermonuclear bomber plummeted from the sky.",
+    "published_at": "2026-11-20",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 152.9,
+        "audio_seconds": 525.4
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 63,
+        "fallback_scenes": 0,
+        "seconds": 321.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "B-52 CRASH ON ICE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 18 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "Four hydrogen bombs plummeted onto the Arctic ice, and only one local hunter dared enter the radioactive fallout. But that was only the beginning of a catastrophe that nearly triggered an unthinkable nuclear disaster. On January 21, 1968, a United States Air Force B-52G Stratofortress was on a top-secret airborne alert mission. Codenamed Chrome Dome, these flights kept armed nuclear bombers airborne twenty-four hours a day. The fear of a surprise Soviet first strike drove the Pentagon to keep atomic weapons constantly in the sky."
   }
 ]
