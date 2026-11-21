@@ -64,5 +64,11 @@
     "hook": "Your PC is too fast for F.E.A.R..",
     "at": "20261120-0202",
     "buffer_post": "6affaa34ca85ebefb0e9fffd"
+  },
+  {
+    "id": "splinter-cell",
+    "hook": "Your PC is too fast for Tom Clancy's Splinter Cell.",
+    "at": "20261121-0143",
+    "buffer_post": "6b00f747d9cbb430a10f6524"
   }
 ]
