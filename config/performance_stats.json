@@ -222,9 +222,9 @@
     "repaired_private_zeros": 8
   },
   "unsolved_mysteries:longform": {
-    "samples": 24,
-    "total_score": 481.3000000000001,
-    "avg_score": 20.05416666666667,
+    "samples": 25,
+    "total_score": 513.5000000000001,
+    "avg_score": 20.540000000000006,
     "history": [
       {
         "date": "2026-10-24",
@@ -277,14 +277,18 @@
       {
         "date": "2026-11-20",
         "score": 16.4
+      },
+      {
+        "date": "2026-11-21",
+        "score": 32.2
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 12.559999999999999
+        "avg_score": 15.833333333333334
       },
       "30d": {
-        "avg_score": 21.03076923076923
+        "avg_score": 21.828571428571426
       }
     },
     "repaired_private_zeros": 2
@@ -373,9 +377,9 @@
     }
   },
   "modern_history:shorts": {
-    "samples": 2,
-    "total_score": 5.5,
-    "avg_score": 2.75,
+    "samples": 3,
+    "total_score": 6.4,
+    "avg_score": 2.1333333333333333,
     "history": [
       {
         "date": "2026-10-29",
@@ -384,14 +388,18 @@
       {
         "date": "2026-11-12",
         "score": 5.4
+      },
+      {
+        "date": "2026-11-21",
+        "score": 0.9
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 5.4
+        "avg_score": 0.9
       },
       "30d": {
-        "avg_score": 2.75
+        "avg_score": 2.1333333333333333
       }
     }
   },

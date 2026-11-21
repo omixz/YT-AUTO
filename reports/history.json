@@ -2455,5 +2455,52 @@
         "YT_SEARCH": 1
       }
     }
+  },
+  {
+    "video_id": "oM7vu0TRLDc",
+    "published_at": "2026-11-14",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "The 1917 Telegram Deception That Shocked Washington",
+    "stats": {
+      "views": 9,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 8.0,
+      "avg_view_percentage": 15.07,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 4,
+        "SHORTS": 4,
+        "YT_OTHER_PAGE": 1,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "bM3IvFOBli4",
+    "published_at": "2026-11-14",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The Bizarre 1976 Parking Garage Disappearance of Ray Richardson",
+    "stats": {
+      "views": 42,
+      "minutes_watched": 14.0,
+      "avg_view_duration_s": 48.0,
+      "avg_view_percentage": 8.81,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SUBSCRIBER": 22,
+        "RELATED_VIDEO": 15,
+        "YT_SEARCH": 3,
+        "YT_OTHER_PAGE": 1,
+        "PLAYLIST": 1
+      }
+    }
   }
 ]

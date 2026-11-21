@@ -1,8 +1,8 @@
 {
-  "videos": 74,
+  "videos": 76,
   "overall": {
-    "avg_views": 53.6,
-    "avg_view_pct": 37.6
+    "avg_views": 52.9,
+    "avg_view_pct": 36.9
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -17,8 +17,8 @@
     },
     "modern_history": {
       "avg_views": 9.0,
-      "avg_view_pct": 28.4,
-      "videos": 7
+      "avg_view_pct": 26.8,
+      "videos": 8
     },
     "mythology": {
       "avg_views": 7.8,
@@ -32,8 +32,8 @@
     },
     "unsolved_mysteries": {
       "avg_views": 40.1,
-      "avg_view_pct": 25.7,
-      "videos": 34
+      "avg_view_pct": 25.3,
+      "videos": 35
     },
     "world_wars": {
       "avg_views": 221.4,
@@ -43,14 +43,14 @@
   },
   "by_format": {
     "longform": {
-      "avg_views": 6.6,
-      "avg_view_pct": 16.0,
-      "videos": 42
+      "avg_views": 7.4,
+      "avg_view_pct": 15.8,
+      "videos": 43
     },
     "shorts": {
-      "avg_views": 103.8,
-      "avg_view_pct": 67.4,
-      "videos": 28
+      "avg_views": 100.5,
+      "avg_view_pct": 65.6,
+      "videos": 29
     },
     "teaser": {
       "avg_views": 195.8,
@@ -65,9 +65,9 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 78.8,
-      "avg_view_pct": 46.7,
-      "videos": 48
+      "avg_views": 76.7,
+      "avg_view_pct": 45.3,
+      "videos": 50
     }
   },
   "by_title_has_year": {
@@ -77,9 +77,9 @@
       "videos": 51
     },
     "year": {
-      "avg_views": 59.7,
-      "avg_view_pct": 30.6,
-      "videos": 23
+      "avg_views": 57.0,
+      "avg_view_pct": 29.1,
+      "videos": 25
     }
   },
   "by_title_is_question": {
@@ -89,16 +89,16 @@
       "videos": 2
     },
     "statement": {
-      "avg_views": 53.3,
-      "avg_view_pct": 37.3,
-      "videos": 72
+      "avg_views": 52.5,
+      "avg_view_pct": 36.6,
+      "videos": 74
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 69.1,
-      "avg_view_pct": 45.6,
-      "videos": 49
+      "avg_views": 67.4,
+      "avg_view_pct": 44.3,
+      "videos": 51
     },
     "<=50": {
       "avg_views": 20.1,
