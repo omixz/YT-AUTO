@@ -3550,5 +3550,39 @@
       ]
     },
     "seed": "Four hydrogen bombs plummeted onto the Arctic ice, and only one local hunter dared enter the radioactive fallout. But that was only the beginning of a catastrophe that nearly triggered an unthinkable nuclear disaster. On January 21, 1968, a United States Air Force B-52G Stratofortress was on a top-secret airborne alert mission. Codenamed Chrome Dome, these flights kept armed nuclear bombers airborne twenty-four hours a day. The fear of a surprise Soviet first strike drove the Pentagon to keep atomic weapons constantly in the sky."
+  },
+  {
+    "video_id": "6BHMKrcIIRM",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Private Who Spotted Pearl Harbor 45 Minutes Early",
+    "topic": "The accidental courier of Pearl Harbor: How a 22-year-old US Army private named Joseph Lockard watched a massive swarm of unknown planes on an untested radar screen on the morning of December 7, 1941, only to have his frantic warning dismissed by a rookie lieutenant as incoming B-17 bombers from California.",
+    "published_at": "2026-11-21",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 23.2,
+        "audio_seconds": 40.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 32.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "HE SAW THEM FIRST"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
