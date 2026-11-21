@@ -3588,5 +3588,42 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "NBmp-o6r8TM",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "The Surgeon Who Accidentally Killed Three People in One Operation",
+    "topic": "The Assistant Who Designed His Own Execution: The 1847 Hospital Death of Dr. Robert Liston\u2019s Terrified Young Boy Whose Routine Amputation Became a Freak Double Fatality",
+    "published_at": "2026-11-21",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 184.7,
+        "audio_seconds": 593.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 70,
+        "fallback_scenes": 0,
+        "seconds": 266.7,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "300% MORTALITY RATE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 21 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "A brilliant Victorian surgeon accidentally killed three people in a single routine operation, achieving a staggering three hundred percent mortality rate. His name was Dr Robert Liston, and he was known across London as the fastest knife in the British Empire. In an era before effective anesthesia, operating speed was quite literally the difference between life and agonizing death. Liston could cleanly amputate a human leg in under two and a half minutes, earning him legendary status. Eager crowds of medical students would pack the steep viewing galleries to watch his breathtaking displays."
   }
 ]
