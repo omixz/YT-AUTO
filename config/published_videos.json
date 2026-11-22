@@ -3625,5 +3625,39 @@
       ]
     },
     "seed": "A brilliant Victorian surgeon accidentally killed three people in a single routine operation, achieving a staggering three hundred percent mortality rate. His name was Dr Robert Liston, and he was known across London as the fastest knife in the British Empire. In an era before effective anesthesia, operating speed was quite literally the difference between life and agonizing death. Liston could cleanly amputate a human leg in under two and a half minutes, earning him legendary status. Eager crowds of medical students would pack the steep viewing galleries to watch his breathtaking displays."
+  },
+  {
+    "video_id": "nr40mhvoWNo",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Hidden 1945 Diaries That Could Have Sparked World War III",
+    "topic": "How General George S. Patton\u2019s sudden death in a mundane 1945 car crash left his chief of staff, Major General Hobart Gay, scrambling to secure Patton\u2019s controversial, anti-Soviet diaries before military censors could confiscate them.",
+    "published_at": "2026-11-22",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 19.7,
+        "audio_seconds": 48.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 27.1,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "PATTON'S SECRET DIARY"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
