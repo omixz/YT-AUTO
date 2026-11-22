@@ -70,5 +70,11 @@
     "hook": "Your PC is too fast for Tom Clancy's Splinter Cell.",
     "at": "20261121-0143",
     "buffer_post": "6b00f747d9cbb430a10f6524"
+  },
+  {
+    "id": "kotor",
+    "hook": "Your PC is too fast for Star Wars: Knights of the Old Republic.",
+    "at": "20261122-0038",
+    "buffer_post": "6b023990d864a0110586f114"
   }
 ]
