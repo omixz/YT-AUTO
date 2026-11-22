@@ -2502,5 +2502,49 @@
         "PLAYLIST": 1
       }
     }
+  },
+  {
+    "video_id": "yBrTRrm7cHM",
+    "published_at": "2026-11-15",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1945 Christmas Fire Where Five Children Vanished",
+    "stats": {
+      "views": 81,
+      "minutes_watched": 3.0,
+      "avg_view_duration_s": 17.0,
+      "avg_view_percentage": 30.12,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 81,
+        "NO_LINK_OTHER": 0,
+        "YT_SEARCH": 0
+      }
+    }
+  },
+  {
+    "video_id": "gJ_NBWcsDY4",
+    "published_at": "2026-11-15",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "How a 1972 Campfire Unearthed D.B. Cooper's Missing Cash",
+    "stats": {
+      "views": 9,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 6.0,
+      "avg_view_percentage": 1.22,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 5,
+        "SUBSCRIBER": 2,
+        "YT_SEARCH": 2
+      }
+    }
   }
 ]

@@ -3128,7 +3128,7 @@
     "title": "The 1945 Christmas Fire Where Five Children Vanished",
     "topic": "The chilling 1945 Sodder family Christmas Eve fire in Fayetteville, West Virginia, where a massive blaze burned down a family home, but when the ashes cooled, the bodies of five missing children were entirely gone\u2014sparking a decades-long desperate search fueled by a cryptic photograph mailed to the grieving parents years later.",
     "published_at": "2026-11-15",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3155,7 +3155,9 @@
       "hook_warnings": [
         "first sentence names nothing specific (no person/place/number)"
       ]
-    }
+    },
+    "views": 81,
+    "avg_view_pct": 30.1
   },
   {
     "video_id": "gJ_NBWcsDY4",
@@ -3164,7 +3166,7 @@
     "title": "How a 1972 Campfire Unearthed D.B. Cooper's Missing Cash",
     "topic": "The 1972 aftermath of the D.B. Cooper hijacking, focusing on the moment an eight-year-old boy digging in the sandy banks of the Columbia River uncovered a rotting packet of rotting ransom bills that blew the cold case wide open.",
     "published_at": "2026-11-15",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3192,7 +3194,9 @@
         "first sentence is 20 words (aim for 14 or fewer)"
       ]
     },
-    "seed": "An eight-year-old boy in 1972 dug his hands into a muddy riverbank and pulled out a fortune in rotting cash. But that discovery was just the beginning of a strange puzzle that investigators never expected to encounter on the river. Years earlier, a mysterious man hijacked a commercial flight and vanished into the freezing November night. He demanded two hundred thousand dollars in ransom and four parachutes before letting everyone go unharmed. Then he jumped out the rear airstair door into the pitch-black wilderness of the Pacific Northwest."
+    "seed": "An eight-year-old boy in 1972 dug his hands into a muddy riverbank and pulled out a fortune in rotting cash. But that discovery was just the beginning of a strange puzzle that investigators never expected to encounter on the river. Years earlier, a mysterious man hijacked a commercial flight and vanished into the freezing November night. He demanded two hundred thousand dollars in ransom and four parachutes before letting everyone go unharmed. Then he jumped out the rear airstair door into the pitch-black wilderness of the Pacific Northwest.",
+    "views": 9,
+    "avg_view_pct": 1.2
   },
   {
     "video_id": "OKZM6-9AR88",
