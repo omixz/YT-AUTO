@@ -3663,5 +3663,40 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "vuBwsCMMjxU",
+    "niche": "world_wars",
+    "format": "longform",
+    "title": "How a Single Telegraph Typo Tricked the Kaiser in 1914",
+    "topic": "How a single, mistranslated diplomatic cable in Berlin on August 1, 1914, tricked Kaiser Wilhelm II into halting the German army's advance against France, creating a frantic 90-minute window where World War I nearly didn't happen as ordered.",
+    "published_at": "2026-11-22",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 172.1,
+        "audio_seconds": 504.4
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 66,
+        "fallback_scenes": 0,
+        "seconds": 300.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE 90-MINUTE MISTAKE THAT ALMOST STOPPED WWI"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    },
+    "seed": "The First World War nearly didn't happen because of a single mistranslated diplomatic cable in Berlin. And that is only the beginning of the bizarre scramble that nearly stopped history in its tracks. It was August first, 1914, and Europe stood at the very precipice of total war. Mobilization schedules were ticking like doomsday clocks across every major capital. Germany had a precise, inflexible blueprint known as the Schlieffen Plan."
   }
 ]
