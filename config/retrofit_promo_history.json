@@ -76,5 +76,11 @@
     "hook": "Your PC is too fast for Star Wars: Knights of the Old Republic.",
     "at": "20261122-0038",
     "buffer_post": "6b023990d864a0110586f114"
+  },
+  {
+    "id": "kotor-2",
+    "hook": "Your PC is too fast for Star Wars: Knights of the Old Republic II.",
+    "at": "20261123-0107",
+    "buffer_post": "6b0391cdcc364169c19c0e6a"
   }
 ]
