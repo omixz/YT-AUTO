@@ -3698,5 +3698,39 @@
       "hook_warnings": []
     },
     "seed": "The First World War nearly didn't happen because of a single mistranslated diplomatic cable in Berlin. And that is only the beginning of the bizarre scramble that nearly stopped history in its tracks. It was August first, 1914, and Europe stood at the very precipice of total war. Mobilization schedules were ticking like doomsday clocks across every major capital. Germany had a precise, inflexible blueprint known as the Schlieffen Plan."
+  },
+  {
+    "video_id": "ud7JkN10qi8",
+    "niche": "mythology",
+    "format": "shorts",
+    "title": "The Roman Legions That Marched Into a Trap and Disappeared Forever",
+    "topic": "The Ghost Army of the Teutoburg Forest: How three Roman legions marched into a swampy German trap in a torrential downpour, resulting in a three-day massacre that shattered Rome's expansion forever",
+    "published_at": "2026-11-23",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 18.8,
+        "audio_seconds": 42.9
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 6,
+        "fallback_scenes": 0,
+        "seconds": 35.7,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "3 LEGIONS VANISHED"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
