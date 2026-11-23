@@ -2546,5 +2546,27 @@
         "YT_SEARCH": 2
       }
     }
+  },
+  {
+    "video_id": "ccdKCmkR_Oc",
+    "published_at": "2026-11-16",
+    "niche": "world_wars",
+    "format": "longform",
+    "title": "The 17-Year-Old Girl Who Fought Disguised in WWI Trenches",
+    "stats": {
+      "views": 7,
+      "minutes_watched": 12.0,
+      "avg_view_duration_s": 145.0,
+      "avg_view_percentage": 25.989999999999995,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "RELATED_VIDEO": 4,
+        "YT_SEARCH": 2,
+        "SUBSCRIBER": 1
+      }
+    }
   }
 ]

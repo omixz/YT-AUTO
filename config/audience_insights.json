@@ -1,8 +1,8 @@
 {
-  "videos": 78,
+  "videos": 79,
   "overall": {
-    "avg_views": 52.7,
-    "avg_view_pct": 36.3
+    "avg_views": 52.1,
+    "avg_view_pct": 36.2
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -36,16 +36,16 @@
       "videos": 37
     },
     "world_wars": {
-      "avg_views": 221.4,
-      "avg_view_pct": 32.4,
-      "videos": 10
+      "avg_views": 201.9,
+      "avg_view_pct": 31.8,
+      "videos": 11
     }
   },
   "by_format": {
     "longform": {
-      "avg_views": 7.5,
-      "avg_view_pct": 15.5,
-      "videos": 44
+      "avg_views": 7.4,
+      "avg_view_pct": 15.7,
+      "videos": 45
     },
     "shorts": {
       "avg_views": 99.9,
@@ -65,16 +65,16 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 75.5,
-      "avg_view_pct": 44.1,
-      "videos": 52
+      "avg_views": 74.2,
+      "avg_view_pct": 43.8,
+      "videos": 53
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 50.8,
-      "avg_view_pct": 40.7,
-      "videos": 51
+      "avg_views": 50.0,
+      "avg_view_pct": 40.4,
+      "videos": 52
     },
     "year": {
       "avg_views": 56.1,
@@ -89,16 +89,16 @@
       "videos": 2
     },
     "statement": {
-      "avg_views": 52.3,
-      "avg_view_pct": 36.1,
-      "videos": 76
+      "avg_views": 51.7,
+      "avg_view_pct": 35.9,
+      "videos": 77
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 66.5,
-      "avg_view_pct": 43.2,
-      "videos": 53
+      "avg_views": 65.4,
+      "avg_view_pct": 42.9,
+      "videos": 54
     },
     "<=50": {
       "avg_views": 20.1,

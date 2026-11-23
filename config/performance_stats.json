@@ -298,21 +298,25 @@
     "repaired_private_zeros": 2
   },
   "world_wars:longform": {
-    "samples": 8,
-    "total_score": 85.6,
-    "avg_score": 10.7,
+    "samples": 9,
+    "total_score": 110.3,
+    "avg_score": 12.255555555555555,
     "history": [
       {
         "date": "2026-11-14",
         "score": 17.6
+      },
+      {
+        "date": "2026-11-23",
+        "score": 24.7
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 17.6
+        "avg_score": 24.7
       },
       "30d": {
-        "avg_score": 17.6
+        "avg_score": 21.15
       }
     },
     "repaired_private_zeros": 2
