@@ -82,5 +82,11 @@
     "hook": "Your PC is too fast for Star Wars: Knights of the Old Republic II.",
     "at": "20261123-0107",
     "buffer_post": "6b0391cdcc364169c19c0e6a"
+  },
+  {
+    "id": "thief-gold",
+    "hook": "Your PC is too fast for Thief Gold.",
+    "at": "20261124-0512",
+    "buffer_post": "6b051ca4db52b449cf2957f5"
   }
 ]
