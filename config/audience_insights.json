@@ -1,8 +1,8 @@
 {
-  "videos": 79,
+  "videos": 81,
   "overall": {
-    "avg_views": 52.1,
-    "avg_view_pct": 36.2
+    "avg_views": 51.3,
+    "avg_view_pct": 35.8
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -31,9 +31,9 @@
       "videos": 1
     },
     "unsolved_mysteries": {
-      "avg_views": 40.4,
-      "avg_view_pct": 24.7,
-      "videos": 37
+      "avg_views": 39.3,
+      "avg_view_pct": 24.4,
+      "videos": 39
     },
     "world_wars": {
       "avg_views": 201.9,
@@ -43,14 +43,14 @@
   },
   "by_format": {
     "longform": {
-      "avg_views": 7.4,
-      "avg_view_pct": 15.7,
-      "videos": 45
+      "avg_views": 7.3,
+      "avg_view_pct": 15.3,
+      "videos": 46
     },
     "shorts": {
-      "avg_views": 99.9,
-      "avg_view_pct": 64.4,
-      "videos": 30
+      "avg_views": 97.9,
+      "avg_view_pct": 63.5,
+      "videos": 31
     },
     "teaser": {
       "avg_views": 195.8,
@@ -65,9 +65,9 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 74.2,
-      "avg_view_pct": 43.8,
-      "videos": 53
+      "avg_views": 72.2,
+      "avg_view_pct": 42.9,
+      "videos": 55
     }
   },
   "by_title_has_year": {
@@ -77,9 +77,9 @@
       "videos": 52
     },
     "year": {
-      "avg_views": 56.1,
-      "avg_view_pct": 28.1,
-      "videos": 27
+      "avg_views": 53.6,
+      "avg_view_pct": 27.4,
+      "videos": 29
     }
   },
   "by_title_is_question": {
@@ -89,16 +89,16 @@
       "videos": 2
     },
     "statement": {
-      "avg_views": 51.7,
-      "avg_view_pct": 35.9,
-      "videos": 77
+      "avg_views": 50.9,
+      "avg_view_pct": 35.5,
+      "videos": 79
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 65.4,
-      "avg_view_pct": 42.9,
-      "videos": 54
+      "avg_views": 64.9,
+      "avg_view_pct": 42.8,
+      "videos": 55
     },
     "<=50": {
       "avg_views": 20.1,
@@ -106,9 +106,9 @@
       "videos": 14
     },
     ">70": {
-      "avg_views": 27.3,
-      "avg_view_pct": 23.0,
-      "videos": 11
+      "avg_views": 25.0,
+      "avg_view_pct": 21.0,
+      "videos": 12
     }
   }
 }

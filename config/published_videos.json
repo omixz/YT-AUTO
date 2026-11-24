@@ -3281,7 +3281,7 @@
     "title": "The 1959 Cabin Mystery Where Everyone Vanished Mid-Meal",
     "topic": "The 1959 chilling case of the Amitiza cabin massacre, where a remote family in the deep timberlands of Canada vanished overnight, leaving behind a dinner table with steaming bowls of stew, unwashed spoons, and an unlit kerosene lamp awaiting a family that never returned.",
     "published_at": "2026-11-17",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3306,7 +3306,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 39,
+    "avg_view_pct": 35.4
   },
   {
     "video_id": "qKFAdZcZZ1M",
@@ -3315,7 +3317,7 @@
     "title": "The 1934 Maryland Farmhouse Trunk: Inside the Secret Adoption Ring Ledger",
     "topic": "The 1934 follow-up to the Barbara Gansert kidnapping, where investigators tracked the mysterious stranger's trail to an abandoned farmhouse in Maryland, uncovering a hidden trunk filled with hundreds of tailored children's outfits and a ledger detailing a bizarre adoption ring.",
     "published_at": "2026-11-17",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3341,7 +3343,9 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     },
-    "seed": "A locked iron trunk in a Maryland farmhouse held hundreds of tailored children's outfits in 1934. And the reason why will change how you see the era forever. What investigators found inside that trunk went far beyond a simple kidnapping investigation. But that is only half the story of what was hidden in those rural woods. The trail began months earlier with the baffling disappearance of young Barbara Gansert from her home. Her parents were beside themselves with grief as days turned into agonizing weeks of silence. Police had searched every corner of the city without finding a single trace of her whereabouts. Every alleyway, train station, and local park yielded nothing. Then an anonymous t"
+    "seed": "A locked iron trunk in a Maryland farmhouse held hundreds of tailored children's outfits in 1934. And the reason why will change how you see the era forever. What investigators found inside that trunk went far beyond a simple kidnapping investigation. But that is only half the story of what was hidden in those rural woods. The trail began months earlier with the baffling disappearance of young Barbara Gansert from her home. Her parents were beside themselves with grief as days turned into agonizing weeks of silence. Police had searched every corner of the city without finding a single trace of her whereabouts. Every alleyway, train station, and local park yielded nothing. Then an anonymous t",
+    "views": 0,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "xAi1s8B07ZQ",

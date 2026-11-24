@@ -2568,5 +2568,43 @@
         "SUBSCRIBER": 1
       }
     }
+  },
+  {
+    "video_id": "UwAQh2mic50",
+    "published_at": "2026-11-17",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1959 Cabin Mystery Where Everyone Vanished Mid-Meal",
+    "stats": {
+      "views": 39,
+      "minutes_watched": 2.0,
+      "avg_view_duration_s": 17.0,
+      "avg_view_percentage": 35.35,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 39
+      }
+    }
+  },
+  {
+    "video_id": "qKFAdZcZZ1M",
+    "published_at": "2026-11-17",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1934 Maryland Farmhouse Trunk: Inside the Secret Adoption Ring Ledger",
+    "stats": {
+      "views": 0,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {}
+    }
   }
 ]
