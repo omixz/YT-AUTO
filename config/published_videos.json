@@ -3734,5 +3734,43 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "1Gjz77wnNWo",
+    "niche": "ancient_civilizations",
+    "format": "longform",
+    "title": "The Desperate Hedeby Slave Who Stole Thor's Sacred Goat",
+    "topic": "The desperate morning of a Viking '\u00der\u00e6ll' (slave) in Hedeby who discovered his master's silver hoard was missing just as the local Thing (assembly) convened, forcing him to steal a sacred temple goat as a replacement sacrifice to escape being buried alive.",
+    "published_at": "2026-11-24",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 221.7,
+        "audio_seconds": 507.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 66,
+        "fallback_scenes": 0,
+        "seconds": 339.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "STOLEN SILVER OR DEATH"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)",
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    },
+    "seed": "The heavy wooden lid of the silver chest slammed open to reveal nothing but cold, empty air. Leif stared at the barren floorboards where three hundred weighed silver arm rings had rested just hours before. But that was only the beginning of his nightmare. This was not just any theft in the bustling trading port of Hedeby. It was the entire seasonal tribute belonging to Jarl Thorkell. Thorkell was a notoriously brutal master known across the Jutland peninsula for his merciless punishments. And in ninth century Viking society, the penalty for a thrall losing his owner's wealth was absolute."
   }
 ]
