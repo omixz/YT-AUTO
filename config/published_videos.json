@@ -3354,7 +3354,7 @@
     "title": "The 1957 Disappearance That Shocked Illinois",
     "topic": "The chilling 1957 disappearance of 6-year-old Maria Ridulph in Sycamore, Illinois, who was last seen playing under a streetlamp with a friendly neighborhood teenager in a crisp red coat, only to vanish into the winter night before her skeletal remains were found decades later in a remote snow-dusted field.",
     "published_at": "2026-11-18",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3379,7 +3379,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 105,
+    "avg_view_pct": 39.9
   },
   {
     "video_id": "7YGnV9NT9aw",
@@ -3388,7 +3390,7 @@
     "title": "The 1964 West Point Cadet Who Met George And Vanished Forever",
     "topic": "The bizarre 1964 case of 7-year-old Richard Colvin Cox, a West Point cadet who vanished after walking into a sleepy Massachusetts diner with an unidentified man known only as \"George,\" leaving behind a pristine dorm room and a final cryptic letter warning his fianc\u00e9e that if he didn't return, she should look for a man wearing a military ring.",
     "published_at": "2026-11-18",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3417,7 +3419,9 @@
         "first sentence is 24 words (aim for 14 or fewer)"
       ]
     },
-    "seed": "In 1964, a West Point cadet walked into a Massachusetts diner, met a man named George, and vanished off the face of the earth. But that is only the beginning of a rabbit hole that baffled federal investigators for decades. Richard Colvin Cox was twenty-one years old, bright, ambitious, and seemingly on the path to a promising military career. He had transferred to the United States Military Academy at West Point from Mansfield State College in Pennsylvania. By all accounts, Cox was adjusting to the notoriously rigorous demands of cadet life."
+    "seed": "In 1964, a West Point cadet walked into a Massachusetts diner, met a man named George, and vanished off the face of the earth. But that is only the beginning of a rabbit hole that baffled federal investigators for decades. Richard Colvin Cox was twenty-one years old, bright, ambitious, and seemingly on the path to a promising military career. He had transferred to the United States Military Academy at West Point from Mansfield State College in Pennsylvania. By all accounts, Cox was adjusting to the notoriously rigorous demands of cadet life.",
+    "views": 4,
+    "avg_view_pct": 8.2
   },
   {
     "video_id": "3QClO8_MnZ4",

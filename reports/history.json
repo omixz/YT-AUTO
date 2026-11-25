@@ -2606,5 +2606,48 @@
       "subscribers_gained": 0,
       "traffic_sources": {}
     }
+  },
+  {
+    "video_id": "xAi1s8B07ZQ",
+    "published_at": "2026-11-18",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1957 Disappearance That Shocked Illinois",
+    "stats": {
+      "views": 105,
+      "minutes_watched": 5.0,
+      "avg_view_duration_s": 17.0,
+      "avg_view_percentage": 39.91,
+      "likes": 3,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 102,
+        "YT_SEARCH": 3,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "7YGnV9NT9aw",
+    "published_at": "2026-11-18",
+    "niche": "unsolved_mysteries",
+    "format": "longform",
+    "title": "The 1964 West Point Cadet Who Met George And Vanished Forever",
+    "stats": {
+      "views": 4,
+      "minutes_watched": 1.0,
+      "avg_view_duration_s": 39.0,
+      "avg_view_percentage": 8.15,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 2,
+        "RELATED_VIDEO": 2
+      }
+    }
   }
 ]
