@@ -3814,5 +3814,42 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "Tg7GgWcEM8g",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "The Munich Doctor Who Drank Typhoid and Killed Five Researchers",
+    "topic": "The Doctor Who Swallowed Live Typhoid Bacteria to Prove His Point: The 1892 Munich Laboratory Stunt That Killed Five Researchers and Sparked an International Epidemic Panic",
+    "published_at": "2026-11-25",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 148.9,
+        "audio_seconds": 508.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 58,
+        "fallback_scenes": 0,
+        "seconds": 187.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "HE DRANK TYPHOID?"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 19 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "Five scientists drank a glass of live, deadly typhoid bacteria in 1892 Munich, and the catastrophic aftermath was terrifying. But that is only the beginning of a much stranger story about professional ego and lethal laboratory hubris. The Munich hygiene conference of 1892 was supposed to be a triumph of modern medical science, drawing minds from across Europe. Instead, it quickly became the stage for one of the most reckless biological experiments in human history. Renowned Bavarian bacteriologist Max von Pettenkofer firmly rejected Robert Koch\u2019s revolutionary new theory about disease."
   }
 ]
