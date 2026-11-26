@@ -3851,5 +3851,41 @@
       ]
     },
     "seed": "Five scientists drank a glass of live, deadly typhoid bacteria in 1892 Munich, and the catastrophic aftermath was terrifying. But that is only the beginning of a much stranger story about professional ego and lethal laboratory hubris. The Munich hygiene conference of 1892 was supposed to be a triumph of modern medical science, drawing minds from across Europe. Instead, it quickly became the stage for one of the most reckless biological experiments in human history. Renowned Bavarian bacteriologist Max von Pettenkofer firmly rejected Robert Koch\u2019s revolutionary new theory about disease."
+  },
+  {
+    "video_id": "CVc2OysddGc",
+    "niche": "modern_history",
+    "format": "shorts",
+    "title": "The Double Agent Who Tried to Stop the 1973 Yom Kippur War",
+    "topic": "The 1973 Yom Kippur War intelligence failure: how an Egyptian double agent codenamed 'The Angel' risked his life to hand-deliver a midnight warning to Israeli intelligence about an imminent invasion, only to be dismissed by arrogant commanders until the first sirens began wailing.",
+    "published_at": "2026-11-26",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 19.5,
+        "audio_seconds": 44.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 8,
+        "fallback_scenes": 0,
+        "seconds": 26.6,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THE SPY WHO CRIED WOLF"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    }
   }
 ]
