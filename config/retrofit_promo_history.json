@@ -94,5 +94,11 @@
     "hook": "Your PC is too fast for Thief II: The Metal Age.",
     "at": "20261125-0342",
     "buffer_post": "6b06594122dfb7833a78cdc9"
+  },
+  {
+    "id": "deus-ex",
+    "hook": "Your PC is too fast for Deus Ex.",
+    "at": "20261126-0301",
+    "buffer_post": "6b07a1249f6dda31ccbae50c"
   }
 ]
