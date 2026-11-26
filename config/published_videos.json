@@ -3887,5 +3887,42 @@
         "first sentence names nothing specific (no person/place/number)"
       ]
     }
+  },
+  {
+    "video_id": "BSvqfre8TSg",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "The Kentucky Cabin Surgery That Shocked Medical History in 1822",
+    "topic": "The Surgeon Who Performed a 100% Mortality Cesarean Section in a Kitchen: The 1822 Remote Appalachian Cabin Operation Where Ephraim McDowell Extracted a 22-Pound Ovarian Tumor Without Anesthesia While a Lynching Mob Gathered Outside",
+    "published_at": "2026-11-26",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 167.1,
+        "audio_seconds": 540.1
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 64,
+        "fallback_scenes": 0,
+        "seconds": 283.4,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SURGERY WITHOUT ANESTHESIA"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 21 words (aim for 14 or fewer)"
+      ]
+    },
+    "seed": "A doctor in 1822 stood in a remote Kentucky cabin holding a twenty-two pound ovarian tumor with no anesthesia in sight. Outside that very door, an angry mob was gathering with ropes and pitchforks, convinced the procedure was cold-blooded murder. Most people assume modern surgery was built on slow, careful, sterile steps forward in European universities. But here is the twist that changes everything about how medical history actually unfolded. In 1809, before anesthesia even existed, one frontier doctor dared to cut open a human abdomen."
   }
 ]
