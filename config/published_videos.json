@@ -3964,5 +3964,42 @@
         "first sentence is 22 words (aim for 14 or fewer)"
       ]
     }
+  },
+  {
+    "video_id": "ADQWYLV96co",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "Why the USS Monitor Crew Barely Survived Their Own Ship",
+    "topic": "The Ghost Ship of the Ironclads: The Terrifying 12-Hour Battle Where Sailors Suffocated in Iron Cans",
+    "published_at": "2026-11-27",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 204.5,
+        "audio_seconds": 472.0
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 63,
+        "fallback_scenes": 0,
+        "seconds": 340.0,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SUFFOCATED IN AN IRON CAN"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    },
+    "seed": "Iron walls didn't protect them. They became a sealed metal tomb trapping every breath they took. And that is only part of the nightmare, because the men inside weren't just fighting an enemy fleet. On March 9, 1862, two iron monstrosities clashed at Hampton Roads in a duel that changed naval warfare forever. Yet beneath the roaring cannon fire, a terrifying silent killer was hunting the crew inside the Union vessel. And that killer wasn't Confederate gunpowder. It was the very air the sailors were breathing."
   }
 ]
