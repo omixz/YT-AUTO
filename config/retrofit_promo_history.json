@@ -100,5 +100,11 @@
     "hook": "Your PC is too fast for Deus Ex.",
     "at": "20261126-0301",
     "buffer_post": "6b07a1249f6dda31ccbae50c"
+  },
+  {
+    "id": "hitman-blood-money",
+    "hook": "Your PC is too fast for Hitman: Blood Money.",
+    "at": "20261127-0311",
+    "buffer_post": "6b08f4e31fd46e62e70a3d7d"
   }
 ]
