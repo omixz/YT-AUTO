@@ -3505,7 +3505,7 @@
     "title": "The 1982 Hiker Who Walked Off the Face of the Earth",
     "topic": "The 1982 mysterious disappearance of 20-year-old nurse Paula Welden from a Vermont hiking trail, where dozens of searchers walked right past her bootprints in the fresh mud before she vanished entirely into a dense forest, leaving behind an open dormitory room with her bed unmade and a half-written letter on her desk.",
     "published_at": "2026-11-20",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3530,7 +3530,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 28,
+    "avg_view_pct": 59.5
   },
   {
     "video_id": "wjp4h27wE2w",
@@ -3539,7 +3541,7 @@
     "title": "The Greenlandic Hunter Who Braved Radioactive Ice in 1968",
     "topic": "The 1968 Thule Air Base B-52 crash: how a heroic Greenlandic local braved sub-zero Arctic blazes and lethal radioactive plutonium sludge on the sea ice to rescue freezing American airmen after a thermonuclear bomber plummeted from the sky.",
     "published_at": "2026-11-20",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3567,7 +3569,9 @@
         "first sentence is 18 words (aim for 14 or fewer)"
       ]
     },
-    "seed": "Four hydrogen bombs plummeted onto the Arctic ice, and only one local hunter dared enter the radioactive fallout. But that was only the beginning of a catastrophe that nearly triggered an unthinkable nuclear disaster. On January 21, 1968, a United States Air Force B-52G Stratofortress was on a top-secret airborne alert mission. Codenamed Chrome Dome, these flights kept armed nuclear bombers airborne twenty-four hours a day. The fear of a surprise Soviet first strike drove the Pentagon to keep atomic weapons constantly in the sky."
+    "seed": "Four hydrogen bombs plummeted onto the Arctic ice, and only one local hunter dared enter the radioactive fallout. But that was only the beginning of a catastrophe that nearly triggered an unthinkable nuclear disaster. On January 21, 1968, a United States Air Force B-52G Stratofortress was on a top-secret airborne alert mission. Codenamed Chrome Dome, these flights kept armed nuclear bombers airborne twenty-four hours a day. The fear of a surprise Soviet first strike drove the Pentagon to keep atomic weapons constantly in the sky.",
+    "views": 2,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "6BHMKrcIIRM",

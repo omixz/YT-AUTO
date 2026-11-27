@@ -2649,5 +2649,47 @@
         "RELATED_VIDEO": 2
       }
     }
+  },
+  {
+    "video_id": "Qi8N6IUVRco",
+    "published_at": "2026-11-20",
+    "niche": "unsolved_mysteries",
+    "format": "shorts",
+    "title": "The 1982 Hiker Who Walked Off the Face of the Earth",
+    "stats": {
+      "views": 28,
+      "minutes_watched": 2.0,
+      "avg_view_duration_s": 29.0,
+      "avg_view_percentage": 59.47,
+      "likes": 1,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 25,
+        "YT_SEARCH": 3,
+        "NO_LINK_OTHER": 0
+      }
+    }
+  },
+  {
+    "video_id": "wjp4h27wE2w",
+    "published_at": "2026-11-20",
+    "niche": "modern_history",
+    "format": "longform",
+    "title": "The Greenlandic Hunter Who Braved Radioactive Ice in 1968",
+    "stats": {
+      "views": 2,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 2
+      }
+    }
   }
 ]
