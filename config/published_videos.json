@@ -3924,5 +3924,41 @@
       ]
     },
     "seed": "A doctor in 1822 stood in a remote Kentucky cabin holding a twenty-two pound ovarian tumor with no anesthesia in sight. Outside that very door, an angry mob was gathering with ropes and pitchforks, convinced the procedure was cold-blooded murder. Most people assume modern surgery was built on slow, careful, sterile steps forward in European universities. But here is the twist that changes everything about how medical history actually unfolded. In 1809, before anesthesia even existed, one frontier doctor dared to cut open a human abdomen."
+  },
+  {
+    "video_id": "xmbMpaDCiuo",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "Why the USS Stewart Was Sunk Twice in World War Two",
+    "topic": "The forgotten midnight mutiny of the USS Stewart in December 1941, where a lone, half-repaired American destroyer trapped in dry dock at Surabaya chose to scuttle rather than surrender, only to be salvaged, refitted with Japanese anti-aircraft guns, and sent back into battle as Patrol Boat No. 102 to unwittingly fight its former crew across the Java Sea.",
+    "published_at": "2026-11-27",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 17.5,
+        "audio_seconds": 41.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 7,
+        "fallback_scenes": 0,
+        "seconds": 30.8,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THEY FOUGHT THEIR OWN SHIP"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 22 words (aim for 14 or fewer)"
+      ]
+    }
   }
 ]
