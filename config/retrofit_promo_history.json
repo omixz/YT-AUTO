@@ -106,5 +106,11 @@
     "hook": "Your PC is too fast for Hitman: Blood Money.",
     "at": "20261127-0311",
     "buffer_post": "6b08f4e31fd46e62e70a3d7d"
+  },
+  {
+    "id": "swbf2-2005",
+    "hook": "Your PC is too fast for Star Wars: Battlefront II.",
+    "at": "20261128-0257",
+    "buffer_post": "6b0a430670e80ae8f1c88dea"
   }
 ]
