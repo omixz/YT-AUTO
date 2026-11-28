@@ -4001,5 +4001,39 @@
       ]
     },
     "seed": "Iron walls didn't protect them. They became a sealed metal tomb trapping every breath they took. And that is only part of the nightmare, because the men inside weren't just fighting an enemy fleet. On March 9, 1862, two iron monstrosities clashed at Hampton Roads in a duel that changed naval warfare forever. Yet beneath the roaring cannon fire, a terrifying silent killer was hunting the crew inside the Union vessel. And that killer wasn't Confederate gunpowder. It was the very air the sailors were breathing."
+  },
+  {
+    "video_id": "tQskoP3SSKk",
+    "niche": "mythology",
+    "format": "shorts",
+    "title": "The Brutal King Who Trapped His Own Inventor in an Inescapable Labyrinth",
+    "topic": "The Blind Justice of King Minos: How the brutal king forced the inventor Daedalus to design a inescapable labyrinth, only for Daedalus to watch his own son plunge into the sea after escaping it",
+    "published_at": "2026-11-28",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 20.6,
+        "audio_seconds": 46.3
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 9,
+        "fallback_scenes": 0,
+        "seconds": 29.5,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "THEY ESCAPED THE MAZE"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": []
+    }
   }
 ]
