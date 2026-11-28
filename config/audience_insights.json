@@ -1,8 +1,8 @@
 {
-  "videos": 85,
+  "videos": 87,
   "overall": {
-    "avg_views": 50.5,
-    "avg_view_pct": 35.3
+    "avg_views": 49.4,
+    "avg_view_pct": 34.5
   },
   "by_niche": {
     "ancient_civilizations": {
@@ -11,9 +11,9 @@
       "videos": 5
     },
     "dark_history": {
-      "avg_views": 26.0,
-      "avg_view_pct": 32.8,
-      "videos": 8
+      "avg_views": 23.2,
+      "avg_view_pct": 29.2,
+      "videos": 9
     },
     "modern_history": {
       "avg_views": 8.2,
@@ -36,21 +36,21 @@
       "videos": 42
     },
     "world_wars": {
-      "avg_views": 201.9,
-      "avg_view_pct": 31.8,
-      "videos": 11
+      "avg_views": 185.4,
+      "avg_view_pct": 29.2,
+      "videos": 12
     }
   },
   "by_format": {
     "longform": {
-      "avg_views": 7.1,
-      "avg_view_pct": 14.9,
-      "videos": 48
+      "avg_views": 7.0,
+      "avg_view_pct": 14.6,
+      "videos": 49
     },
     "shorts": {
-      "avg_views": 96.0,
-      "avg_view_pct": 62.7,
-      "videos": 33
+      "avg_views": 93.3,
+      "avg_view_pct": 60.8,
+      "videos": 34
     },
     "teaser": {
       "avg_views": 195.8,
@@ -65,16 +65,16 @@
       "videos": 26
     },
     "toon": {
-      "avg_views": 69.7,
-      "avg_view_pct": 41.8,
-      "videos": 59
+      "avg_views": 67.5,
+      "avg_view_pct": 40.4,
+      "videos": 61
     }
   },
   "by_title_has_year": {
     "no_year": {
-      "avg_views": 50.0,
-      "avg_view_pct": 40.4,
-      "videos": 52
+      "avg_views": 48.2,
+      "avg_view_pct": 38.9,
+      "videos": 54
     },
     "year": {
       "avg_views": 51.3,
@@ -89,16 +89,16 @@
       "videos": 2
     },
     "statement": {
-      "avg_views": 50.1,
-      "avg_view_pct": 35.1,
-      "videos": 83
+      "avg_views": 49.0,
+      "avg_view_pct": 34.2,
+      "videos": 85
     }
   },
   "by_title_length": {
     "51-70": {
-      "avg_views": 62.2,
-      "avg_view_pct": 41.7,
-      "videos": 58
+      "avg_views": 60.2,
+      "avg_view_pct": 40.3,
+      "videos": 60
     },
     "<=50": {
       "avg_views": 25.8,

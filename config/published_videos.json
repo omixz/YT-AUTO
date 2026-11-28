@@ -3580,7 +3580,7 @@
     "title": "The Private Who Spotted Pearl Harbor 45 Minutes Early",
     "topic": "The accidental courier of Pearl Harbor: How a 22-year-old US Army private named Joseph Lockard watched a massive swarm of unknown planes on an untested radar screen on the morning of December 7, 1941, only to have his frantic warning dismissed by a rookie lieutenant as incoming B-17 bombers from California.",
     "published_at": "2026-11-21",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3605,7 +3605,9 @@
       },
       "tiktok_post_id": null,
       "hook_warnings": []
-    }
+    },
+    "views": 4,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "NBmp-o6r8TM",
@@ -3614,7 +3616,7 @@
     "title": "The Surgeon Who Accidentally Killed Three People in One Operation",
     "topic": "The Assistant Who Designed His Own Execution: The 1847 Hospital Death of Dr. Robert Liston\u2019s Terrified Young Boy Whose Routine Amputation Became a Freak Double Fatality",
     "published_at": "2026-11-21",
-    "scored": false,
+    "scored": true,
     "privacy_status": "public",
     "passed_quality_gate": true,
     "quality_gate_reasons": [],
@@ -3642,7 +3644,9 @@
         "first sentence is 21 words (aim for 14 or fewer)"
       ]
     },
-    "seed": "A brilliant Victorian surgeon accidentally killed three people in a single routine operation, achieving a staggering three hundred percent mortality rate. His name was Dr Robert Liston, and he was known across London as the fastest knife in the British Empire. In an era before effective anesthesia, operating speed was quite literally the difference between life and agonizing death. Liston could cleanly amputate a human leg in under two and a half minutes, earning him legendary status. Eager crowds of medical students would pack the steep viewing galleries to watch his breathtaking displays."
+    "seed": "A brilliant Victorian surgeon accidentally killed three people in a single routine operation, achieving a staggering three hundred percent mortality rate. His name was Dr Robert Liston, and he was known across London as the fastest knife in the British Empire. In an era before effective anesthesia, operating speed was quite literally the difference between life and agonizing death. Liston could cleanly amputate a human leg in under two and a half minutes, earning him legendary status. Eager crowds of medical students would pack the steep viewing galleries to watch his breathtaking displays.",
+    "views": 1,
+    "avg_view_pct": 0.0
   },
   {
     "video_id": "nr40mhvoWNo",

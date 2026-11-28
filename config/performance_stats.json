@@ -39,43 +39,21 @@
     "repaired_private_zeros": 1
   },
   "dark_history:longform": {
-    "samples": 7,
-    "total_score": 141.4,
-    "avg_score": 20.2,
+    "samples": 8,
+    "total_score": 141.5,
+    "avg_score": 17.6875,
     "history": [
       {
-        "date": "2026-10-08",
-        "score": 0.2
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
-      },
-      {
-        "date": "2026-10-08",
-        "score": 113.5
-      },
-      {
-        "date": "2026-10-08",
-        "score": 10.6
-      },
-      {
-        "date": "2026-10-08",
-        "score": 8.6
-      },
-      {
-        "date": "2026-10-08",
-        "score": 8.5
-      },
-      {
-        "date": "2026-10-08",
-        "score": 0.0
+        "date": "2026-11-28",
+        "score": 0.1
       }
     ],
     "windows": {
-      "7d": {},
+      "7d": {
+        "avg_score": 0.1
+      },
       "30d": {
-        "avg_score": 20.2
+        "avg_score": 0.1
       }
     },
     "repaired_private_zeros": 1
@@ -398,9 +376,9 @@
     }
   },
   "world_wars:shorts": {
-    "samples": 6,
-    "total_score": 564.0999999999999,
-    "avg_score": 94.01666666666665,
+    "samples": 7,
+    "total_score": 564.4999999999999,
+    "avg_score": 80.64285714285712,
     "history": [
       {
         "date": "2026-10-30",
@@ -425,14 +403,18 @@
       {
         "date": "2026-11-14",
         "score": 21.9
+      },
+      {
+        "date": "2026-11-28",
+        "score": 0.4
       }
     ],
     "windows": {
       "7d": {
-        "avg_score": 15.25
+        "avg_score": 0.4
       },
       "30d": {
-        "avg_score": 94.01666666666665
+        "avg_score": 80.64285714285712
       }
     }
   },

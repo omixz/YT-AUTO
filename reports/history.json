@@ -2691,5 +2691,46 @@
         "YT_SEARCH": 2
       }
     }
+  },
+  {
+    "video_id": "6BHMKrcIIRM",
+    "published_at": "2026-11-21",
+    "niche": "world_wars",
+    "format": "shorts",
+    "title": "The Private Who Spotted Pearl Harbor 45 Minutes Early",
+    "stats": {
+      "views": 4,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "SHORTS": 3,
+        "YT_SEARCH": 1
+      }
+    }
+  },
+  {
+    "video_id": "NBmp-o6r8TM",
+    "published_at": "2026-11-21",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "The Surgeon Who Accidentally Killed Three People in One Operation",
+    "stats": {
+      "views": 1,
+      "minutes_watched": 0.0,
+      "avg_view_duration_s": 0.0,
+      "avg_view_percentage": 0.0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "subscribers_gained": 0,
+      "traffic_sources": {
+        "YT_SEARCH": 1
+      }
+    }
   }
 ]
