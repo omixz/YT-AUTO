@@ -4039,5 +4039,43 @@
       "tiktok_post_id": null,
       "hook_warnings": []
     }
+  },
+  {
+    "video_id": "_HyzpUTHWYk",
+    "niche": "dark_history",
+    "format": "longform",
+    "title": "The Romanov Prince Who Survived the First Execution Barrage",
+    "topic": "The Lost Boy of the Romanovs: The Gruesome 1917 Escape Attempt That Everyone Forgot",
+    "published_at": "2026-11-28",
+    "scored": false,
+    "privacy_status": "public",
+    "passed_quality_gate": true,
+    "quality_gate_reasons": [],
+    "render": {
+      "voice": {
+        "requested": "kokoro",
+        "used": "kokoro",
+        "fell_back": false,
+        "seconds": 146.1,
+        "audio_seconds": 438.6
+      },
+      "animation": {
+        "engine": "toon",
+        "scenes": 63,
+        "fallback_scenes": 0,
+        "seconds": 265.2,
+        "workers": 3
+      },
+      "thumbnail": {
+        "style": "toon",
+        "text": "SURVIVED THE BULLETS?"
+      },
+      "tiktok_post_id": null,
+      "hook_warnings": [
+        "first sentence is 17 words (aim for 14 or fewer)",
+        "first sentence names nothing specific (no person/place/number)"
+      ]
+    },
+    "seed": "A burning crate, a hidden cellar, and a boy who was supposed to vanish from history forever. Most histories claim the Romanov family was simply marched into a basement and executed in cold blood. But what if I told you the Tsarevich Alexei actually survived the first terrifying barrage of lead? We need to go back to the stifling summer of nineteen seventeen in the remote Urals. The empire had already collapsed like a house of cards under Nicholas the Second."
   }
 ]
